@@ -33,6 +33,7 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 | Tag | Notes |
 |-----|--------|
 | `<core-alert>` | `variant` info \| success \| warning \| error; `dismissible` |
+| `<core-tooltip>` | `text`, `position` top \| bottom \| left \| right; `delay`, `hide-delay`; wraps trigger slot |
 | `<core-badge>` | `variant` neutral \| primary \| success \| warning \| error |
 | `<core-spinner>` | `size` sm \| md \| lg |
 

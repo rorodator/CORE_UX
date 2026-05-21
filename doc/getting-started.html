@@ -71,7 +71,7 @@ php -S localhost:8765 -t .
                 <thead><tr><th>Base class</th><th>Components</th><th>Role</th></tr></thead>
                 <tbody>
                     <tr><td><code>Core_UXElement</code></td><td>Most tags</td><td>Extends <code>Core_HTMLElement</code>; <code>ui_render()</code> builds DOM.</td></tr>
-                    <tr><td><code>Core_UXSlotElement</code></td><td>container, stack, grid, card, modal</td><td>Captures light-DOM children before render.</td></tr>
+                    <tr><td><code>Core_UXSlotElement</code></td><td>container, stack, grid, card, modal, tooltip</td><td>Captures light-DOM children before render.</td></tr>
                     <tr><td><code>Core_UXFormControl</code></td><td>field, textarea, select, checkbox, radio-group</td><td>Label, hint, error, ARIA wiring.</td></tr>
                 </tbody>
             </table>
@@ -104,8 +104,7 @@ $svc('dom').createElement('button', { text: 'Save', attrs: { type: 'button' } })
 <script type="importmap">
 {
     "imports": {
-        "CORE_JS/lib/base/core-html-element.js": "./assets/core-html-element-shim.js",
-        "CORE_JS/lib/utils/dom.js":"./assets/core-dom-shim.js",
+        "CORE_JS/": "../../CORE_JS/",
         "CORE_UX/": "../"
     }
 }

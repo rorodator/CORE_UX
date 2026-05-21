@@ -320,6 +320,49 @@
       focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
   }
 
+  /* —— Tooltip —— */
+  .core-tooltip {
+    @apply relative inline-flex max-w-full font-core;
+  }
+
+  .core-tooltip__trigger {
+    @apply inline-flex;
+  }
+
+  .core-tooltip__popup {
+    @apply pointer-events-none w-max max-w-xs rounded-core border border-core-border
+      bg-core-surface px-2.5 py-1.5 text-xs leading-snug text-core-text shadow-core-sm;
+  }
+
+  .core-tooltip__popup[hidden] {
+    @apply !hidden;
+  }
+
+  .core-tooltip__popup--floating {
+    @apply fixed z-[9999] opacity-100;
+  }
+
+  .core-tooltip__popup::after {
+    content: '';
+    @apply absolute h-2 w-2 rotate-45 border border-core-border bg-core-surface;
+  }
+
+  .core-tooltip__popup--floating[data-placement='top']::after {
+    @apply -bottom-1 left-1/2 -ml-1 border-t-0 border-l-0;
+  }
+
+  .core-tooltip__popup--floating[data-placement='bottom']::after {
+    @apply -top-1 left-1/2 -ml-1 border-b-0 border-r-0;
+  }
+
+  .core-tooltip__popup--floating[data-placement='left']::after {
+    @apply -right-1 top-1/2 -mt-1 border-t-0 border-l-0;
+  }
+
+  .core-tooltip__popup--floating[data-placement='right']::after {
+    @apply -left-1 top-1/2 -mt-1 border-b-0 border-r-0;
+  }
+
   /* —— Badge —— */
   .core-badge {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;

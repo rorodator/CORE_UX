@@ -44,6 +44,7 @@
             title: 'Feedback',
             links: [
                 { id: 'core-alert', href: comp + 'core-alert.html', label: 'core-alert' },
+                { id: 'core-tooltip', href: comp + 'core-tooltip.html', label: 'core-tooltip' },
                 { id: 'core-badge', href: comp + 'core-badge.html', label: 'core-badge' },
                 { id: 'core-spinner', href: comp + 'core-spinner.html', label: 'core-spinner' }
             ]
@@ -68,7 +69,7 @@
     ];
 
     var html = '<div class="sidebar__brand"><h1><a href="' + root + 'index.html">CORE_UX</a></h1>'
-        + '<p>Doc + live demos · 20 tags</p></div>';
+        + '<p>Doc + live demos · 21 tags</p></div>';
 
     groups.forEach(function (group) {
         html += '<div class="nav-group"><div class="nav-group__title">' + group.title + '</div>';

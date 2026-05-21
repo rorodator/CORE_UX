@@ -1,6 +1,6 @@
 import { Core_UXSlotElement } from '../../lib/base/core-ux-slot-element.js';
-import { createElement, mountHtml } from '../../lib/utils/dom.js';
-import { registerCoreComponent } from '../../lib/utils/register-component.js';
+import { createElement, mountHtml } from 'CORE_JS/lib/utils/dom.js';
+import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
  * Responsive centred container — sizes: sm | md | lg | xl | fluid.

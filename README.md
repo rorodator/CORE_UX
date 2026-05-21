@@ -68,7 +68,8 @@ See **[THEMING.md](./THEMING.md)** and [doc/theming.html](./doc/theming.html) (l
 - `dist/core-ux.css` — compiled kit stylesheet (includes tokens)
 - `THEMING.md` — runtime theming contract for consuming apps
 - `lib/base/` — `Core_UXElement`, `Core_UXSlotElement`, `Core_UXFormControl`
-- `lib/utils/dom.js` — DOM helpers (`createElement`, `mountHtml`)
+- `lib/register-core-component.js` — thin wrapper around CORE_JS `registerCustomElement`
+- DOM helpers live in **CORE_JS** (`CORE_JS/lib/utils/dom.js`, `$svc('dom')`) — not duplicated here
 - `tailwind.preset.js` — design tokens (for kit build or future app Tailwind)
 - `tailwind.content.js` — content globs export (future app use only)
 

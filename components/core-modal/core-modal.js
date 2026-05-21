@@ -1,7 +1,6 @@
 import { Core_UXSlotElement } from '../../lib/base/core-ux-slot-element.js';
-import { createElement, mountHtml } from '../../lib/utils/dom.js';
-import { hasBoolAttr } from '../../lib/utils/ux-attributes.js';
-import { registerCoreComponent } from '../../lib/utils/register-component.js';
+import { createElement, mountHtml, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
+import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
  * Modal dialog. Open with `open` attribute. Body/footer via light DOM.

@@ -1,6 +1,6 @@
 import { CoreAutocomplete } from '../core-autocomplete/core-autocomplete.js';
-import { createElement } from '../../lib/utils/dom.js';
-import { registerCoreComponent } from '../../lib/utils/register-component.js';
+import { createElement } from 'CORE_JS/lib/utils/dom.js';
+import { registerCoreComponent } from '../../lib/register-core-component.js';
 import { getItemText, getItemValue } from '../../lib/autocomplete/autocomplete-helpers.js';
 
 /**

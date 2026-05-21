@@ -1,7 +1,6 @@
 import { Core_UXElement } from '../../lib/base/core-ux-element.js';
-import { createElement } from '../../lib/utils/dom.js';
-import { hasBoolAttr } from '../../lib/utils/ux-attributes.js';
-import { registerCoreComponent } from '../../lib/utils/register-component.js';
+import { createElement, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
+import { registerCoreComponent } from '../../lib/register-core-component.js';
 import {
     DEFAULT_AUTOCOMPLETE_CONFIG,
     readAutocompleteAttributes,

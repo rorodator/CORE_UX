@@ -1,6 +1,6 @@
 import { Core_UXFormControl } from '../../lib/base/core-ux-form-control.js';
-import { createElement } from '../../lib/utils/dom.js';
-import { registerCoreComponent } from '../../lib/utils/register-component.js';
+import { createElement } from 'CORE_JS/lib/utils/dom.js';
+import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
  * Text field — types: text | email | password | number | tel | url | search.

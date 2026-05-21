@@ -1,10 +1,8 @@
 /**
- * Creates a DOM element with optional class, text, attributes and children.
- *
- * @param {string} tag
- * @param {{ className?: string, text?: string, html?: string, attrs?: Record<string, string|boolean>, children?: Node[] }} [options]
- * @returns {HTMLElement}
+ * Doc demo shim — mirrors CORE_JS/lib/utils/dom.js for static pages (php -S from CORE_UX).
+ * Keep in sync when dom helpers change in CORE_JS.
  */
+
 export function createElement(tag, options = {}) {
     const el = document.createElement(tag);
     if (options.className) {
@@ -36,12 +34,6 @@ export function createElement(tag, options = {}) {
     return el;
 }
 
-/**
- * Appends parsed HTML fragment nodes into a parent element.
- *
- * @param {HTMLElement} parent
- * @param {string} html
- */
 export function mountHtml(parent, html) {
     if (!html) {
         return;
@@ -50,5 +42,41 @@ export function mountHtml(parent, html) {
     wrap.innerHTML = html;
     while (wrap.firstChild) {
         parent.appendChild(wrap.firstChild);
+    }
+}
+
+export function hasBoolAttr(el, name) {
+    if (!el.hasAttribute(name)) {
+        return false;
+    }
+    const value = el.getAttribute(name);
+    return value === '' || value === 'true';
+}
+
+export function parseJsonAttr(el, name, fallback = []) {
+    const raw = el.getAttribute(name);
+    if (!raw) {
+        return fallback;
+    }
+    try {
+        return JSON.parse(raw);
+    } catch (_) {
+        return fallback;
+    }
+}
+
+export function mirrorAttributes(host, target, names) {
+    names.forEach((name) => {
+        if (host.hasAttribute(name)) {
+            target.setAttribute(name, host.getAttribute(name) || '');
+        } else {
+            target.removeAttribute(name);
+        }
+    });
+}
+
+export function registerCustomElement(tagName, Class) {
+    if (!customElements.get(tagName)) {
+        customElements.define(tagName, Class);
     }
 }

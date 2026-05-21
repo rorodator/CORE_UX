@@ -85,6 +85,11 @@ php -S localhost:8765 -t .
 
         <section id="conventions">
             <h2>Conventions</h2>
+            <h3>DOM helpers</h3>
+            <p>Shared DOM utilities live in CORE_JS — import the module or use <code>$svc('dom')</code> when AppCore is bootstrapped:</p>
+            <pre><code>import { createElement, mountHtml, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
+
+$svc('dom').createElement('button', { text: 'Save', attrs: { type: 'button' } });</code></pre>
             <h3>Boolean attributes</h3>
             <p>Present and not <code>"false"</code> → true. Remove the attribute to disable (not <code>disabled="false"</code>).</p>
             <h3>JSON attributes</h3>
@@ -99,7 +104,8 @@ php -S localhost:8765 -t .
 <script type="importmap">
 {
     "imports": {
-        "CORE_JS/": "../../CORE_JS/",
+        "CORE_JS/lib/base/core-html-element.js": "./assets/core-html-element-shim.js",
+        "CORE_JS/lib/utils/dom.js":"./assets/core-dom-shim.js",
         "CORE_UX/": "../"
     }
 }

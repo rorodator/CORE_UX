@@ -1,6 +1,6 @@
 import { Core_UXElement } from '../../lib/base/core-ux-element.js';
-import { createElement } from '../../lib/utils/dom.js';
-import { registerCoreComponent } from '../../lib/utils/register-component.js';
+import { createElement } from 'CORE_JS/lib/utils/dom.js';
+import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
  * Loading spinner — sizes: sm | md | lg.

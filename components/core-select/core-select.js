@@ -1,7 +1,6 @@
 import { Core_UXFormControl } from '../../lib/base/core-ux-form-control.js';
-import { createElement } from '../../lib/utils/dom.js';
-import { parseJsonAttr } from '../../lib/utils/ux-attributes.js';
-import { registerCoreComponent } from '../../lib/utils/register-component.js';
+import { createElement, parseJsonAttr } from 'CORE_JS/lib/utils/dom.js';
+import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
  * Native select field. Options via JSON attribute.

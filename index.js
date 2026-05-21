@@ -20,3 +20,5 @@ import './components/core-link/core-link.js';
 import './components/core-container/core-container.js';
 import './components/core-stack/core-stack.js';
 import './components/core-grid/core-grid.js';
+import './components/core-autocomplete/core-autocomplete.js';
+import './components/core-autocomplete-chips/core-autocomplete-chips.js';

@@ -382,6 +382,85 @@
     @apply rounded-core p-1.5 text-core-text-muted hover:bg-gray-100
       focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
   }
+
+  /* —— Autocomplete —— */
+  .core-autocomplete {
+    @apply relative w-full font-core;
+  }
+
+  .core-autocomplete__control {
+    @apply relative;
+  }
+
+  .core-autocomplete__input {
+    @apply pr-9;
+  }
+
+  .core-autocomplete__clear {
+    @apply absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-core-text-muted
+      hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
+  }
+
+  .core-autocomplete__spinner {
+    @apply pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2
+      animate-spin rounded-full border-2 border-core-border border-t-core-primary;
+  }
+
+  .core-autocomplete--loading .core-autocomplete__input {
+    @apply pr-9;
+  }
+
+  .core-autocomplete--disabled {
+    @apply opacity-60;
+  }
+
+  .core-autocomplete__list {
+    @apply absolute z-50 mt-1 max-h-72 w-full overflow-y-auto rounded-core border
+      border-core-border bg-core-surface py-1 shadow-core;
+  }
+
+  .core-autocomplete__option {
+    @apply cursor-pointer px-3 py-2 text-sm text-core-text transition-colors;
+  }
+
+  .core-autocomplete__option:hover,
+  .core-autocomplete__option--active {
+    @apply bg-core-info-muted text-core-primary;
+  }
+
+  .core-autocomplete__option-title {
+    @apply block font-medium;
+  }
+
+  .core-autocomplete__option-desc {
+    @apply mt-0.5 block text-xs text-core-text-muted;
+  }
+
+  .core-autocomplete__option--add .core-autocomplete__option-title {
+    @apply font-normal italic;
+  }
+
+  .core-autocomplete__empty {
+    @apply px-3 py-2 text-center text-sm text-core-text-muted;
+  }
+
+  .core-autocomplete__chips {
+    @apply mb-2 flex flex-wrap gap-2;
+  }
+
+  .core-autocomplete__chips--below {
+    @apply mb-0 mt-2;
+  }
+
+  .core-autocomplete__chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-core-border
+      bg-core-surface-muted px-2.5 py-0.5 text-xs font-medium text-core-text;
+  }
+
+  .core-autocomplete__chip-remove {
+    @apply rounded-full p-0.5 text-core-text-muted hover:bg-gray-200
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
+  }
 }
 
 @layer utilities {

@@ -1,0 +1,393 @@
+/**
+ * CORE_UX Tailwind source (build with: npm run build → dist/core-ux.css).
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --core-color-primary: #2185d0;
+    --core-color-primary-hover: #1678c2;
+    --core-radius: 0.28571429rem;
+    --core-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .core-ux-root {
+    font-family: var(--core-font);
+    color: theme('colors.core.text');
+  }
+}
+
+@layer components {
+  /* —— Button —— */
+  .core-btn {
+    @apply inline-flex w-full sm:w-auto items-center justify-center font-core text-sm font-medium
+      rounded-core border border-transparent px-4 py-2.5 sm:py-2 transition-colors
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary
+      focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .core-btn--sm {
+    @apply text-xs px-3 py-1.5;
+  }
+
+  .core-btn--lg {
+    @apply text-base px-5 py-3 sm:py-2.5;
+  }
+
+  .core-btn--block {
+    @apply w-full;
+  }
+
+  .core-btn--primary {
+    @apply bg-core-primary text-white hover:bg-core-primary-hover;
+  }
+
+  .core-btn--secondary {
+    @apply bg-white text-core-text border-core-border hover:bg-gray-50;
+  }
+
+  .core-btn--ghost {
+    @apply bg-transparent text-core-primary hover:bg-blue-50;
+  }
+
+  .core-btn--danger {
+    @apply bg-core-error text-white hover:bg-red-700;
+  }
+
+  /* —— Form —— */
+  .core-field {
+    @apply flex w-full flex-col gap-1.5 font-core;
+  }
+
+  .core-label {
+    @apply text-sm font-medium text-core-text;
+  }
+
+  .core-label--required::after {
+    content: ' *';
+    @apply text-core-error;
+  }
+
+  .core-hint {
+    @apply text-xs text-core-text-muted;
+  }
+
+  .core-error-text {
+    @apply text-xs text-core-error;
+  }
+
+  .core-control {
+    @apply w-full rounded-core border border-core-border bg-white px-3 py-2.5 sm:py-2
+      text-sm text-core-text shadow-sm transition-colors
+      placeholder:text-core-text-muted
+      focus:border-core-primary focus:outline-none focus:ring-2 focus:ring-core-primary/25
+      disabled:cursor-not-allowed disabled:bg-core-surface-muted disabled:opacity-70;
+  }
+
+  .core-control--error {
+    @apply border-core-error focus:border-core-error focus:ring-core-error/25;
+  }
+
+  .core-textarea {
+    @apply core-control min-h-[6rem] resize-y;
+  }
+
+  .core-select {
+    @apply core-control pr-9 appearance-none bg-no-repeat;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23767676' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center;
+    background-size: 1.25rem;
+  }
+
+  .core-check,
+  .core-radio {
+    @apply h-4 w-4 shrink-0 rounded border-core-border text-core-primary
+      focus:ring-2 focus:ring-core-primary/30 focus:ring-offset-0;
+  }
+
+  .core-radio {
+    @apply rounded-full;
+  }
+
+  .core-check-row,
+  .core-radio-row {
+    @apply flex items-start gap-2 text-sm text-core-text;
+  }
+
+  .core-radio-group {
+    @apply flex flex-col gap-2;
+  }
+
+  .core-radio-group--inline {
+    @apply flex-row flex-wrap gap-4;
+  }
+
+  /* —— Card —— */
+  .core-card {
+    @apply w-full overflow-hidden rounded-core border border-core-border bg-core-surface shadow-core;
+  }
+
+  .core-card__header {
+    @apply border-b border-core-border bg-core-surface-muted px-4 py-3 sm:px-5;
+  }
+
+  .core-card__title {
+    @apply text-base font-semibold text-core-text;
+  }
+
+  .core-card__subtitle {
+    @apply mt-0.5 text-sm text-core-text-muted;
+  }
+
+  .core-card__body {
+    @apply px-4 py-4 sm:px-5;
+  }
+
+  .core-card__footer {
+    @apply flex flex-col gap-2 border-t border-core-border bg-core-surface-muted
+      px-4 py-3 sm:flex-row sm:justify-end sm:px-5;
+  }
+
+  /* —— Alert —— */
+  .core-alert {
+    @apply relative w-full rounded-core border px-4 py-3 text-sm font-core;
+  }
+
+  .core-alert--info {
+    @apply border-core-info/30 bg-core-info-muted text-core-text;
+  }
+
+  .core-alert--success {
+    @apply border-core-success/30 bg-core-success-muted text-core-text;
+  }
+
+  .core-alert--warning {
+    @apply border-core-warning/30 bg-core-warning-muted text-core-text;
+  }
+
+  .core-alert--error {
+    @apply border-core-error/30 bg-core-error-muted text-core-text;
+  }
+
+  .core-alert__dismiss {
+    @apply absolute right-2 top-2 rounded p-1 text-core-text-muted hover:bg-black/5
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
+  }
+
+  /* —— Badge —— */
+  .core-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .core-badge--neutral {
+    @apply bg-gray-100 text-core-text;
+  }
+
+  .core-badge--primary {
+    @apply bg-core-info-muted text-core-primary;
+  }
+
+  .core-badge--success {
+    @apply bg-core-success-muted text-green-800;
+  }
+
+  .core-badge--warning {
+    @apply bg-core-warning-muted text-orange-900;
+  }
+
+  .core-badge--error {
+    @apply bg-core-error-muted text-red-800;
+  }
+
+  /* —— Spinner —— */
+  .core-spinner {
+    @apply inline-block animate-spin rounded-full border-2 border-core-border
+      border-t-core-primary;
+  }
+
+  .core-spinner--sm {
+    @apply h-4 w-4;
+  }
+
+  .core-spinner--md {
+    @apply h-6 w-6;
+  }
+
+  .core-spinner--lg {
+    @apply h-10 w-10;
+  }
+
+  /* —— Divider —— */
+  .core-divider {
+    @apply border-0 border-t border-core-border;
+  }
+
+  .core-divider--label {
+    @apply flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-core-text-muted;
+  }
+
+  .core-divider--label::before,
+  .core-divider--label::after {
+    content: '';
+    @apply h-px flex-1 bg-core-border;
+  }
+
+  /* —— Link —— */
+  .core-link {
+    @apply font-core text-sm font-medium text-core-primary underline-offset-2
+      hover:text-core-primary-hover hover:underline
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary focus-visible:ring-offset-2;
+  }
+
+  /* —— Layout —— */
+  .core-container {
+    @apply mx-auto w-full px-4 sm:px-6;
+  }
+
+  .core-container--sm {
+    @apply max-w-core-sm;
+  }
+
+  .core-container--md {
+    @apply max-w-core-md;
+  }
+
+  .core-container--lg {
+    @apply max-w-core-lg;
+  }
+
+  .core-container--xl {
+    @apply max-w-core-xl;
+  }
+
+  .core-container--fluid {
+    @apply max-w-none;
+  }
+
+  .core-stack {
+    @apply flex w-full;
+  }
+
+  .core-stack--col {
+    @apply flex-col;
+  }
+
+  .core-stack--row {
+    @apply flex-col sm:flex-row;
+  }
+
+  .core-stack--gap-1 {
+    @apply gap-1;
+  }
+
+  .core-stack--gap-2 {
+    @apply gap-2;
+  }
+
+  .core-stack--gap-3 {
+    @apply gap-3;
+  }
+
+  .core-stack--gap-4 {
+    @apply gap-4;
+  }
+
+  .core-stack--gap-6 {
+    @apply gap-6;
+  }
+
+  .core-stack--align-center {
+    @apply items-center;
+  }
+
+  .core-stack--justify-between {
+    @apply justify-between;
+  }
+
+  .core-grid {
+    @apply grid w-full gap-4;
+  }
+
+  .core-grid--1 {
+    @apply grid-cols-1;
+  }
+
+  .core-grid--2 {
+    @apply grid-cols-1 sm:grid-cols-2;
+  }
+
+  .core-grid--3 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .core-grid--4 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  .core-grid--auto {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+
+  /* —— Modal —— */
+  .core-modal-host {
+    @apply fixed inset-0 z-[1000] flex items-end justify-center p-0 sm:items-center sm:p-4;
+  }
+
+  .core-modal-host[hidden] {
+    display: none !important;
+  }
+
+  .core-modal-backdrop {
+    @apply absolute inset-0 bg-black/45;
+  }
+
+  .core-modal {
+    @apply relative z-10 flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-core
+      border border-core-border bg-core-surface shadow-core-lg
+      sm:max-h-[85vh] sm:max-w-lg sm:rounded-core;
+  }
+
+  .core-modal--sm {
+    @apply sm:max-w-md;
+  }
+
+  .core-modal--lg {
+    @apply sm:max-w-2xl;
+  }
+
+  .core-modal--full {
+    @apply h-[100dvh] max-h-[100dvh] rounded-none sm:h-auto sm:max-h-[90vh] sm:max-w-4xl sm:rounded-core;
+  }
+
+  .core-modal__header {
+    @apply flex items-start justify-between gap-3 border-b border-core-border px-4 py-3 sm:px-5;
+  }
+
+  .core-modal__title {
+    @apply text-lg font-semibold text-core-text;
+  }
+
+  .core-modal__body {
+    @apply overflow-y-auto px-4 py-4 sm:px-5;
+  }
+
+  .core-modal__footer {
+    @apply flex flex-col-reverse gap-2 border-t border-core-border px-4 py-3
+      sm:flex-row sm:justify-end sm:px-5;
+  }
+
+  .core-modal__close {
+    @apply rounded-core p-1.5 text-core-text-muted hover:bg-gray-100
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
+  }
+}
+
+@layer utilities {
+  .sr-only {
+    @apply absolute h-px w-px overflow-hidden whitespace-nowrap border-0 p-0;
+    clip: rect(0, 0, 0, 0);
+    margin: -1px;
+  }
+}

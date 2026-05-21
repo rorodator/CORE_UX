@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-side-panel — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+    <script type="importmap">
+    {
+        "imports": {
+            "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+        }
+    }
+    </script>
+    <script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-side-panel"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-side-panel&gt;</span> <span class="badge badge--slot">slot</span> <span class="badge badge--event">event</span></h1>
+            <p class="lead">Slide-over drawer from any edge. Toggle with the <code>open</code> attribute. Closes on backdrop, ×, or Escape.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute / pattern</th><th>Values</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>open</code></td><td>boolean</td><td>Show / hide panel.</td></tr>
+                <tr><td><code>title</code></td><td>string</td><td>Panel title (<code>aria-labelledby</code>).</td></tr>
+                <tr><td><code>position</code></td><td>left · right · top · bottom</td><td>Edge to slide from (default <code>right</code>).</td></tr>
+                <tr><td><code>size</code></td><td>sm · lg · full</td><td>Width (left/right) or height (top/bottom).</td></tr>
+                <tr><td><code>data-core-footer</code></td><td>—</td><td>Footer slot (same as card / modal).</td></tr>
+            </tbody>
+        </table>
+        <p>Event: <code>core-side-panel-close</code> — <code>detail.reason</code>: <code>backdrop</code> · <code>close</code> · <code>escape</code>.</p>
+
+        <section class="demo-section">
+            <h3>Open by position</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <p>Click a button to open the drawer from that edge.</p>
+                    <core-stack direction="row" gap="2">
+                        <core-button id="btn-right" variant="primary" label="Right"></core-button>
+                        <core-button id="btn-left" variant="secondary" label="Left"></core-button>
+                        <core-button id="btn-top" variant="secondary" label="Top"></core-button>
+                        <core-button id="btn-bottom" variant="secondary" label="Bottom"></core-button>
+                    </core-stack>
+                    <div class="event-log" id="log-panel">Close reason will appear here.</div>
+                </div>
+                <pre class="demo__code"><code>&lt;core-button id="open" label="Open filters"&gt;&lt;/core-button&gt;
+&lt;core-side-panel id="drawer" title="Filters" position="right"&gt;
+  …body…
+  &lt;div data-core-footer&gt;…&lt;/div&gt;
+&lt;/core-side-panel&gt;
+
+document.getElementById('open').addEventListener('click', () =&gt; {
+  document.getElementById('drawer').setAttribute('open', '');
+});
+drawer.addEventListener('core-side-panel-close', (e) =&gt; {
+  console.log(e.detail.reason);
+});</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Large panel</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-button id="btn-lg" variant="primary" label="Open large panel"></core-button>
+                </div>
+                <pre class="demo__code"><code>&lt;core-side-panel title="Details" position="right" size="lg" open&gt;…&lt;/core-side-panel&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+
+<core-side-panel id="panel-right" title="Filters" position="right">
+    <core-stack gap="3">
+        <core-field label="Search" placeholder="Type to filter…"></core-field>
+        <core-checkbox label="Active only" checked></core-checkbox>
+        <core-checkbox label="Include archived"></core-checkbox>
+    </core-stack>
+    <div data-core-footer>
+        <core-stack direction="row" gap="2" justify="between">
+            <core-button id="btn-reset" variant="ghost" label="Reset"></core-button>
+            <core-button variant="primary" label="Apply"></core-button>
+        </core-stack>
+    </div>
+</core-side-panel>
+
+<core-side-panel id="panel-left" title="Navigation" position="left" size="sm">
+    <core-stack gap="2">
+        <core-link href="#" label="Dashboard"></core-link>
+        <core-link href="#" label="Projects"></core-link>
+        <core-link href="#" label="Settings"></core-link>
+    </core-stack>
+</core-side-panel>
+
+<core-side-panel id="panel-top" title="Announcement" position="top" size="sm">
+    <p>New features are available — check the changelog for details.</p>
+</core-side-panel>
+
+<core-side-panel id="panel-bottom" title="Quick actions" position="bottom">
+    <core-grid cols="2">
+        <core-button variant="secondary" label="Share"></core-button>
+        <core-button variant="secondary" label="Export"></core-button>
+        <core-button variant="secondary" label="Duplicate"></core-button>
+        <core-button variant="secondary" label="Archive"></core-button>
+    </core-grid>
+</core-side-panel>
+
+<core-side-panel id="panel-lg" title="Details" position="right" size="lg">
+    <core-stack gap="4">
+        <core-field label="Title" value="Quarterly report"></core-field>
+        <core-textarea label="Notes" rows="6" value="Add your notes here…"></core-textarea>
+    </core-stack>
+</core-side-panel>
+
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+<script type="module">
+await Promise.all([
+    customElements.whenDefined('core-button'),
+    customElements.whenDefined('core-side-panel')
+]);
+
+function bindOpen(btnId, panelId) {
+    document.getElementById(btnId).addEventListener('click', () => {
+        document.getElementById(panelId).setAttribute('open', '');
+    });
+}
+
+bindOpen('btn-right', 'panel-right');
+bindOpen('btn-left', 'panel-left');
+bindOpen('btn-top', 'panel-top');
+bindOpen('btn-bottom', 'panel-bottom');
+bindOpen('btn-lg', 'panel-lg');
+
+['panel-right', 'panel-left', 'panel-top', 'panel-bottom', 'panel-lg'].forEach((id) => {
+    document.getElementById(id).addEventListener('core-side-panel-close', (e) => {
+        document.getElementById('log-panel').textContent =
+            id + ' closed — reason: ' + e.detail.reason;
+    });
+});
+
+document.getElementById('panel-right').querySelector('#btn-reset')
+    ?.addEventListener('click', () => {
+        document.getElementById('panel-right').removeAttribute('open');
+    });
+</script>
+</body>
+</html>

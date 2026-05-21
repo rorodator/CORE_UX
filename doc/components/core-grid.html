@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-grid — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-grid"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-grid&gt;</span> <span class="badge badge--slot">slot</span></h1>
+            <p class="lead">Responsive CSS grid for child items.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>cols</code></td><td>auto · 1 · 2 · 3 · 4</td><td>Column preset (default: auto).</td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Auto-fit columns</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-grid cols="auto">
+                        <core-card title="Alpha"><p>Card one</p></core-card>
+                        <core-card title="Beta"><p>Card two</p></core-card>
+                        <core-card title="Gamma"><p>Card three</p></core-card>
+                    </core-grid>
+                </div>
+                <pre class="demo__code"><code>&lt;core-grid cols="auto"&gt;
+  &lt;core-card title="Alpha"&gt;…&lt;/core-card&gt;
+  …
+&lt;/core-grid&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Fixed columns</h3>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-grid cols="2">
+                        <core-badge variant="neutral" label="A"></core-badge>
+                        <core-badge variant="neutral" label="B"></core-badge>
+                        <core-badge variant="neutral" label="C"></core-badge>
+                        <core-badge variant="neutral" label="D"></core-badge>
+                    </core-grid>
+                    <core-grid cols="4">
+                        <core-badge variant="primary" label="1"></core-badge>
+                        <core-badge variant="primary" label="2"></core-badge>
+                        <core-badge variant="primary" label="3"></core-badge>
+                        <core-badge variant="primary" label="4"></core-badge>
+                    </core-grid>
+                </div>
+                <pre class="demo__code"><code>&lt;core-grid cols="2"&gt;…&lt;/core-grid&gt;
+&lt;core-grid cols="4"&gt;…&lt;/core-grid&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+</body>
+</html>

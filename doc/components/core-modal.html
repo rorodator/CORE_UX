@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-modal — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-modal"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-modal&gt;</span> <span class="badge badge--slot">slot</span> <span class="badge badge--event">event</span></h1>
+            <p class="lead">Dialog overlay. Toggle with the <code>open</code> attribute. Closes on backdrop, ×, or Escape.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute / pattern</th><th>Values</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>open</code></td><td>boolean</td><td>Show / hide dialog.</td></tr>
+                <tr><td><code>title</code></td><td>string</td><td>Dialog title (<code>aria-labelledby</code>).</td></tr>
+                <tr><td><code>size</code></td><td>sm · lg · full</td><td>Width modifier.</td></tr>
+                <tr><td><code>data-core-footer</code></td><td>—</td><td>Footer slot (same as card).</td></tr>
+            </tbody>
+        </table>
+        <p>Event: <code>core-modal-close</code> — <code>detail.reason</code>: <code>backdrop</code> · <code>close</code> · <code>escape</code>.</p>
+
+        <section class="demo-section">
+            <h3>Open a modal</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-stack direction="row" gap="2">
+                        <core-button id="btn-open-sm" variant="secondary" label="Small"></core-button>
+                        <core-button id="btn-open-default" variant="primary" label="Default"></core-button>
+                        <core-button id="btn-open-lg" variant="primary" label="Large"></core-button>
+                    </core-stack>
+                    <div class="event-log" id="log-modal">Close reason will appear here.</div>
+
+                    <core-modal id="modal-sm" title="Small dialog" size="sm">
+                        <p>Compact confirmation or alert.</p>
+                    </core-modal>
+
+                    <core-modal id="modal-default" title="Edit profile">
+                        <core-stack gap="3">
+                            <core-field label="Name" value="Jane Doe"></core-field>
+                            <core-field label="Email" type="email" value="jane@example.com"></core-field>
+                        </core-stack>
+                        <div data-core-footer>
+                            <core-stack direction="row" gap="2" justify="between">
+                                <core-button id="btn-cancel" variant="ghost" label="Cancel"></core-button>
+                                <core-button variant="primary" label="Save"></core-button>
+                            </core-stack>
+                        </div>
+                    </core-modal>
+
+                    <core-modal id="modal-lg" title="Terms of service" size="lg">
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Scrollable body content can go here.</p>
+                        <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
+                    </core-modal>
+                </div>
+                <pre class="demo__code"><code>&lt;core-button id="open" label="Open"&gt;&lt;/core-button&gt;
+&lt;core-modal id="dialog" title="Edit profile"&gt;
+  …body…
+  &lt;div data-core-footer&gt;
+    &lt;core-button variant="ghost" label="Cancel"&gt;&lt;/core-button&gt;
+  &lt;/div&gt;
+&lt;/core-modal&gt;
+
+document.getElementById('open').addEventListener('click', () =&gt; {
+  document.getElementById('dialog').setAttribute('open', '');
+});
+dialog.addEventListener('core-modal-close', (e) =&gt; {
+  console.log(e.detail.reason);
+});</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Full-width modal</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-button id="btn-open-full" variant="secondary" label="Open full modal"></core-button>
+                    <core-modal id="modal-full" title="Gallery" size="full">
+                        <core-grid cols="3">
+                            <core-card title="Photo 1"><p>Image placeholder</p></core-card>
+                            <core-card title="Photo 2"><p>Image placeholder</p></core-card>
+                            <core-card title="Photo 3"><p>Image placeholder</p></core-card>
+                        </core-grid>
+                    </core-modal>
+                </div>
+                <pre class="demo__code"><code>&lt;core-modal title="Gallery" size="full" open&gt;…&lt;/core-modal&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+<script type="module">
+await customElements.whenDefined('core-modal');
+
+function bindOpen(btnId, modalId) {
+    document.getElementById(btnId).addEventListener('click', () => {
+        document.getElementById(modalId).setAttribute('open', '');
+    });
+}
+
+bindOpen('btn-open-sm', 'modal-sm');
+bindOpen('btn-open-default', 'modal-default');
+bindOpen('btn-open-lg', 'modal-lg');
+bindOpen('btn-open-full', 'modal-full');
+
+['modal-sm', 'modal-default', 'modal-lg', 'modal-full'].forEach((id) => {
+    document.getElementById(id).addEventListener('core-modal-close', (e) => {
+        document.getElementById('log-modal').textContent =
+            id + ' closed — reason: ' + e.detail.reason;
+    });
+});
+
+document.getElementById('btn-cancel').addEventListener('click', () => {
+    document.getElementById('modal-default').removeAttribute('open');
+});
+</script>
+</body>
+</html>

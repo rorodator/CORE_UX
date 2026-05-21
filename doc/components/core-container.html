@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-container — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-container"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-container&gt;</span> <span class="badge badge--slot">slot</span></h1>
+            <p class="lead">Centred max-width wrapper. Light-DOM children are preserved as content.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>size</code></td><td>sm · md · lg · xl · fluid</td><td>Max width (default: lg).</td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Size comparison</h3>
+            <p>Each box uses a different container size (background shows the constrained width).</p>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-container size="sm"><div style="padding:0.5rem;background:#e8f0fe;border-radius:4px;">size="sm"</div></core-container>
+                    <core-container size="md"><div style="padding:0.5rem;background:#e8f0fe;border-radius:4px;">size="md"</div></core-container>
+                    <core-container size="lg"><div style="padding:0.5rem;background:#e8f0fe;border-radius:4px;">size="lg" (default)</div></core-container>
+                    <core-container size="xl"><div style="padding:0.5rem;background:#e8f0fe;border-radius:4px;">size="xl"</div></core-container>
+                    <core-container size="fluid"><div style="padding:0.5rem;background:#e8f0fe;border-radius:4px;">size="fluid"</div></core-container>
+                </div>
+                <pre class="demo__code"><code>&lt;core-container size="sm"&gt;…&lt;/core-container&gt;
+&lt;core-container size="md"&gt;…&lt;/core-container&gt;
+&lt;core-container size="lg"&gt;…&lt;/core-container&gt;
+&lt;core-container size="fluid"&gt;…&lt;/core-container&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Page layout</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-container size="md">
+                        <core-card title="Welcome" subtitle="Inside a medium container">
+                            <p>Main page content goes here.</p>
+                        </core-card>
+                    </core-container>
+                </div>
+                <pre class="demo__code"><code>&lt;core-container size="md"&gt;
+  &lt;core-card title="Welcome"&gt;…&lt;/core-card&gt;
+&lt;/core-container&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+</body>
+</html>

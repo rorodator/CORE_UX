@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-checkbox — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-checkbox"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-checkbox&gt;</span></h1>
+            <p class="lead">Checkbox with inline label.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>checked</code></td><td>boolean — initial checked state.</td></tr>
+                <tr><td><code>value</code></td><td>Submitted value when checked.</td></tr>
+                <tr><td colspan="2"><em>Plus shared form attributes (no placeholder).</em></td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Unchecked &amp; checked</h3>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-checkbox label="Send me updates" name="updates" value="yes"></core-checkbox>
+                    <core-checkbox label="I accept the terms" name="terms" value="accepted" checked></core-checkbox>
+                </div>
+                <pre class="demo__code"><code>&lt;core-checkbox label="Send me updates" name="updates" value="yes"&gt;&lt;/core-checkbox&gt;
+&lt;core-checkbox label="I accept the terms" name="terms" value="accepted" checked&gt;&lt;/core-checkbox&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>With hint</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-checkbox label="Marketing emails" name="marketing" hint="You can unsubscribe anytime."></core-checkbox>
+                </div>
+                <pre class="demo__code"><code>&lt;core-checkbox label="Marketing emails" hint="You can unsubscribe anytime."&gt;&lt;/core-checkbox&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Disabled &amp; error</h3>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-checkbox label="Unavailable option" disabled checked></core-checkbox>
+                    <core-checkbox label="You must accept to continue" error="Required field."></core-checkbox>
+                </div>
+                <pre class="demo__code"><code>&lt;core-checkbox label="Unavailable option" disabled checked&gt;&lt;/core-checkbox&gt;
+&lt;core-checkbox label="You must accept to continue" error="Required field."&gt;&lt;/core-checkbox&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-radio-group — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-radio-group"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-radio-group&gt;</span></h1>
+            <p class="lead">Fieldset of radio buttons from JSON <code>options</code>.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>name</code></td><td>auto</td><td>Shared radio name (defaults to field id).</td></tr>
+                <tr><td><code>options</code></td><td>JSON array</td><td><code>{ value, label, selected? }</code></td></tr>
+                <tr><td><code>layout</code></td><td>stack · inline</td><td>Vertical (default) or horizontal layout.</td></tr>
+                <tr><td colspan="3"><em>Plus shared form attributes.</em></td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Stack layout (default)</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-radio-group
+                        label="Shipping method"
+                        name="shipping_stack"
+                        options='[{"value":"standard","label":"Standard (5–7 days)"},{"value":"express","label":"Express (1–2 days)","selected":true},{"value":"pickup","label":"Store pickup"}]'
+                    ></core-radio-group>
+                </div>
+                <pre class="demo__code"><code>&lt;core-radio-group
+  label="Shipping method"
+  name="shipping"
+  options='[{"value":"standard","label":"Standard"},{"value":"express","label":"Express","selected":true}]'
+&gt;&lt;/core-radio-group&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Inline layout</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-radio-group
+                        label="Size"
+                        name="size_inline"
+                        layout="inline"
+                        options='[{"value":"s","label":"S"},{"value":"m","label":"M"},{"value":"l","label":"L"},{"value":"xl","label":"XL"}]'
+                    ></core-radio-group>
+                </div>
+                <pre class="demo__code"><code>&lt;core-radio-group label="Size" layout="inline" options="..."&gt;&lt;/core-radio-group&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Required with error</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-radio-group
+                        label="Payment"
+                        name="payment_err"
+                        required
+                        error="Select a payment method."
+                        options='[{"value":"card","label":"Credit card"},{"value":"paypal","label":"PayPal"}]'
+                    ></core-radio-group>
+                </div>
+                <pre class="demo__code"><code>&lt;core-radio-group label="Payment" required error="Select a payment method." options="..."&gt;&lt;/core-radio-group&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+</body>
+</html>

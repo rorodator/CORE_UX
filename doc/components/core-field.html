@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-field — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-field"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-field&gt;</span></h1>
+            <p class="lead">Single-line input with label, hint, and error support. <a href="../form-controls.html">Shared form attrs</a>.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>type</code></td><td>text · email · password · number · tel · url · search</td><td>Input type (default: text).</td></tr>
+                <tr><td colspan="3"><em>Plus shared form attributes.</em></td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Common types</h3>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-field label="Full name" name="name" placeholder="Jane Doe"></core-field>
+                    <core-field label="Email" type="email" name="email" placeholder="you@example.com"></core-field>
+                    <core-field label="Password" type="password" name="password" placeholder="••••••••"></core-field>
+                </div>
+                <pre class="demo__code"><code>&lt;core-field label="Full name" placeholder="Jane Doe"&gt;&lt;/core-field&gt;
+&lt;core-field label="Email" type="email" placeholder="you@example.com"&gt;&lt;/core-field&gt;
+&lt;core-field label="Password" type="password"&gt;&lt;/core-field&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Number, tel, url, search</h3>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-field label="Age" type="number" name="age" value="30"></core-field>
+                    <core-field label="Phone" type="tel" name="phone" placeholder="+33 6 12 34 56 78"></core-field>
+                    <core-field label="Website" type="url" name="site" placeholder="https://"></core-field>
+                    <core-field label="Search" type="search" name="q" placeholder="Filter…"></core-field>
+                </div>
+                <pre class="demo__code"><code>&lt;core-field label="Age" type="number" value="30"&gt;&lt;/core-field&gt;
+&lt;core-field label="Phone" type="tel"&gt;&lt;/core-field&gt;
+&lt;core-field label="Website" type="url"&gt;&lt;/core-field&gt;
+&lt;core-field label="Search" type="search"&gt;&lt;/core-field&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Hint &amp; error</h3>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-field label="Username" hint="3–20 characters." placeholder="jane"></core-field>
+                    <core-field label="Username" value="x" error="Username is too short."></core-field>
+                </div>
+                <pre class="demo__code"><code>&lt;core-field label="Username" hint="3–20 characters."&gt;&lt;/core-field&gt;
+&lt;core-field label="Username" value="x" error="Username is too short."&gt;&lt;/core-field&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+</body>
+</html>

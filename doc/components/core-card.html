@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-card — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-card"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-card&gt;</span> <span class="badge badge--slot">slot</span></h1>
+            <p class="lead">Content card with optional header and footer (<code>data-core-footer</code>).</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute / pattern</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>title</code></td><td>Card heading.</td></tr>
+                <tr><td><code>subtitle</code></td><td>Subtitle under title.</td></tr>
+                <tr><td>Light DOM</td><td>Body content.</td></tr>
+                <tr><td><code>data-core-footer</code></td><td>Child extracted into footer region.</td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Title only</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-card title="Notifications">
+                        <p style="margin:0;">You have 3 unread messages.</p>
+                    </core-card>
+                </div>
+                <pre class="demo__code"><code>&lt;core-card title="Notifications"&gt;
+  &lt;p&gt;You have 3 unread messages.&lt;/p&gt;
+&lt;/core-card&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Title + subtitle</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-card title="Profile" subtitle="Public information">
+                        <core-field label="Display name" value="Jane Doe"></core-field>
+                    </core-card>
+                </div>
+                <pre class="demo__code"><code>&lt;core-card title="Profile" subtitle="Public information"&gt;
+  &lt;core-field label="Display name" value="Jane Doe"&gt;&lt;/core-field&gt;
+&lt;/core-card&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>With footer actions</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-card title="Confirm delete" subtitle="This action cannot be undone.">
+                        <p style="margin:0;">All associated data will be permanently removed.</p>
+                        <div data-core-footer>
+                            <core-stack direction="row" gap="2" justify="between">
+                                <core-button variant="ghost" label="Cancel"></core-button>
+                                <core-button variant="danger" label="Delete"></core-button>
+                            </core-stack>
+                        </div>
+                    </core-card>
+                </div>
+                <pre class="demo__code"><code>&lt;core-card title="Confirm delete"&gt;
+  &lt;p&gt;…&lt;/p&gt;
+  &lt;div data-core-footer&gt;
+    &lt;core-stack direction="row" gap="2" justify="between"&gt;
+      &lt;core-button variant="ghost" label="Cancel"&gt;&lt;/core-button&gt;
+      &lt;core-button variant="danger" label="Delete"&gt;&lt;/core-button&gt;
+    &lt;/core-stack&gt;
+  &lt;/div&gt;
+&lt;/core-card&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+</body>
+</html>

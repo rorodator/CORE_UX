@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-multi-select — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-multi-select"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-multi-select&gt;</span></h1>
+            <p class="lead">
+                Dropdown multi-select (collapsed by default): click or focus the trigger to open
+                a searchable checkbox panel. Each row can be plain text, label + image, or custom HTML.
+            </p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>options</code></td><td><code>[]</code></td><td>JSON array (see option shape below).</td></tr>
+                <tr><td><code>value</code></td><td>—</td><td>Selected values as JSON array or comma-separated string.</td></tr>
+                <tr><td><code>searchable</code></td><td>true</td><td>Show search field (set <code>searchable="false"</code> to hide).</td></tr>
+                <tr><td><code>search-placeholder</code></td><td>Search…</td><td>Search input placeholder.</td></tr>
+                <tr><td><code>max-visible</code></td><td>6</td><td>Option rows visible in the list (toolbar height is added on top).</td></tr>
+                <tr><td><code>max-height</code></td><td>—</td><td>CSS length override for the whole block (panel or inline).</td></tr>
+                <tr><td><code>empty-search</code></td><td>No matches</td><td>Message when filter returns nothing.</td></tr>
+                <tr><td><code>show-count</code></td><td>false</td><td>Display “N selected”.</td></tr>
+                <tr><td><code>select-all</code></td><td>false</td><td>Buttons: Select visible / Clear all.</td></tr>
+                <tr><td><code>placeholder</code></td><td>Select…</td><td>Trigger text when nothing is selected (dropdown mode).</td></tr>
+                <tr><td><code>always-open</code></td><td>false</td><td>Keep the full list visible (no collapsed trigger).</td></tr>
+                <tr><td colspan="3"><em>Default: dropdown — collapsed trigger; panel opens on focus/click.</em></td></tr>
+                <tr><td colspan="3"><em>Plus shared form attributes (<a href="../form-controls.html">form controls</a>).</em></td></tr>
+            </tbody>
+        </table>
+
+        <h3>Option shape</h3>
+        <pre><code>{
+  "value": "fr",
+  "label": "France",
+  "selected": false,
+  "image": "https://…/fr.png",
+  "imageAlt": "France",
+  "description": "Optional subtitle",
+  "keywords": "extra search terms",
+  "html": "&lt;span class='badge'&gt;Custom&lt;/span&gt;",
+  "disabled": false
+}</code></pre>
+        <p>If <code>html</code> is set, it replaces the default label/image layout for that row.</p>
+
+        <h3>Events</h3>
+        <p><code>multiselect-change</code> · <code>multiselect-select</code> · <code>multiselect-deselect</code> · <code>multiselect-open</code> · <code>multiselect-close</code></p>
+
+        <h3>API</h3>
+        <p><code>open()</code> · <code>close()</code> · <code>toggle()</code> · <code>getSelectedValues()</code> · <code>getSelectedItems()</code> · <code>setSelected(values)</code> · <code>setOptions(options)</code> · <code>clearSelection()</code> · <code>selectVisible()</code></p>
+
+        <section class="demo-section">
+            <h3>Dropdown mode (default)</h3>
+            <p>Collapsed trigger — focus or click to open. Closes on outside click, Escape, or when focus leaves.</p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-multi-select
+                        id="demo-text"
+                        label="Languages"
+                        name="languages"
+                        max-visible="4"
+                        options='[{"value":"en","label":"English","selected":true},{"value":"fr","label":"French"},{"value":"de","label":"German"},{"value":"es","label":"Spanish"},{"value":"it","label":"Italian"},{"value":"pt","label":"Portuguese"}]'
+                    ></core-multi-select>
+                </div>
+                <pre class="demo__code"><code>&lt;core-multi-select
+  label="Languages"
+  options='[{"value":"en","label":"English","selected":true}, …]'
+&gt;&lt;/core-multi-select&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Countries — search + large list</h3>
+            <p>48 countries with flags, search, selection count, and bulk actions.</p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-multi-select
+                        id="demo-countries"
+                        label="Countries"
+                        name="countries"
+                        show-count
+                        select-all
+                        search-placeholder="Filter countries…"
+                        max-visible="8"
+                        empty-search="No country matches your search"
+                    ></core-multi-select>
+                    <div class="event-log" id="log-countries">Change event output appears here.</div>
+                </div>
+                <pre class="demo__code"><code>import { COUNTRIES_DEMO } from '../assets/countries-demo.js';
+
+el.setOptions(COUNTRIES_DEMO);
+el.addEventListener('multiselect-change', (e) =&gt; {
+  console.log(e.detail.values);
+});</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Always open</h3>
+            <p>Add <code>always-open</code> for the previous always-expanded layout.</p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-multi-select
+                        label="Skills (always open)"
+                        always-open
+                        max-visible="3"
+                        options='[{"value":"js","label":"JavaScript"},{"value":"php","label":"PHP"},{"value":"sql","label":"SQL"}]'
+                    ></core-multi-select>
+                </div>
+                <pre class="demo__code"><code>&lt;core-multi-select always-open label="Skills" options="..."&gt;&lt;/core-multi-select&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Label + image + description</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-multi-select
+                        id="demo-images"
+                        label="Team members"
+                        max-visible="3"
+                        searchable="false"
+                    ></core-multi-select>
+                </div>
+                <pre class="demo__code"><code>{
+  "value": "alice",
+  "label": "Alice Martin",
+  "description": "Engineering",
+  "image": "https://i.pravatar.cc/40?u=alice"
+}</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Custom HTML rows</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-multi-select
+                        id="demo-custom"
+                        label="Tech stack"
+                        show-count
+                        max-visible="4"
+                    ></core-multi-select>
+                </div>
+                <pre class="demo__code"><code>{
+  "value": "php",
+  "html": "&lt;span style='display:flex;align-items:center;gap:.5rem'&gt;&lt;span style='background:#777;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px'&gt;PHP&lt;/span&gt;&lt;span&gt;Backend API&lt;/span&gt;&lt;/span&gt;"
+}</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+<script type="module">
+import { COUNTRIES_DEMO } from '../assets/countries-demo.js';
+
+await customElements.whenDefined('core-multi-select');
+
+document.getElementById('demo-countries').setOptions(COUNTRIES_DEMO);
+document.getElementById('demo-countries').setSelected(['fr', 'de', 'es']);
+document.getElementById('demo-countries').addEventListener('multiselect-change', (e) => {
+    document.getElementById('log-countries').textContent =
+        'Selected (' + e.detail.count + '): ' + e.detail.values.join(', ');
+});
+
+document.getElementById('demo-images').setOptions([
+    {
+        value: 'alice',
+        label: 'Alice Martin',
+        description: 'Engineering',
+        image: 'https://i.pravatar.cc/40?u=alice',
+        selected: true
+    },
+    {
+        value: 'bob',
+        label: 'Bob Smith',
+        description: 'Design',
+        image: 'https://i.pravatar.cc/40?u=bob'
+    },
+    {
+        value: 'carol',
+        label: 'Carol Lee',
+        description: 'Product',
+        image: 'https://i.pravatar.cc/40?u=carol'
+    }
+]);
+
+document.getElementById('demo-custom').setOptions([
+    {
+        value: 'js',
+        html: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#f7df1e;color:#111;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700">JS</span><span>Frontend SPA</span></span>'
+    },
+    {
+        value: 'php',
+        html: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#777BB4;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700">PHP</span><span>REST API</span></span>',
+        selected: true
+    },
+    {
+        value: 'sqlite',
+        html: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#003B57;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px">SQLite</span><span>Embedded database</span></span>'
+    },
+    {
+        value: 'rxjs',
+        html: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#B7178C;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px">RxJS</span><span>Reactive streams</span></span>'
+    }
+]);
+</script>
+</body>
+</html>

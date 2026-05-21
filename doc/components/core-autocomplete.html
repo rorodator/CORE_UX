@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-autocomplete — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-autocomplete"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-autocomplete&gt;</span></h1>
+            <p class="lead">Combobox with local array or async data source. Keyboard: ↑ ↓ Enter Escape.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>placeholder</code></td><td>Type to search...</td><td>Input placeholder.</td></tr>
+                <tr><td><code>label</code></td><td>—</td><td>Visible label.</td></tr>
+                <tr><td><code>min-characters</code></td><td>3</td><td>Min query length.</td></tr>
+                <tr><td><code>delay</code></td><td>300</td><td>Debounce (ms).</td></tr>
+                <tr><td><code>max-results</code></td><td>10</td><td>Max items (local filter).</td></tr>
+                <tr><td><code>allow-additions</code></td><td>false</td><td>Free-text entry on Enter.</td></tr>
+                <tr><td><code>force-selection</code></td><td>false</td><td>Revert blur if not from list.</td></tr>
+                <tr><td><code>clearable</code></td><td>false</td><td>Show clear button.</td></tr>
+                <tr><td><code>no-results</code></td><td>No results</td><td>Empty state text.</td></tr>
+                <tr><td><code>disabled</code></td><td>false</td><td>Disable input.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Events</h3>
+        <p><code>autocomplete-select</code>, <code>autocomplete-search</code>, <code>autocomplete-results</code>, <code>autocomplete-open</code>, <code>autocomplete-close</code>, <code>autocomplete-focus</code>, <code>autocomplete-blur</code>, <code>autocomplete-change</code></p>
+
+        <section class="demo-section">
+            <h3>Local data source</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-autocomplete id="demo-local" label="City" placeholder="Type a city…" min-characters="1" clearable></core-autocomplete>
+                    <div class="event-log" id="log-local">Select a city to see the event.</div>
+                </div>
+                <pre class="demo__code"><code>el.setDataSource([
+  { title: 'Paris', value: 'paris', description: 'France' },
+  { title: 'Berlin', value: 'berlin', description: 'Germany' }
+]);
+el.addEventListener('autocomplete-select', (e) =&gt; console.log(e.detail.result));</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Allow additions</h3>
+            <p>Type a name not in the list and press Enter.</p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-autocomplete id="demo-add" label="Tag" placeholder="Add a tag…" min-characters="1" allow-additions="true"></core-autocomplete>
+                </div>
+                <pre class="demo__code"><code>&lt;core-autocomplete allow-additions="true" min-characters="1"&gt;&lt;/core-autocomplete&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Force selection</h3>
+            <p>Blur reverts to the last selected value.</p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-autocomplete id="demo-force" label="Fruit" min-characters="1" force-selection="true"></core-autocomplete>
+                </div>
+                <pre class="demo__code"><code>&lt;core-autocomplete force-selection="true"&gt;&lt;/core-autocomplete&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Async function source</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-autocomplete id="demo-async" label="User" placeholder="Search users…" min-characters="2" delay="400"></core-autocomplete>
+                </div>
+                <pre class="demo__code"><code>el.setDataSource(async (query) =&gt; {
+  await new Promise((r) =&gt; setTimeout(r, 300));
+  return users.filter((u) =&gt; u.title.toLowerCase().includes(query.toLowerCase()));
+});</code></pre>
+            </div>
+        </section>
+
+        <h3>Public API</h3>
+        <p><code>setDataSource</code>, <code>configure</code>, <code>preConfigure</code>, <code>getValue</code>, <code>setValue</code>, <code>clear</code>, <code>focus</code>, <code>blur</code>, <code>enable</code>, <code>disable</code>, <code>setLoading</code>, <code>performSearch</code>, <code>updateResults</code></p>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+<script type="module">
+const cities = [
+    { title: 'Paris', value: 'paris', description: 'France' },
+    { title: 'London', value: 'london', description: 'UK' },
+    { title: 'Berlin', value: 'berlin', description: 'Germany' },
+    { title: 'Madrid', value: 'madrid', description: 'Spain' },
+    { title: 'Rome', value: 'rome', description: 'Italy' }
+];
+const fruits = [
+    { title: 'Apple', value: 1 },
+    { title: 'Banana', value: 2 },
+    { title: 'Cherry', value: 3 }
+];
+const users = [
+    { title: 'Alice Martin', value: 1, description: 'Engineering' },
+    { title: 'Bob Smith', value: 2, description: 'Design' },
+    { title: 'Carol Lee', value: 3, description: 'Product' }
+];
+
+await customElements.whenDefined('core-autocomplete');
+
+const local = document.getElementById('demo-local');
+local.setDataSource(cities);
+local.addEventListener('autocomplete-select', (e) => {
+    document.getElementById('log-local').textContent =
+        'Selected: ' + JSON.stringify(e.detail.result);
+});
+
+document.getElementById('demo-add').setDataSource([
+    { title: 'JavaScript', value: 'js' },
+    { title: 'TypeScript', value: 'ts' }
+]);
+
+document.getElementById('demo-force').setDataSource(fruits);
+
+document.getElementById('demo-async').setDataSource(async (query) => {
+    await new Promise((r) => setTimeout(r, 350));
+    return users.filter((u) => u.title.toLowerCase().includes(query.toLowerCase()));
+});
+</script>
+</body>
+</html>

@@ -57,7 +57,10 @@ import 'CORE_UX/index.js';
 
 ## Component catalog
 
-See [COMPONENTS.md](./COMPONENTS.md) for tags, attributes, and examples.
+- **[doc/index.html](./doc/index.html)** — home; links to one page per component (doc + live demos).
+- [COMPONENTS.md](./COMPONENTS.md) — short markdown index.
+
+When adding, removing, or modifying a component, update `doc/index.html` in the same change (see [ai-instructions/components.md](./ai-instructions/components.md)).
 
 ## Conventions
 

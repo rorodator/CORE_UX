@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORE_UX — Component Reference</title>
+    <link rel="stylesheet" href="../dist/core-ux.css">
+    <link rel="stylesheet" href="assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "./assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="index"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1>CORE_UX</h1>
+            <p class="lead">
+                Shared UI kit for CORE-based apps: 20 custom elements, mobile-first CSS,
+                pure DOM rendering. Each component has its own page with live demos and copy-paste examples.
+            </p>
+        </header>
+
+        <section>
+            <h2>Quick start</h2>
+            <pre><code>import 'CORE_UX/index.js';
+
+&lt;core-button variant="primary" label="Save"&gt;&lt;/core-button&gt;</code></pre>
+            <div class="callout callout--info">
+                Open these pages via a local HTTP server (ES modules). From the repo root:
+                <code>php -S localhost:8765 -t .</code> then visit
+                <code>http://localhost:8765/doc/</code>.
+            </div>
+            <p>See <a href="getting-started.html">Getting started</a> for installation, architecture, and conventions.</p>
+        </section>
+
+        <section>
+            <h2>Components</h2>
+            <div class="card-grid">
+                <a href="components/core-button.html"><strong>core-button</strong><span>Variants, sizes, block, disabled</span></a>
+                <a href="components/core-link.html"><strong>core-link</strong><span>Internal and external links</span></a>
+                <a href="components/core-field.html"><strong>core-field</strong><span>Input types, validation states</span></a>
+                <a href="components/core-textarea.html"><strong>core-textarea</strong><span>Rows, hints, errors</span></a>
+                <a href="components/core-select.html"><strong>core-select</strong><span>JSON options</span></a>
+                <a href="components/core-checkbox.html"><strong>core-checkbox</strong><span>Checked state, labels</span></a>
+                <a href="components/core-radio-group.html"><strong>core-radio-group</strong><span>Stack / inline layouts</span></a>
+                <a href="components/core-autocomplete.html"><strong>core-autocomplete</strong><span>Local &amp; async search</span></a>
+                <a href="components/core-autocomplete-chips.html"><strong>core-autocomplete-chips</strong><span>Multi-select chips</span></a>
+                <a href="components/core-multi-select.html"><strong>core-multi-select</strong><span>Checkbox list + search</span></a>
+                <a href="components/core-alert.html"><strong>core-alert</strong><span>Semantic banners</span></a>
+                <a href="components/core-badge.html"><strong>core-badge</strong><span>Status labels</span></a>
+                <a href="components/core-spinner.html"><strong>core-spinner</strong><span>Loading indicator</span></a>
+                <a href="components/core-container.html"><strong>core-container</strong><span>Max-width wrappers</span></a>
+                <a href="components/core-stack.html"><strong>core-stack</strong><span>Flex layouts</span></a>
+                <a href="components/core-grid.html"><strong>core-grid</strong><span>Responsive grids</span></a>
+                <a href="components/core-divider.html"><strong>core-divider</strong><span>Rules and labels</span></a>
+                <a href="components/core-card.html"><strong>core-card</strong><span>Header, body, footer</span></a>
+                <a href="components/core-modal.html"><strong>core-modal</strong><span>Dialog overlay</span></a>
+                <a href="components/core-side-panel.html"><strong>core-side-panel</strong><span>Drawer from any edge</span></a>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="assets/sidebar.js"></script>
+<script type="module" src="assets/load-kit.js"></script>
+</body>
+</html>

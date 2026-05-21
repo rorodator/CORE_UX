@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-stack — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-stack"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-stack&gt;</span> <span class="badge badge--slot">slot</span></h1>
+            <p class="lead">Flex stack for laying out children. Responsive row when <code>direction="row"</code>.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>direction</code></td><td>col · row</td><td>Flex direction (default: col).</td></tr>
+                <tr><td><code>gap</code></td><td>1 · 2 · 3 · 4 · 6</td><td>Spacing scale (default: 4).</td></tr>
+                <tr><td><code>align</code></td><td>center</td><td>Cross-axis alignment when set.</td></tr>
+                <tr><td><code>justify</code></td><td>between</td><td>Main-axis justification when set.</td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Column (default)</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-stack gap="3">
+                        <core-badge variant="primary" label="Step 1"></core-badge>
+                        <core-badge variant="neutral" label="Step 2"></core-badge>
+                        <core-badge variant="neutral" label="Step 3"></core-badge>
+                    </core-stack>
+                </div>
+                <pre class="demo__code"><code>&lt;core-stack gap="3"&gt;
+  &lt;core-badge variant="primary" label="Step 1"&gt;&lt;/core-badge&gt;
+  …
+&lt;/core-stack&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Row with justify between</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-stack direction="row" gap="4" justify="between" align="center">
+                        <core-field label="Search" type="search" placeholder="Filter…"></core-field>
+                        <core-button variant="primary" label="Search"></core-button>
+                    </core-stack>
+                </div>
+                <pre class="demo__code"><code>&lt;core-stack direction="row" gap="4" justify="between" align="center"&gt;
+  &lt;core-field label="Search" type="search"&gt;&lt;/core-field&gt;
+  &lt;core-button variant="primary" label="Search"&gt;&lt;/core-button&gt;
+&lt;/core-stack&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Button group</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-stack direction="row" gap="2">
+                        <core-button variant="ghost" label="Cancel"></core-button>
+                        <core-button variant="secondary" label="Save draft"></core-button>
+                        <core-button variant="primary" label="Publish"></core-button>
+                    </core-stack>
+                </div>
+                <pre class="demo__code"><code>&lt;core-stack direction="row" gap="2"&gt;
+  &lt;core-button variant="ghost" label="Cancel"&gt;&lt;/core-button&gt;
+  &lt;core-button variant="primary" label="Publish"&gt;&lt;/core-button&gt;
+&lt;/core-stack&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+</body>
+</html>

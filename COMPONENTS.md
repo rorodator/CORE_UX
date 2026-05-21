@@ -2,6 +2,8 @@
 
 Responsive, mobile-first kit. Register via `import 'CORE_UX/index.js'`.
 
+> **Full reference:** [doc/index.html](./doc/index.html) — one page per component with live demos. Update on every catalog change.
+
 Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_render()` (no Handlebars in CORE_UX).
 
 ## Actions
@@ -22,6 +24,7 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 | `<core-radio-group>` | `name`, `options` JSON, `layout` stack \| inline |
 | `<core-autocomplete>` | async/local search; attrs: `min-characters`, `delay`, `clearable`, … |
 | `<core-autocomplete-chips>` | multi-select + chips; `max-chips`, `chips-position`, `unique` |
+| `<core-multi-select>` | checkbox dropdown + search; `max-visible` (rows) or `max-height` (CSS) |
 
 ## Feedback
 
@@ -46,6 +49,7 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 | Tag | Notes |
 |-----|--------|
 | `<core-modal>` | `open`, `title`, `size` sm \| lg \| full; event `core-modal-close` |
+| `<core-side-panel>` | `open`, `title`, `position` left \| right \| top \| bottom, `size` sm \| lg \| full; event `core-side-panel-close` |
 
 ## Examples
 

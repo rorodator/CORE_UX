@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form controls — CORE_UX</title>
+    <link rel="stylesheet" href="../dist/core-ux.css">
+    <link rel="stylesheet" href="assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "./assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="form-controls"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1>Shared form attributes</h1>
+            <p class="lead">Common to <code>core-field</code>, <code>core-textarea</code>, <code>core-select</code>, <code>core-checkbox</code>, and <code>core-radio-group</code>.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>label</code></td><td>string</td><td>Visible label (<code>&lt;legend&gt;</code> on radio group).</td></tr>
+                <tr><td><code>hint</code></td><td>string</td><td>Helper text; linked via <code>aria-describedby</code>.</td></tr>
+                <tr><td><code>error</code></td><td>string</td><td>Validation message; adds error styling and <code>aria-invalid</code>.</td></tr>
+                <tr><td><code>name</code></td><td>string</td><td>Form field name on inner control.</td></tr>
+                <tr><td><code>value</code></td><td>string</td><td>Initial value.</td></tr>
+                <tr><td><code>input-id</code></td><td>string</td><td>Explicit control <code>id</code> (auto-generated if omitted).</td></tr>
+                <tr><td><code>required</code></td><td>boolean</td><td>HTML required.</td></tr>
+                <tr><td><code>disabled</code></td><td>boolean</td><td>Disables control.</td></tr>
+                <tr><td><code>placeholder</code></td><td>string</td><td>field and textarea only.</td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Validation states demo</h3>
+            <p>Same field with hint vs error styling.</p>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-field label="Username" name="user_ok" placeholder="jane.doe" hint="Letters and numbers only."></core-field>
+                    <core-field label="Username" name="user_err" value="!!!" error="Invalid characters in username."></core-field>
+                </div>
+                <pre class="demo__code"><code>&lt;core-field label="Username" hint="Letters and numbers only."&gt;&lt;/core-field&gt;
+&lt;core-field label="Username" value="!!!" error="Invalid characters in username."&gt;&lt;/core-field&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Required &amp; disabled</h3>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-field label="Email" type="email" required placeholder="you@example.com"></core-field>
+                    <core-field label="Read-only field" value="Locked" disabled></core-field>
+                </div>
+                <pre class="demo__code"><code>&lt;core-field label="Email" type="email" required&gt;&lt;/core-field&gt;
+&lt;core-field label="Read-only field" value="Locked" disabled&gt;&lt;/core-field&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="assets/sidebar.js"></script>
+<script type="module" src="assets/load-kit.js"></script>
+</body>
+</html>

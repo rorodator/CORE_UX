@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-spinner — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-spinner"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-spinner&gt;</span></h1>
+            <p class="lead">Loading indicator with accessible label (<code>role="status"</code>).</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>size</code></td><td>sm · md · lg</td><td>Spinner size (default: md).</td></tr>
+                <tr><td><code>label</code></td><td>Loading</td><td>Screen-reader text.</td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Sizes</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-stack direction="row" gap="4" align="center">
+                        <core-spinner size="sm"></core-spinner>
+                        <core-spinner size="md"></core-spinner>
+                        <core-spinner size="lg"></core-spinner>
+                    </core-stack>
+                </div>
+                <pre class="demo__code"><code>&lt;core-spinner size="sm"&gt;&lt;/core-spinner&gt;
+&lt;core-spinner size="md"&gt;&lt;/core-spinner&gt;
+&lt;core-spinner size="lg"&gt;&lt;/core-spinner&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Custom label</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-stack direction="row" gap="3" align="center">
+                        <core-spinner label="Fetching data…"></core-spinner>
+                        <span style="color:#555;">Loading content…</span>
+                    </core-stack>
+                </div>
+                <pre class="demo__code"><code>&lt;core-spinner label="Fetching data…"&gt;&lt;/core-spinner&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+</body>
+</html>

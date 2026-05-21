@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-link — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-link"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-link&gt;</span></h1>
+            <p class="lead">Styled anchor for in-app and external navigation.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>href</code></td><td>URL (default <code>#</code>).</td></tr>
+                <tr><td><code>label</code></td><td>Link text (falls back to <code>href</code>).</td></tr>
+                <tr><td><code>external</code></td><td>Opens in new tab with <code>rel="noopener noreferrer"</code>.</td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Internal links</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <div class="demo-row">
+                        <core-link href="../index.html" label="Back to doc home"></core-link>
+                        <core-link href="core-button.html" label="View core-button"></core-link>
+                    </div>
+                </div>
+                <pre class="demo__code"><code>&lt;core-link href="/dashboard" label="Dashboard"&gt;&lt;/core-link&gt;
+&lt;core-link href="/settings" label="Settings"&gt;&lt;/core-link&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>External link</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-link href="https://example.com" label="Example.com" external></core-link>
+                </div>
+                <pre class="demo__code"><code>&lt;core-link href="https://example.com" label="Example.com" external&gt;&lt;/core-link&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Label fallback</h3>
+            <p>When <code>label</code> is omitted, the href is shown as text.</p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-link href="mailto:support@example.com"></core-link>
+                </div>
+                <pre class="demo__code"><code>&lt;core-link href="mailto:support@example.com"&gt;&lt;/core-link&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+</body>
+</html>

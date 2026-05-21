@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-autocomplete-chips — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-autocomplete-chips"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-autocomplete-chips&gt;</span></h1>
+            <p class="lead">Multi-select autocomplete with removable chips. Inherits autocomplete API and events.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>max-chips</code></td><td>—</td><td>Maximum selected items.</td></tr>
+                <tr><td><code>unique</code></td><td>true</td><td>Prevent duplicate values (<code>unique="false"</code> to allow).</td></tr>
+                <tr><td><code>chips-position</code></td><td>above</td><td><code>above</code> or <code>below</code> the input.</td></tr>
+                <tr><td><code>clear-on-select</code></td><td>true</td><td>Clear input after adding a chip.</td></tr>
+                <tr><td><code>item-label-key</code> / <code>item-value-key</code></td><td>—</td><td>Custom object keys for label/value.</td></tr>
+                <tr><td colspan="3"><em>Plus all core-autocomplete attributes.</em></td></tr>
+            </tbody>
+        </table>
+
+        <h3>Events</h3>
+        <p><code>chips-change</code>, <code>chips-add</code>, <code>chips-remove</code> (+ inherited <code>autocomplete-*</code>)</p>
+
+        <section class="demo-section">
+            <h3>Basic multi-select</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-autocomplete-chips id="demo-chips" label="Skills" placeholder="Add a skill…" min-characters="1"></core-autocomplete-chips>
+                    <div class="event-log" id="log-chips">Selected values appear here.</div>
+                </div>
+                <pre class="demo__code"><code>&lt;core-autocomplete-chips label="Skills" min-characters="1"&gt;&lt;/core-autocomplete-chips&gt;
+el.setDataSource([{ title: 'JavaScript', value: 'js' }, ...]);
+el.addEventListener('chips-change', (e) =&gt; console.log(e.detail.values));</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Max chips &amp; chips below</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-autocomplete-chips id="demo-max" label="Team (max 3)" max-chips="3" chips-position="below" min-characters="1"></core-autocomplete-chips>
+                </div>
+                <pre class="demo__code"><code>&lt;core-autocomplete-chips max-chips="3" chips-position="below"&gt;&lt;/core-autocomplete-chips&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Pre-selected values</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-autocomplete-chips id="demo-pre" label="Categories" min-characters="1"></core-autocomplete-chips>
+                </div>
+                <pre class="demo__code"><code>el.setSelected([
+  { title: 'News', value: 'news' },
+  { title: 'Sports', value: 'sports' }
+]);</code></pre>
+            </div>
+        </section>
+
+        <h3>Additional API</h3>
+        <p><code>setSelected</code>, <code>getSelectedValues</code>, <code>getSelectedItems</code>, <code>add</code>, <code>remove</code>, <code>clearSelection</code>, <code>setChipsPosition</code>, <code>setItemLabelGetter</code>, <code>setItemValueGetter</code></p>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+<script type="module">
+const skills = [
+    { title: 'JavaScript', value: 'js' },
+    { title: 'TypeScript', value: 'ts' },
+    { title: 'PHP', value: 'php' },
+    { title: 'SQL', value: 'sql' },
+    { title: 'CSS', value: 'css' }
+];
+const people = [
+    { title: 'Alice', value: 'a1' },
+    { title: 'Bob', value: 'b2' },
+    { title: 'Carol', value: 'c3' },
+    { title: 'Dan', value: 'd4' }
+];
+const categories = [
+    { title: 'News', value: 'news' },
+    { title: 'Sports', value: 'sports' },
+    { title: 'Tech', value: 'tech' }
+];
+
+await customElements.whenDefined('core-autocomplete-chips');
+
+const chips = document.getElementById('demo-chips');
+chips.setDataSource(skills);
+chips.addEventListener('chips-change', (e) => {
+    document.getElementById('log-chips').textContent =
+        'Values: [' + e.detail.values.join(', ') + ']';
+});
+
+document.getElementById('demo-max').setDataSource(people);
+
+const pre = document.getElementById('demo-pre');
+pre.setDataSource(categories);
+pre.setSelected([
+    { title: 'News', value: 'news' },
+    { title: 'Sports', value: 'sports' }
+]);
+</script>
+</body>
+</html>

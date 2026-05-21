@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getting started — CORE_UX</title>
+    <link rel="stylesheet" href="../dist/core-ux.css">
+    <link rel="stylesheet" href="assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/base/core-html-element.js": "./assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="getting-started"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1>Getting started</h1>
+            <p class="lead">Install the kit, import components, rebuild CSS when styles change.</p>
+        </header>
+
+        <section>
+            <h2>Installation</h2>
+            <p>Symlink <code>CORE_UX</code> in your app and add a bundler alias:</p>
+            <pre><code>CORE_UX → ../CORE/CORE_UX
+CORE_JS → ../CORE/CORE_JS</code></pre>
+        </section>
+
+        <section>
+            <h2>Import</h2>
+            <pre><code>// Full kit (all components + CSS)
+import 'CORE_UX/index.js';
+
+// Or curated subset in app entry (e.g. core-ux-myjourney.js)
+import 'CORE_UX/components/core-button/core-button.js';
+import 'CORE_UX/dist/core-ux.css';</code></pre>
+        </section>
+
+        <section>
+            <h2>CSS build</h2>
+            <pre><code>cd CORE_UX
+npm install
+npm run build    # styles/core-ux.css → dist/core-ux.css</code></pre>
+            <div class="callout callout--warn">Rebuild after changing <code>styles/</code> or component class names.</div>
+        </section>
+
+        <section>
+            <h2>Viewing this documentation</h2>
+            <p>Demos use ES modules and import maps. Serve the repo over HTTP:</p>
+            <pre><code>cd CORE_UX
+php -S localhost:8765 -t .
+# → http://localhost:8765/doc/</code></pre>
+        </section>
+
+        <section id="architecture">
+            <h2>Architecture</h2>
+            <table>
+                <thead><tr><th>Base class</th><th>Components</th><th>Role</th></tr></thead>
+                <tbody>
+                    <tr><td><code>Core_UXElement</code></td><td>Most tags</td><td>Extends <code>Core_HTMLElement</code>; <code>ui_render()</code> builds DOM.</td></tr>
+                    <tr><td><code>Core_UXSlotElement</code></td><td>container, stack, grid, card, modal</td><td>Captures light-DOM children before render.</td></tr>
+                    <tr><td><code>Core_UXFormControl</code></td><td>field, textarea, select, checkbox, radio-group</td><td>Label, hint, error, ARIA wiring.</td></tr>
+                </tbody>
+            </table>
+            <h3>Lifecycle</h3>
+            <ol>
+                <li><code>onConnect()</code> → <code>this.render()</code></li>
+                <li><code>render()</code> → <code>ui_render()</code> then <code>ui_toFunctional()</code></li>
+                <li><code>cleanFunctional()</code> on disconnect</li>
+            </ol>
+        </section>
+
+        <section id="conventions">
+            <h2>Conventions</h2>
+            <h3>Boolean attributes</h3>
+            <p>Present and not <code>"false"</code> → true. Remove the attribute to disable (not <code>disabled="false"</code>).</p>
+            <h3>JSON attributes</h3>
+            <p><code>options</code> on select/radio expects <code>[{ "value", "label", "selected"? }]</code>.</p>
+            <h3>Footer slot</h3>
+            <p><code>core-card</code> and <code>core-modal</code> extract a child with <code>data-core-footer</code>.</p>
+            <p>Form shared attributes: <a href="form-controls.html">Form controls</a>.</p>
+        </section>
+    </main>
+</div>
+<script src="assets/sidebar.js"></script>
+<script type="module" src="assets/load-kit.js"></script>
+</body>
+</html>

@@ -2,6 +2,19 @@
 
 Guidance for AI-assisted work on the shared UI kit.
 
+## Layering (mandatory)
+
+CORE_UX is the **middle doll**: generic `<core-*>` presentation on top of **CORE_JS** only.
+
+| Put in CORE_UX | Put elsewhere |
+|----------------|---------------|
+| Reusable UI (`<core-button>`, `<core-tooltip>`, tokens, kit CSS) | **MyJourney** — feature UI, business logic, app services |
+| Pure DOM rendering, no `$svc('ajax')`, no domain rules | **CORE_JS** — base classes, utils, platform `$svc()` |
+
+**Never** import from MyJourney. **Never** add code that belongs in CORE_JS (promote primitives downward).
+
+Full rules: MyJourney `ai-instructions/layering.md`.
+
 | File | Topic |
 |------|--------|
 | [components.md](./components.md) | Component conventions, doc maintenance |

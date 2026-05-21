@@ -1,0 +1,129 @@
+/**
+ * CORE_UX design tokens — runtime theming contract.
+ * Override on .core-ux-root (or :root) in consuming apps; no kit rebuild required.
+ * See THEMING.md for the full reference.
+ */
+:root {
+  /* Brand / actions */
+  --core-color-primary: #2185d0;
+  --core-color-primary-hover: #1678c2;
+  --core-color-primary-subtle: #e8f4fc;
+  --core-color-on-primary: #ffffff;
+
+  /* Surfaces */
+  --core-color-surface: #ffffff;
+  --core-color-surface-muted: #f9fafb;
+  --core-color-surface-hover: #f3f4f6;
+  --core-color-surface-active: #e5e7eb;
+
+  /* Text */
+  --core-color-text: #1b1c1d;
+  --core-color-text-muted: #767676;
+
+  /* Borders & overlays */
+  --core-color-border: #e0e1e2;
+  --core-color-overlay: rgba(0, 0, 0, 0.45);
+  --core-color-overlay-subtle: rgba(0, 0, 0, 0.05);
+
+  /* Semantic — info */
+  --core-color-info: #2185d0;
+  --core-color-info-muted: #e8f4fc;
+  --core-color-info-border: rgba(33, 133, 208, 0.3);
+
+  /* Semantic — success */
+  --core-color-success: #21ba45;
+  --core-color-success-muted: #e8f6ec;
+  --core-color-success-border: rgba(33, 186, 69, 0.3);
+  --core-color-success-on-muted: #166534;
+
+  /* Semantic — warning */
+  --core-color-warning: #f2711c;
+  --core-color-warning-muted: #fff6e6;
+  --core-color-warning-border: rgba(242, 113, 28, 0.3);
+  --core-color-warning-on-muted: #7c2d12;
+
+  /* Semantic — error */
+  --core-color-error: #db2828;
+  --core-color-error-muted: #fdeaea;
+  --core-color-error-border: rgba(219, 40, 40, 0.3);
+  --core-color-error-on-muted: #991b1b;
+  --core-color-error-hover: #b21e1e;
+
+  /* Neutral (badges, chips) */
+  --core-color-neutral-muted: #f3f4f6;
+  --core-color-neutral-on-muted: #1b1c1d;
+
+  /* Focus rings (pre-computed alpha — do not use Tailwind opacity modifiers) */
+  --core-color-primary-ring: rgba(33, 133, 208, 0.25);
+  --core-color-primary-ring-strong: rgba(33, 133, 208, 0.3);
+  --core-color-error-ring: rgba(219, 40, 40, 0.25);
+
+  /* Shape, typography, elevation */
+  --core-radius: 0.28571429rem;
+  --core-font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --core-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --core-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --core-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* Layout tokens (component behaviour) */
+  --core-multiselect-option-height: 2.75rem;
+  --core-multiselect-list-rows: 6;
+}
+
+.core-ux-root {
+  font-family: var(--core-font-family);
+  color: var(--core-color-text);
+}
+
+/**
+ * Optional dark palette — activate with data-core-theme="dark" on .core-ux-root.
+ */
+.core-ux-root[data-core-theme="dark"] {
+  --core-color-primary: #5b9cf5;
+  --core-color-primary-hover: #3d7dd6;
+  --core-color-primary-subtle: #1e3a5f;
+  --core-color-on-primary: #ffffff;
+
+  --core-color-surface: #1a2332;
+  --core-color-surface-muted: #243044;
+  --core-color-surface-hover: #2d3a4f;
+  --core-color-surface-active: #364560;
+
+  --core-color-text: #e7ecf3;
+  --core-color-text-muted: #9aa8bc;
+
+  --core-color-border: #2d3a4f;
+  --core-color-overlay: rgba(0, 0, 0, 0.6);
+  --core-color-overlay-subtle: rgba(255, 255, 255, 0.06);
+
+  --core-color-info: #5b9cf5;
+  --core-color-info-muted: #1e3a5f;
+  --core-color-info-border: rgba(91, 156, 245, 0.35);
+
+  --core-color-success: #3ecf8e;
+  --core-color-success-muted: #1a3d2e;
+  --core-color-success-border: rgba(62, 207, 142, 0.35);
+  --core-color-success-on-muted: #a7f3d0;
+
+  --core-color-warning: #f5b942;
+  --core-color-warning-muted: #4a3a1a;
+  --core-color-warning-border: rgba(245, 185, 66, 0.35);
+  --core-color-warning-on-muted: #fde68a;
+
+  --core-color-error: #f07178;
+  --core-color-error-muted: #4a2828;
+  --core-color-error-border: rgba(240, 113, 120, 0.35);
+  --core-color-error-on-muted: #fecaca;
+  --core-color-error-hover: #e5535d;
+
+  --core-color-neutral-muted: #2d3a4f;
+  --core-color-neutral-on-muted: #e7ecf3;
+
+  --core-color-primary-ring: rgba(91, 156, 245, 0.35);
+  --core-color-primary-ring-strong: rgba(91, 156, 245, 0.45);
+  --core-color-error-ring: rgba(240, 113, 120, 0.35);
+
+  --core-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --core-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --core-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.45);
+}

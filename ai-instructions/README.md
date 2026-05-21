@@ -5,6 +5,7 @@ Guidance for AI-assisted work on the shared UI kit.
 | File | Topic |
 |------|--------|
 | [components.md](./components.md) | Component conventions, doc maintenance |
+| [../THEMING.md](../THEMING.md) | Runtime `--core-*` CSS variables (public API) |
 
 ## HTML reference
 
@@ -14,6 +15,7 @@ Human-readable catalog with **live demos**: open **`doc/index.html`** in a brows
 |------|---------|
 | `doc/index.html` | Home + links to all components |
 | `doc/getting-started.html` | Install, architecture, conventions |
+| `doc/theming.html` | Design tokens + live theme presets |
 | `doc/form-controls.html` | Shared form attributes |
 | `doc/components/core-*.html` | One page per tag — attributes table + interactive demos |
 

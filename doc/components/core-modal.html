@@ -6,14 +6,6 @@
     <title>core-modal — CORE_UX</title>
     <link rel="stylesheet" href="../../dist/core-ux.css">
     <link rel="stylesheet" href="../assets/doc.css">
-<script type="importmap">
-{
-    "imports": {
-        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
-    }
-}
-</script>
-<script src="../assets/bootstrap.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -22,6 +14,10 @@
         <header class="hero">
             <h1><span class="tag">&lt;core-modal&gt;</span> <span class="badge badge--slot">slot</span> <span class="badge badge--event">event</span></h1>
             <p class="lead">Dialog overlay. Toggle with the <code>open</code> attribute. Closes on backdrop, ×, or Escape.</p>
+            <div class="callout callout--theme">
+                Backdrop: <code>--core-color-overlay</code>. Panel: <code>--core-color-surface</code>, <code>--core-shadow-lg</code>.
+                <a href="../theming.html">Theming reference</a>
+            </div>
         </header>
 
         <table>
@@ -103,6 +99,10 @@ dialog.addEventListener('core-modal-close', (e) =&gt; {
         </section>
     </main>
 </div>
+<script src="../assets/bootstrap.js"></script>
+<script type="importmap">
+{"imports":{"CORE_JS/":"../../../CORE_JS/","CORE_UX/":"../../"}}
+</script>
 <script src="../assets/sidebar.js"></script>
 <script type="module" src="../assets/load-kit.js"></script>
 <script type="module">

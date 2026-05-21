@@ -6,14 +6,6 @@
     <title>core-button — CORE_UX</title>
     <link rel="stylesheet" href="../../dist/core-ux.css">
     <link rel="stylesheet" href="../assets/doc.css">
-<script type="importmap">
-{
-    "imports": {
-        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
-    }
-}
-</script>
-<script src="../assets/bootstrap.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -22,6 +14,10 @@
         <header class="hero">
             <h1><span class="tag">&lt;core-button&gt;</span></h1>
             <p class="lead">Styled button with variant, size, and block modifiers.</p>
+            <div class="callout callout--theme">
+                Uses <code>--core-color-primary</code>, <code>--core-color-on-primary</code>, <code>--core-color-surface*</code>.
+                <a href="../theming.html">Theming reference</a>
+            </div>
         </header>
 
         <table>
@@ -85,6 +81,10 @@
         </section>
     </main>
 </div>
+<script src="../assets/bootstrap.js"></script>
+<script type="importmap">
+{"imports":{"CORE_JS/":"../../../CORE_JS/","CORE_UX/":"../../"}}
+</script>
 <script src="../assets/sidebar.js"></script>
 <script type="module" src="../assets/load-kit.js"></script>
 </body>

@@ -3,6 +3,8 @@
 Responsive, mobile-first kit. Register via `import 'CORE_UX/index.js'`.
 
 > **Full reference:** [doc/index.html](./doc/index.html) — one page per component with live demos. Update on every catalog change.
+>
+> **Theming:** [THEMING.md](./THEMING.md) — runtime `--core-*` CSS variables; [doc/theming.html](./doc/theming.html) — live presets.
 
 Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_render()` (no Handlebars in CORE_UX).
 

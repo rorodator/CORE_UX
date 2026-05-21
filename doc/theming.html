@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theming — CORE_UX</title>
+    <link rel="stylesheet" href="../dist/core-ux.css">
+    <link rel="stylesheet" href="assets/doc.css">
+    <script type="importmap">
+    {
+        "imports": {
+            "CORE_JS/lib/base/core-html-element.js": "./assets/core-html-element-shim.js"
+        }
+    }
+    </script>
+    <script src="assets/bootstrap.js"></script>
+</head>
+<body class="core-ux-root">
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="theming"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1>Theming</h1>
+            <p class="lead">
+                CORE_UX components read semantic CSS custom properties (<code>--core-*</code>).
+                Override them on <code>.core-ux-root</code> — no kit rebuild. Full reference:
+                <a href="../THEMING.md">THEMING.md</a>.
+            </p>
+        </header>
+
+        <section class="demo-section">
+            <h3>Live presets</h3>
+            <p>Switch palette below — only CSS variables change, not component markup.</p>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <div id="theme-presets" class="doc-theme-toolbar">
+                        <button type="button" class="doc-theme-btn is-active" data-theme-preset="default">Default</button>
+                        <button type="button" class="doc-theme-btn" data-theme-preset="indigo">Indigo</button>
+                        <button type="button" class="doc-theme-btn" data-theme-preset="forest">Forest</button>
+                        <button type="button" class="doc-theme-btn" data-theme-preset="sunset">Sunset</button>
+                    </div>
+                    <label class="doc-theme-dark">
+                        <input type="checkbox" id="theme-dark-toggle">
+                        Dark mode (<code>data-core-theme="dark"</code>)
+                    </label>
+                    <div class="event-log" id="theme-readout">Preset: default</div>
+                    <div class="doc-theme-sample">
+                        <core-stack direction="row" gap="2">
+                            <core-button variant="primary" label="Primary"></core-button>
+                            <core-button variant="secondary" label="Secondary"></core-button>
+                            <core-button variant="ghost" label="Ghost"></core-button>
+                            <core-button variant="danger" label="Danger"></core-button>
+                        </core-stack>
+                        <core-field label="Email" type="email" placeholder="you@example.com"></core-field>
+                        <core-alert variant="success" message="Payment confirmed."></core-alert>
+                        <core-stack direction="row" gap="2">
+                            <core-badge variant="primary" label="New"></core-badge>
+                            <core-badge variant="success" label="Active"></core-badge>
+                            <core-badge variant="warning" label="Pending"></core-badge>
+                            <core-badge variant="error" label="Failed"></core-badge>
+                        </core-stack>
+                    </div>
+                </div>
+                <pre class="demo__code"><code>/* app-theme.css — after CORE_UX/dist/core-ux.css */
+.core-ux-root {
+  --core-color-primary: #6366f1;
+  --core-color-primary-hover: #4f46e5;
+  --core-radius: 0.5rem;
+  --core-font-family: "Inter", system-ui, sans-serif;
+}
+
+/* Optional built-in dark palette */
+.core-ux-root[data-core-theme="dark"] { /* see THEMING.md */ }</code></pre>
+            </div>
+        </section>
+
+        <section>
+            <h2>Token groups</h2>
+            <table>
+                <thead><tr><th>Group</th><th>Variables</th><th>Used by</th></tr></thead>
+                <tbody>
+                    <tr><td>Brand</td><td><code>--core-color-primary</code>, <code>-hover</code>, <code>-subtle</code>, <code>--core-color-on-primary</code></td><td>Buttons, links, focus</td></tr>
+                    <tr><td>Surfaces</td><td><code>--core-color-surface</code>, <code>-muted</code>, <code>-hover</code>, <code>-active</code></td><td>Inputs, cards, lists</td></tr>
+                    <tr><td>Text</td><td><code>--core-color-text</code>, <code>-muted</code></td><td>Labels, hints, icons</td></tr>
+                    <tr><td>Semantic</td><td><code>--core-color-{info|success|warning|error}*</code></td><td>Alerts, badges, validation</td></tr>
+                    <tr><td>Chrome</td><td><code>--core-color-border</code>, <code>--core-color-overlay*</code></td><td>Borders, modal backdrop</td></tr>
+                    <tr><td>Shape</td><td><code>--core-radius</code>, <code>--core-font-family</code>, <code>--core-shadow*</code></td><td>Global look &amp; feel</td></tr>
+                </tbody>
+            </table>
+            <p>Complete table with defaults: <a href="../THEMING.md">THEMING.md</a>.</p>
+        </section>
+
+        <section>
+            <h2>App integration checklist</h2>
+            <ol>
+                <li>Add <code>class="core-ux-root"</code> on <code>&lt;body&gt;</code> (or app shell).</li>
+                <li>Import <code>CORE_UX/dist/core-ux.css</code>, then your theme file.</li>
+                <li>Override only <code>--core-*</code> variables — avoid patching <code>.core-*</code> rules.</li>
+                <li>Toggle <code>data-core-theme="dark"</code> for the built-in dark palette, or define your own.</li>
+            </ol>
+        </section>
+    </main>
+</div>
+<script src="assets/sidebar.js"></script>
+<script type="module" src="assets/load-kit.js"></script>
+<script src="assets/themes-demo.js"></script>
+</body>
+</html>

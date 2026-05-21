@@ -1,23 +1,12 @@
 /**
  * CORE_UX Tailwind source (build with: npm run build → dist/core-ux.css).
+ * Design tokens: styles/tokens.css — override in apps on .core-ux-root (see THEMING.md).
  */
+@import './tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer base {
-  :root {
-    --core-color-primary: #2185d0;
-    --core-color-primary-hover: #1678c2;
-    --core-radius: 0.28571429rem;
-    --core-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
-
-  .core-ux-root {
-    font-family: var(--core-font);
-    color: theme('colors.core.text');
-  }
-}
 
 @layer components {
   /* —— Button —— */
@@ -41,19 +30,19 @@
   }
 
   .core-btn--primary {
-    @apply bg-core-primary text-white hover:bg-core-primary-hover;
+    @apply bg-core-primary text-core-on-primary hover:bg-core-primary-hover;
   }
 
   .core-btn--secondary {
-    @apply bg-white text-core-text border-core-border hover:bg-gray-50;
+    @apply bg-core-surface text-core-text border-core-border hover:bg-core-surface-hover;
   }
 
   .core-btn--ghost {
-    @apply bg-transparent text-core-primary hover:bg-blue-50;
+    @apply bg-transparent text-core-primary hover:bg-core-primary-subtle;
   }
 
   .core-btn--danger {
-    @apply bg-core-error text-white hover:bg-red-700;
+    @apply bg-core-error text-core-on-primary hover:bg-core-error-hover;
   }
 
   /* —— Form —— */
@@ -79,32 +68,47 @@
   }
 
   .core-control {
-    @apply w-full rounded-core border border-core-border bg-white px-3 py-2.5 sm:py-2
-      text-sm text-core-text shadow-sm transition-colors
+    @apply w-full rounded-core border border-core-border bg-core-surface px-3 py-2.5 sm:py-2
+      text-sm text-core-text shadow-core-sm transition-colors
       placeholder:text-core-text-muted
-      focus:border-core-primary focus:outline-none focus:ring-2 focus:ring-core-primary/25
+      focus:border-core-primary focus:outline-none focus:ring-2 focus:ring-core-primary-ring
       disabled:cursor-not-allowed disabled:bg-core-surface-muted disabled:opacity-70;
   }
 
   .core-control--error {
-    @apply border-core-error focus:border-core-error focus:ring-core-error/25;
+    @apply border-core-error focus:border-core-error focus:ring-core-error-ring;
   }
 
   .core-textarea {
     @apply core-control min-h-[6rem] resize-y;
   }
 
+  .core-select-wrap {
+    @apply relative w-full;
+  }
+
+  .core-select-wrap::after {
+    content: '';
+    @apply pointer-events-none absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2;
+    background-color: var(--core-color-text-muted);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: 1.25rem;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: 1.25rem;
+  }
+
   .core-select {
-    @apply core-control pr-9 appearance-none bg-no-repeat;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23767676' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-    background-position: right 0.5rem center;
-    background-size: 1.25rem;
+    @apply core-control pr-9 appearance-none;
   }
 
   .core-check,
   .core-radio {
     @apply h-4 w-4 shrink-0 rounded border-core-border text-core-primary
-      focus:ring-2 focus:ring-core-primary/30 focus:ring-offset-0;
+      focus:ring-2 focus:ring-core-primary-ring-strong focus:ring-offset-0;
   }
 
   .core-radio {
@@ -146,10 +150,16 @@
   }
 
   .core-multi-select__chevron {
-    @apply h-4 w-4 shrink-0 bg-no-repeat transition-transform;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23767676' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-    background-position: center;
-    background-size: 1.25rem;
+    @apply h-4 w-4 shrink-0 transition-transform;
+    background-color: var(--core-color-text-muted);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: 1.25rem;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: 1.25rem;
   }
 
   .core-multi-select--open .core-multi-select__chevron {
@@ -206,15 +216,14 @@
   }
 
   .core-multi-select__action {
-    @apply rounded-core border border-core-border bg-white px-2.5 py-1 text-xs font-medium
+    @apply rounded-core border border-core-border bg-core-surface px-2.5 py-1 text-xs font-medium
       text-core-primary transition-colors hover:bg-core-info-muted
-      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary/30
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary-ring-strong
       disabled:pointer-events-none disabled:opacity-50;
   }
 
   .core-multi-select__list {
-    --core-multiselect-option-height: 2.75rem;
-    @apply overflow-y-auto rounded-core border border-core-border bg-white;
+    @apply overflow-y-auto rounded-core border border-core-border bg-core-surface;
     max-height: calc(var(--core-multiselect-list-rows, 6) * var(--core-multiselect-option-height, 2.75rem));
   }
 
@@ -291,23 +300,23 @@
   }
 
   .core-alert--info {
-    @apply border-core-info/30 bg-core-info-muted text-core-text;
+    @apply border-core-info-border bg-core-info-muted text-core-text;
   }
 
   .core-alert--success {
-    @apply border-core-success/30 bg-core-success-muted text-core-text;
+    @apply border-core-success-border bg-core-success-muted text-core-text;
   }
 
   .core-alert--warning {
-    @apply border-core-warning/30 bg-core-warning-muted text-core-text;
+    @apply border-core-warning-border bg-core-warning-muted text-core-text;
   }
 
   .core-alert--error {
-    @apply border-core-error/30 bg-core-error-muted text-core-text;
+    @apply border-core-error-border bg-core-error-muted text-core-text;
   }
 
   .core-alert__dismiss {
-    @apply absolute right-2 top-2 rounded p-1 text-core-text-muted hover:bg-black/5
+    @apply absolute right-2 top-2 rounded p-1 text-core-text-muted hover:bg-core-overlay-subtle
       focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
   }
 
@@ -317,7 +326,7 @@
   }
 
   .core-badge--neutral {
-    @apply bg-gray-100 text-core-text;
+    @apply bg-core-neutral-muted text-core-neutral-on-muted;
   }
 
   .core-badge--primary {
@@ -325,15 +334,15 @@
   }
 
   .core-badge--success {
-    @apply bg-core-success-muted text-green-800;
+    @apply bg-core-success-muted text-core-success-on-muted;
   }
 
   .core-badge--warning {
-    @apply bg-core-warning-muted text-orange-900;
+    @apply bg-core-warning-muted text-core-warning-on-muted;
   }
 
   .core-badge--error {
-    @apply bg-core-error-muted text-red-800;
+    @apply bg-core-error-muted text-core-error-on-muted;
   }
 
   /* —— Spinner —— */
@@ -475,7 +484,7 @@
   }
 
   .core-modal-backdrop {
-    @apply absolute inset-0 bg-black/45;
+    @apply absolute inset-0 bg-core-overlay;
   }
 
   .core-modal {
@@ -514,7 +523,7 @@
   }
 
   .core-modal__close {
-    @apply rounded-core p-1.5 text-core-text-muted hover:bg-gray-100
+    @apply rounded-core p-1.5 text-core-text-muted hover:bg-core-surface-hover
       focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
   }
 
@@ -544,7 +553,7 @@
   }
 
   .core-side-panel-backdrop {
-    @apply absolute inset-0 bg-black/45 opacity-0 transition-opacity duration-200 ease-out;
+    @apply absolute inset-0 bg-core-overlay opacity-0 transition-opacity duration-200 ease-out;
   }
 
   .core-side-panel-host--open .core-side-panel-backdrop {
@@ -634,7 +643,7 @@
   }
 
   .core-side-panel__close {
-    @apply rounded-core p-1.5 text-core-text-muted hover:bg-gray-100
+    @apply rounded-core p-1.5 text-core-text-muted hover:bg-core-surface-hover
       focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
   }
 
@@ -653,7 +662,7 @@
 
   .core-autocomplete__clear {
     @apply absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-core-text-muted
-      hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
+      hover:bg-core-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
   }
 
   .core-autocomplete__spinner {
@@ -713,7 +722,7 @@
   }
 
   .core-autocomplete__chip-remove {
-    @apply rounded-full p-0.5 text-core-text-muted hover:bg-gray-200
+    @apply rounded-full p-0.5 text-core-text-muted hover:bg-core-surface-active
       focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
   }
 }

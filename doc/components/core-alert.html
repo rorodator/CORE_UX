@@ -6,14 +6,6 @@
     <title>core-alert — CORE_UX</title>
     <link rel="stylesheet" href="../../dist/core-ux.css">
     <link rel="stylesheet" href="../assets/doc.css">
-<script type="importmap">
-{
-    "imports": {
-        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
-    }
-}
-</script>
-<script src="../assets/bootstrap.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -22,6 +14,10 @@
         <header class="hero">
             <h1><span class="tag">&lt;core-alert&gt;</span></h1>
             <p class="lead">Banner with semantic colour variants and optional dismiss.</p>
+            <div class="callout callout--theme">
+                Variants map to semantic tokens: <code>--core-color-{info|success|warning|error}-*</code>.
+                <a href="../theming.html">Theming reference</a>
+            </div>
         </header>
 
         <table>
@@ -63,6 +59,10 @@ el.addEventListener('core-alert-dismiss', () =&gt; { /* … */ });</code></pre>
         </section>
     </main>
 </div>
+<script src="../assets/bootstrap.js"></script>
+<script type="importmap">
+{"imports":{"CORE_JS/":"../../../CORE_JS/","CORE_UX/":"../../"}}
+</script>
 <script src="../assets/sidebar.js"></script>
 <script type="module" src="../assets/load-kit.js"></script>
 <script type="module">

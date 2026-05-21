@@ -446,3 +446,53 @@ html.core-ux-doc-error .demo__preview:not(:has(.core-btn, .core-field, .core-ale
     }
     .main { padding: 1.5rem; }
 }
+
+/* Theming demo (doc/theming.html) */
+.doc-theme-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.doc-theme-sample {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.doc-theme-btn {
+    padding: 0.45rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.doc-theme-btn:hover {
+    border-color: var(--accent);
+}
+
+.doc-theme-btn.is-active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+}
+
+.doc-theme-dark {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.callout--theme {
+    border-left: 3px solid var(--success);
+    margin: 1rem 0;
+}

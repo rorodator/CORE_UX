@@ -16,6 +16,7 @@
             links: [
                 { id: 'index', href: root + 'index.html', label: 'Home' },
                 { id: 'getting-started', href: root + 'getting-started.html', label: 'Getting started' },
+                { id: 'theming', href: root + 'theming.html', label: 'Theming' },
                 { id: 'form-controls', href: root + 'form-controls.html', label: 'Form controls' }
             ]
         },

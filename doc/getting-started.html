@@ -6,14 +6,6 @@
     <title>Getting started — CORE_UX</title>
     <link rel="stylesheet" href="../dist/core-ux.css">
     <link rel="stylesheet" href="assets/doc.css">
-<script type="importmap">
-{
-    "imports": {
-        "CORE_JS/lib/base/core-html-element.js": "./assets/core-html-element-shim.js"
-    }
-}
-</script>
-<script src="assets/bootstrap.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -47,6 +39,22 @@ import 'CORE_UX/dist/core-ux.css';</code></pre>
 npm install
 npm run build    # styles/core-ux.css → dist/core-ux.css</code></pre>
             <div class="callout callout--warn">Rebuild after changing <code>styles/</code> or component class names.</div>
+        </section>
+
+        <section>
+            <h2>Theming</h2>
+            <p>
+                All kit visuals use semantic CSS custom properties (<code>--core-*</code>).
+                Apps override them on <code>.core-ux-root</code> at runtime — no rebuild of CORE_UX required.
+            </p>
+            <pre><code>&lt;body class="core-ux-root"&gt;
+
+/* app-theme.css — after CORE_UX/dist/core-ux.css */
+.core-ux-root {
+  --core-color-primary: #6366f1;
+  --core-radius: 0.5rem;
+}</code></pre>
+            <p>Full token reference: <a href="theming.html">Theming (doc + live demo)</a> · <a href="../THEMING.md">THEMING.md</a>.</p>
         </section>
 
         <section>
@@ -87,6 +95,15 @@ php -S localhost:8765 -t .
         </section>
     </main>
 </div>
+<script src="assets/bootstrap.js"></script>
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/": "../../CORE_JS/",
+        "CORE_UX/": "../"
+    }
+}
+</script>
 <script src="assets/sidebar.js"></script>
 <script type="module" src="assets/load-kit.js"></script>
 </body>

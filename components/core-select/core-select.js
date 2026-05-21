@@ -44,6 +44,7 @@ export class CoreSelect extends Core_UXFormControl {
         const field = this.createFieldShell();
         this.appendLabel(field);
 
+        const wrap = createElement('div', { className: 'core-select-wrap' });
         const select = createElement('select', {
             className: `core-select${this.hasError ? ' core-control--error' : ''}`,
             attrs: { id: this.fieldId }
@@ -57,7 +58,8 @@ export class CoreSelect extends Core_UXFormControl {
                 }
             }));
         });
-        field.appendChild(select);
+        wrap.appendChild(select);
+        field.appendChild(wrap);
         this.appendHint(field);
         this.appendError(field);
         this.replaceChildren(field);

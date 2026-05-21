@@ -42,14 +42,31 @@ import 'CORE_UX/index.js';
 ```
 
 ```html
+<body class="core-ux-root">
 <core-button variant="primary" label="Save"></core-button>
 ```
+
+## Theming
+
+All visuals use **semantic CSS variables** (`--core-*`). Override on `.core-ux-root` in your app — no kit rebuild.
+
+```css
+/* app-theme.css — load after dist/core-ux.css */
+.core-ux-root {
+  --core-color-primary: #6366f1;
+  --core-radius: 0.5rem;
+}
+```
+
+See **[THEMING.md](./THEMING.md)** and [doc/theming.html](./doc/theming.html) (live demo).
 
 ## Structure
 
 - `components/` — `<core-*>` custom elements (`ui_render()` in JS, no Handlebars)
+- `styles/tokens.css` — semantic CSS custom properties (`--core-*` defaults)
 - `styles/core-ux.css` — Tailwind source (`@tailwind`, `@apply`)
-- `dist/core-ux.css` — compiled kit stylesheet
+- `dist/core-ux.css` — compiled kit stylesheet (includes tokens)
+- `THEMING.md` — runtime theming contract for consuming apps
 - `lib/base/` — `Core_UXElement`, `Core_UXSlotElement`, `Core_UXFormControl`
 - `lib/utils/dom.js` — DOM helpers (`createElement`, `mountHtml`)
 - `tailwind.preset.js` — design tokens (for kit build or future app Tailwind)

@@ -22,6 +22,7 @@
 3. Call `registerCoreComponent('core-<name>', Class)` at module bottom.
 4. Import in `index.js` (barrel) if part of the full kit.
 5. Add Tailwind/classes in `styles/core-ux.css`; run `npm run build`.
+   - Use only `core-*` token utilities — no raw `gray-*`, hex, or Tailwind palette colours (see [THEMING.md](../THEMING.md)).
 6. **Update documentation** (same change set):
    - `doc/components/core-<name>.html` — attributes, events, API, **live demos**
    - `doc/assets/sidebar.js` — if adding/removing a tag from the catalog
@@ -39,8 +40,17 @@
 | New/changed attribute | Attribute table + demo on component page |
 | New/changed event or public method | Events/API section + demo if applicable |
 | Slot or footer pattern change | Architecture page and affected component pages |
+| New/changed design token | `styles/tokens.css`, `tailwind.preset.js`, [THEMING.md](../THEMING.md), `doc/theming.html` |
 
 Structure: **`CORE_UX/doc/`** — one page per component with doc + live demos (English). Do not ship component changes without syncing the doc.
+
+## Theming (mandatory for styles)
+
+- All kit colours/shadows/radius → semantic `--core-*` variables in `styles/tokens.css`.
+- `tailwind.preset.js` maps utilities to `var(--core-…)` — never hardcoded hex in preset.
+- `styles/core-ux.css` uses `@apply` with `core-*` utilities only.
+- Document new tokens in [THEMING.md](../THEMING.md) and [doc/theming.html](../doc/theming.html).
+- Apps theme by overriding variables on `.core-ux-root` — they must not patch `.core-*` rules.
 
 ## Conventions
 

@@ -1,5 +1,5 @@
 import { Core_UXSlotElement } from '../../lib/base/core-ux-slot-element.js';
-import { createElement, mountHtml } from 'CORE_JS/lib/utils/dom.js';
+import { createElement, mountTrustedHtml } from 'CORE_JS/lib/utils/dom.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
@@ -30,7 +30,7 @@ export class CoreStack extends Core_UXSlotElement {
                 .filter(Boolean)
                 .join(' ')
         });
-        mountHtml(stack, this._slotContent);
+        mountTrustedHtml(stack, this._slotContent);
         this.replaceChildren(stack);
     }
 }

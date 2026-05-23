@@ -6,15 +6,6 @@
     <title>core-autocomplete — CORE_UX</title>
     <link rel="stylesheet" href="../../dist/core-ux.css">
     <link rel="stylesheet" href="../assets/doc.css">
-<script type="importmap">
-{
-    "imports": {
-        "CORE_JS/lib/utils/dom.js": "../assets/core-dom-shim.js",
-        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
-    }
-}
-</script>
-<script src="../assets/bootstrap.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -38,11 +29,32 @@
                 <tr><td><code>clearable</code></td><td>false</td><td>Show clear button.</td></tr>
                 <tr><td><code>no-results</code></td><td>No results</td><td>Empty state text.</td></tr>
                 <tr><td><code>disabled</code></td><td>false</td><td>Disable input.</td></tr>
+                <tr><td><code>floating</code></td><td>true</td><td>Portal results list to <code>document.body</code> (set <code>floating="false"</code> for in-flow).</td></tr>
             </tbody>
         </table>
 
         <h3>Events</h3>
         <p><code>autocomplete-select</code>, <code>autocomplete-search</code>, <code>autocomplete-results</code>, <code>autocomplete-open</code>, <code>autocomplete-close</code>, <code>autocomplete-focus</code>, <code>autocomplete-blur</code>, <code>autocomplete-change</code></p>
+
+        <section class="demo-section">
+            <h3>Inside overflow container</h3>
+            <p>
+                With <code>floating</code> (default), the results list escapes scrollable parents
+                via a body portal — same pattern as <code>core-multi-select</code>.
+            </p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <div style="height:140px;overflow:auto;border:1px solid var(--core-color-border,#e0e1e2);border-radius:8px;padding:1rem;">
+                        <p style="margin:0 0 0.75rem;font-size:0.875rem;color:var(--core-color-text-muted,#767676);">
+                            Scroll this box — suggestions should not be clipped.
+                        </p>
+                        <core-autocomplete id="demo-overflow" label="City" min-characters="1" placeholder="Type…"></core-autocomplete>
+                        <div style="height:120px"></div>
+                    </div>
+                </div>
+                <pre class="demo__code"><code>&lt;core-autocomplete floating="true" …&gt;&lt;/core-autocomplete&gt;</code></pre>
+            </div>
+        </section>
 
         <section class="demo-section">
             <h3>Local data source</h3>
@@ -98,6 +110,10 @@ el.addEventListener('autocomplete-select', (e) =&gt; console.log(e.detail.result
         <p><code>setDataSource</code>, <code>configure</code>, <code>preConfigure</code>, <code>getValue</code>, <code>setValue</code>, <code>clear</code>, <code>focus</code>, <code>blur</code>, <code>enable</code>, <code>disable</code>, <code>setLoading</code>, <code>performSearch</code>, <code>updateResults</code></p>
     </main>
 </div>
+<script src="../assets/bootstrap.js"></script>
+<script type="importmap">
+{"imports":{"CORE_JS/lib/utils/dom.js":"../assets/core-dom-shim.js","CORE_JS/lib/base/core-html-element.js":"../assets/core-html-element-shim.js","CORE_UX/":"../../"}}
+</script>
 <script src="../assets/sidebar.js"></script>
 <script type="module" src="../assets/load-kit.js"></script>
 <script type="module">
@@ -139,6 +155,8 @@ document.getElementById('demo-async').setDataSource(async (query) => {
     await new Promise((r) => setTimeout(r, 350));
     return users.filter((u) => u.title.toLowerCase().includes(query.toLowerCase()));
 });
+
+document.getElementById('demo-overflow').setDataSource(cities);
 </script>
 </body>
 </html>

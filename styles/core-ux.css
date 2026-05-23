@@ -175,6 +175,10 @@
     display: none !important;
   }
 
+  .core-multi-select__panel.core-floating-overlay {
+    @apply mt-0;
+  }
+
   .core-multi-select__panel .core-multi-select__toolbar {
     @apply mb-0 shrink-0 border-b border-core-border bg-core-surface-muted p-2;
   }
@@ -338,8 +342,8 @@
     @apply !hidden;
   }
 
-  .core-tooltip__popup--floating {
-    @apply fixed z-[9999] opacity-100;
+  .core-tooltip__popup.core-floating-overlay {
+    @apply opacity-100;
   }
 
   .core-tooltip__popup::after {
@@ -347,19 +351,19 @@
     @apply absolute h-2 w-2 rotate-45 border border-core-border bg-core-surface;
   }
 
-  .core-tooltip__popup--floating[data-placement='top']::after {
+  .core-tooltip__popup.core-floating-overlay[data-placement='top']::after {
     @apply -bottom-1 left-1/2 -ml-1 border-t-0 border-l-0;
   }
 
-  .core-tooltip__popup--floating[data-placement='bottom']::after {
+  .core-tooltip__popup.core-floating-overlay[data-placement='bottom']::after {
     @apply -top-1 left-1/2 -ml-1 border-b-0 border-r-0;
   }
 
-  .core-tooltip__popup--floating[data-placement='left']::after {
+  .core-tooltip__popup.core-floating-overlay[data-placement='left']::after {
     @apply -right-1 top-1/2 -mt-1 border-t-0 border-l-0;
   }
 
-  .core-tooltip__popup--floating[data-placement='right']::after {
+  .core-tooltip__popup.core-floating-overlay[data-placement='right']::after {
     @apply -left-1 top-1/2 -mt-1 border-b-0 border-r-0;
   }
 
@@ -726,6 +730,10 @@
       border-core-border bg-core-surface py-1 shadow-core;
   }
 
+  .core-autocomplete__list.core-floating-overlay {
+    @apply mt-0;
+  }
+
   .core-autocomplete__option {
     @apply cursor-pointer px-3 py-2 text-sm text-core-text transition-colors;
   }
@@ -771,6 +779,10 @@
 }
 
 @layer utilities {
+  .core-floating-overlay {
+    @apply fixed z-[9999];
+  }
+
   .sr-only {
     @apply absolute h-px w-px overflow-hidden whitespace-nowrap border-0 p-0;
     clip: rect(0, 0, 0, 0);

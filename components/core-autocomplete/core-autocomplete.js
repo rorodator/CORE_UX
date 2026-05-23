@@ -1,6 +1,7 @@
 import { Core_UXElement } from '../../lib/base/core-ux-element.js';
 import { createElement, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
+import { FloatingOverlay } from '../../lib/floating/floating-overlay.js';
 import {
     DEFAULT_AUTOCOMPLETE_CONFIG,
     readAutocompleteAttributes,
@@ -25,7 +26,7 @@ export class CoreAutocomplete extends Core_UXElement {
     static get observedAttributes() {
         return [
             'placeholder', 'label', 'disabled', 'min-characters', 'delay', 'max-results',
-            'allow-additions', 'force-selection', 'clearable', 'no-results'
+            'allow-additions', 'force-selection', 'clearable', 'no-results', 'floating'
         ];
     }
 
@@ -62,6 +63,8 @@ export class CoreAutocomplete extends Core_UXElement {
         this._onDocumentClick = null;
         /** @type {((event: Event) => void)|null} */
         this._onClearClick = null;
+        /** @type {FloatingOverlay|null} */
+        this._floating = null;
     }
 
     onConnect() {
@@ -154,6 +157,14 @@ export class CoreAutocomplete extends Core_UXElement {
 
     disable() {
         this.setAttribute('disabled', '');
+    }
+
+    /** @returns {boolean} Portal results list to body (default true). */
+    get floatingEnabled() {
+        if (!this.hasAttribute('floating')) {
+            return true;
+        }
+        return hasBoolAttr(this, 'floating');
     }
 
     ui_render() {
@@ -249,15 +260,18 @@ export class CoreAutocomplete extends Core_UXElement {
         };
         this._onKeyDown = (event) => this._handleKeyDown(event);
         this._onDocumentClick = (event) => {
-            if (!this.contains(event.target)) {
-                this._closePanel();
+            if (this._floating?.containsTarget(/** @type {Node|null} */ (event.target))) {
+                return;
             }
+            this._closePanel();
         };
         this._onClearClick = (event) => {
             event.preventDefault();
             this.clear();
             this.focus();
         };
+
+        this._initFloating();
 
         input.addEventListener('input', this._onInput);
         input.addEventListener('focus', this._onFocus);
@@ -266,6 +280,10 @@ export class CoreAutocomplete extends Core_UXElement {
         document.addEventListener('click', this._onDocumentClick);
         this.querySelector('[data-core-autocomplete-clear]')
             ?.addEventListener('click', this._onClearClick);
+
+        if (this._panelOpen) {
+            this._floating?.open();
+        }
     }
 
     cleanFunctional() {
@@ -299,6 +317,21 @@ export class CoreAutocomplete extends Core_UXElement {
         this._onKeyDown = null;
         this._onDocumentClick = null;
         this._onClearClick = null;
+        this._floating?.destroy();
+        this._floating = null;
+    }
+
+    _initFloating() {
+        this._floating?.destroy();
+        this._floating = new FloatingOverlay({
+            host: this,
+            getPanel: () => this._list(),
+            getAnchor: () => this._input(),
+            getMountPoint: () => this.querySelector('.core-autocomplete'),
+            isEnabled: () => this.floatingEnabled,
+            matchWidth: true,
+            align: 'start'
+        });
     }
 
     _setupLangSubscription() {
@@ -531,6 +564,10 @@ export class CoreAutocomplete extends Core_UXElement {
                 attrs: { role: 'presentation' }
             }));
         }
+
+        if (this._panelOpen) {
+            window.requestAnimationFrame(() => this._floating?.reposition());
+        }
     }
 
     _optionCount() {
@@ -570,6 +607,8 @@ export class CoreAutocomplete extends Core_UXElement {
             this._panelOpen = true;
             this.dispatchEvent(new CustomEvent('autocomplete-open', { bubbles: true }));
         }
+        this._floating?.open();
+        window.requestAnimationFrame(() => this._floating?.reposition());
     }
 
     _closePanel() {
@@ -578,6 +617,7 @@ export class CoreAutocomplete extends Core_UXElement {
         if (!list || !input) {
             return;
         }
+        this._floating?.close();
         list.setAttribute('hidden', '');
         input.setAttribute('aria-expanded', 'false');
         if (this._panelOpen) {

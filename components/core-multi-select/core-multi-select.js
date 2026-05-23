@@ -1,6 +1,7 @@
 import { Core_UXFormControl } from '../../lib/base/core-ux-form-control.js';
-import { createElement, mountHtml, hasBoolAttr, parseJsonAttr } from 'CORE_JS/lib/utils/dom.js';
+import { createElement, mountTrustedHtml, hasBoolAttr, parseJsonAttr } from 'CORE_JS/lib/utils/dom.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
+import { FloatingOverlay } from '../../lib/floating/floating-overlay.js';
 import {
     filterOptions,
     normalizeOptions,
@@ -10,7 +11,7 @@ import {
 /**
  * Checkbox multi-select with optional search filter and dropdown panel (default).
  *
- * Options JSON: { value, label?, selected?, image?, imageAlt?, html?, description?, keywords?, disabled? }
+ * Options JSON: { value, label?, selected?, image?, imageAlt?, trustedHtml?, description?, keywords?, disabled? }
  * Events: multiselect-change, multiselect-select, multiselect-deselect, multiselect-open, multiselect-close
  */
 export class CoreMultiSelect extends Core_UXFormControl {
@@ -20,7 +21,7 @@ export class CoreMultiSelect extends Core_UXFormControl {
             'label', 'hint', 'error', 'options', 'value', 'name', 'input-id',
             'required', 'disabled', 'searchable', 'search-placeholder', 'max-height',
             'empty-search', 'show-count', 'select-all', 'placeholder', 'always-open',
-            'max-visible'
+            'max-visible', 'floating'
         ];
     }
 
@@ -56,6 +57,8 @@ export class CoreMultiSelect extends Core_UXFormControl {
         this._onShellFocusOut = null;
         /** @type {((event: MouseEvent) => void)|null} */
         this._onDocumentClick = null;
+        /** @type {FloatingOverlay|null} */
+        this._floating = null;
     }
 
     onConnect() {
@@ -145,6 +148,14 @@ export class CoreMultiSelect extends Core_UXFormControl {
         return this.getAttribute('placeholder') || 'Select…';
     }
 
+    /** @returns {boolean} Portal dropdown panel to body (default true). */
+    get floatingEnabled() {
+        if (!this.hasAttribute('floating')) {
+            return true;
+        }
+        return hasBoolAttr(this, 'floating');
+    }
+
     get visibleOptions() {
         return filterOptions(this._options, this._query);
     }
@@ -156,10 +167,12 @@ export class CoreMultiSelect extends Core_UXFormControl {
         this._open = true;
         this._ignoreFocusOut = true;
         this._syncOpenState();
+        this._floating?.open();
         this.dispatchEvent(new CustomEvent('multiselect-open', { bubbles: true }));
         window.setTimeout(() => {
             this._ignoreFocusOut = false;
             this._syncScrollLayout();
+            this._floating?.reposition();
             const search = this.querySelector('.core-multi-select__search');
             if (search instanceof HTMLInputElement) {
                 search.focus();
@@ -171,6 +184,7 @@ export class CoreMultiSelect extends Core_UXFormControl {
         if (!this.dropdown || !this._open) {
             return;
         }
+        this._floating?.close();
         this._open = false;
         this._query = '';
         const search = this.querySelector('.core-multi-select__search');
@@ -298,13 +312,37 @@ export class CoreMultiSelect extends Core_UXFormControl {
         this._wireList();
         this._wireBulkActions();
         this._wireDropdown();
+        this._initFloating();
         this._syncHiddenInputs();
         this._updateCount();
         this._updateTriggerSummary();
         this._syncScrollLayout();
+
+        if (this._open && this.dropdown) {
+            this._floating?.open();
+        }
+    }
+
+    _initFloating() {
+        this._floating?.destroy();
+        if (!this.dropdown) {
+            this._floating = null;
+            return;
+        }
+        this._floating = new FloatingOverlay({
+            host: this,
+            getPanel: () => this.querySelector('.core-multi-select__panel'),
+            getAnchor: () => this.querySelector('.core-multi-select__trigger'),
+            getMountPoint: () => this.querySelector('.core-multi-select__shell'),
+            isEnabled: () => this.floatingEnabled,
+            matchWidth: true,
+            align: 'start'
+        });
     }
 
     cleanFunctional() {
+        this._floating?.destroy();
+        this._floating = null;
         this.querySelector('.core-multi-select__search')
             ?.removeEventListener('input', this._onSearchInput);
         this.querySelector('.core-multi-select__list')
@@ -456,7 +494,7 @@ export class CoreMultiSelect extends Core_UXFormControl {
             }
         };
         this._onDocumentClick = (event) => {
-            if (!this._open || this.contains(event.target)) {
+            if (!this._open || this._floating?.containsTarget(/** @type {Node|null} */ (event.target))) {
                 return;
             }
             this.close();
@@ -466,10 +504,11 @@ export class CoreMultiSelect extends Core_UXFormControl {
                 if (!this._open || this._ignoreFocusOut) {
                     return;
                 }
-                const shellEl = this.querySelector('.core-multi-select__shell');
-                if (shellEl && !shellEl.contains(document.activeElement)) {
-                    this.close();
+                const active = document.activeElement;
+                if (active && this._floating?.containsTarget(active)) {
+                    return;
                 }
+                this.close();
             }, 0);
         };
 
@@ -593,6 +632,10 @@ export class CoreMultiSelect extends Core_UXFormControl {
         } else {
             shell.style.removeProperty('--core-multiselect-toolbar-height');
             shell.style.maxHeight = this.listMaxHeight;
+        }
+
+        if (this._open) {
+            window.requestAnimationFrame(() => this._floating?.reposition());
         }
     }
 
@@ -794,8 +837,8 @@ export class CoreMultiSelect extends Core_UXFormControl {
      * @param {Record<string, unknown>} option
      */
     _mountOptionBody(body, option) {
-        if (option.html) {
-            mountHtml(body, String(option.html));
+        if (option.trustedHtml) {
+            mountTrustedHtml(body, String(option.trustedHtml));
             return;
         }
 
@@ -836,6 +879,9 @@ export class CoreMultiSelect extends Core_UXFormControl {
         }
         this._mountOptions(list, this.visibleOptions);
         this._updateCount();
+        if (this._open) {
+            window.requestAnimationFrame(() => this._floating?.reposition());
+        }
     }
 
     _updateCount() {
@@ -887,7 +933,7 @@ export class CoreMultiSelect extends Core_UXFormControl {
             label: option.label,
             description: option.description || '',
             image: option.image || '',
-            html: option.html || ''
+            trustedHtml: option.trustedHtml || ''
         };
     }
 

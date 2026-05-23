@@ -1,5 +1,6 @@
 import { Core_UXSlotElement } from '../../lib/base/core-ux-slot-element.js';
-import { createElement, mountHtml, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
+import { createElement, mountTrustedHtml, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
+import { parseTrustedHtmlFragment, readTrustedLightDom } from '../../lib/dom/trusted-html.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
@@ -46,8 +47,7 @@ export class CoreModal extends Core_UXSlotElement {
     }
 
     _captureParts() {
-        const temp = document.createElement('div');
-        temp.innerHTML = this.innerHTML.trim();
+        const temp = parseTrustedHtmlFragment(readTrustedLightDom(this));
         const footer = temp.querySelector('[data-core-footer]');
         if (footer) {
             this._footerContent = footer.innerHTML;
@@ -116,12 +116,12 @@ export class CoreModal extends Core_UXSlotElement {
         dialog.appendChild(header);
 
         const body = createElement('div', { className: 'core-modal__body' });
-        mountHtml(body, this._slotContent);
+        mountTrustedHtml(body, this._slotContent);
         dialog.appendChild(body);
 
         if (this._footerContent) {
             const footer = createElement('footer', { className: 'core-modal__footer' });
-            mountHtml(footer, this._footerContent);
+            mountTrustedHtml(footer, this._footerContent);
             dialog.appendChild(footer);
         }
 

@@ -24,9 +24,9 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 | `<core-select>` | `options` JSON `[{ "value", "label", "selected"? }]` |
 | `<core-checkbox>` | `label`, `checked`, `value` |
 | `<core-radio-group>` | `name`, `options` JSON, `layout` stack \| inline |
-| `<core-autocomplete>` | async/local search; attrs: `min-characters`, `delay`, `clearable`, … |
+| `<core-autocomplete>` | async/local search; attrs: `min-characters`, `delay`, `clearable`, `floating`, … |
 | `<core-autocomplete-chips>` | multi-select + chips; `max-chips`, `chips-position`, `unique` |
-| `<core-multi-select>` | checkbox dropdown + search; `max-visible` (rows) or `max-height` (CSS) |
+| `<core-multi-select>` | checkbox dropdown + search; `max-visible`, `max-height`, `floating` |
 
 ## Feedback
 

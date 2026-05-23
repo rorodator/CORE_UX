@@ -32,7 +32,7 @@ Human-readable catalog with **live demos**: open **`doc/index.html`** in a brows
 | `doc/form-controls.html` | Shared form attributes |
 | `doc/components/core-*.html` | One page per tag — attributes table + interactive demos |
 
-Shared assets: `doc/assets/doc.css`, `bootstrap.js`, `load-kit.js`, `sidebar.js`, `core-html-element-shim.js`, `core-dom-shim.js` (doc shims for `CORE_JS` without full bootstrap). Stylesheet: `<link href="../dist/core-ux.css">` in each page — `load-kit.js` imports component JS only (not `index.js`, which pulls CSS as an ES module).
+Shared assets: `doc/assets/doc.css`, `bootstrap.js`, `load-kit.js`, `sidebar.js`, `core-html-element-shim.js`, `core-dom-shim.js` (doc shims for `CORE_JS` without full bootstrap — **keep `core-dom-shim.js` in sync with `CORE_JS/lib/utils/dom.js`**). Stylesheet: `<link href="../dist/core-ux.css">` in each page — `load-kit.js` imports component JS only (not `index.js`, which pulls CSS as an ES module).
 
 **Important:** open via HTTP (`php -S localhost:8765 -t .` → `/doc/`). `file://` will not load ES modules. When changing `CORE_JS/lib/utils/dom.js`, sync `doc/assets/core-dom-shim.js`.
 

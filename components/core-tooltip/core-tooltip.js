@@ -1,17 +1,10 @@
 import { Core_UXSlotElement } from '../../lib/base/core-ux-slot-element.js';
-import { createElement, mountHtml, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
+import { createElement, mountTrustedHtml, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
+import { FLIP_MAP_ALL, FloatingOverlay } from '../../lib/floating/floating-overlay.js';
 
 /** @type {string[]} */
 const POSITIONS = ['top', 'bottom', 'left', 'right'];
-
-/** @type {Record<string, string>} */
-const FLIP_MAP = {
-    top: 'bottom',
-    bottom: 'top',
-    left: 'right',
-    right: 'left'
-};
 
 let tooltipUid = 0;
 
@@ -33,12 +26,13 @@ export class CoreTooltip extends Core_UXSlotElement {
         this._hideTimer = null;
         this._tooltipId = `core-tooltip-${++tooltipUid}`;
         this._isOpen = false;
+        /** @type {FloatingOverlay|null} */
+        this._floating = null;
         this._onTriggerEnter = this._scheduleShow.bind(this);
         this._onTriggerLeave = this._scheduleHide.bind(this);
         this._onTriggerFocusIn = this._scheduleShow.bind(this);
         this._onTriggerFocusOut = this._handleFocusOut.bind(this);
         this._onKeyDown = this._handleKeyDown.bind(this);
-        this._onReposition = this._repositionIfOpen.bind(this);
     }
 
     attributeChangedCallback() {
@@ -73,7 +67,7 @@ export class CoreTooltip extends Core_UXSlotElement {
             className: `core-tooltip core-tooltip--${this.position}`
         });
         const trigger = createElement('div', { className: 'core-tooltip__trigger' });
-        mountHtml(trigger, this._slotContent);
+        mountTrustedHtml(trigger, this._slotContent);
 
         const popup = createElement('div', {
             className: 'core-tooltip__popup',
@@ -95,6 +89,19 @@ export class CoreTooltip extends Core_UXSlotElement {
         if (!trigger) {
             return;
         }
+
+        this._floating = new FloatingOverlay({
+            host: this,
+            getPanel: () => this.querySelector('.core-tooltip__popup'),
+            getAnchor: () => this.querySelector('.core-tooltip__trigger'),
+            getMountPoint: () => this.querySelector('.core-tooltip'),
+            getPlacement: () => this.position,
+            flipMap: FLIP_MAP_ALL,
+            gap: 8,
+            margin: 8,
+            align: 'center',
+            getAnchorRect: (anchorWrap) => this._getAnchorRect(anchorWrap)
+        });
 
         this._ensureTriggerFocusable(trigger);
         this._syncAriaDescribedBy(trigger);
@@ -162,22 +169,16 @@ export class CoreTooltip extends Core_UXSlotElement {
 
     _show() {
         const root = this.querySelector('.core-tooltip');
-        const triggerWrap = this.querySelector('.core-tooltip__trigger');
         const popup = this.querySelector('.core-tooltip__popup');
-        if (!root || !triggerWrap || !popup || this.isDisabled) {
+        if (!root || !popup || this.isDisabled) {
             return;
         }
 
-        this._applyThemeContext(popup);
-        document.body.appendChild(popup);
-        popup.classList.add('core-tooltip__popup--floating');
         popup.removeAttribute('hidden');
         root.classList.add('core-tooltip--open');
+        this._floating?.open();
         this._isOpen = true;
-        this._positionFloating(popup, triggerWrap);
 
-        window.addEventListener('scroll', this._onReposition, true);
-        window.addEventListener('resize', this._onReposition);
         document.addEventListener('keydown', this._onKeyDown);
         this.dispatchEvent(new CustomEvent('core-tooltip-show', { bubbles: true }));
     }
@@ -191,33 +192,14 @@ export class CoreTooltip extends Core_UXSlotElement {
 
         const wasOpen = this._isOpen;
         popup.setAttribute('hidden', '');
-        popup.classList.remove('core-tooltip__popup--floating', 'core-ux-root');
-        popup.removeAttribute('data-placement');
-        popup.removeAttribute('data-core-theme');
-        popup.style.top = '';
-        popup.style.left = '';
-        popup.style.visibility = '';
-        root.appendChild(popup);
+        this._floating?.close();
         root.classList.remove('core-tooltip--open');
         this._isOpen = false;
 
-        window.removeEventListener('scroll', this._onReposition, true);
-        window.removeEventListener('resize', this._onReposition);
         document.removeEventListener('keydown', this._onKeyDown);
 
         if (wasOpen) {
             this.dispatchEvent(new CustomEvent('core-tooltip-hide', { bubbles: true }));
-        }
-    }
-
-    _repositionIfOpen() {
-        if (!this._isOpen) {
-            return;
-        }
-        const triggerWrap = this.querySelector('.core-tooltip__trigger');
-        const popup = document.getElementById(this._tooltipId);
-        if (triggerWrap && popup) {
-            this._positionFloating(popup, triggerWrap);
         }
     }
 
@@ -232,20 +214,6 @@ export class CoreTooltip extends Core_UXSlotElement {
     }
 
     /**
-     * @param {HTMLElement} popup
-     */
-    _applyThemeContext(popup) {
-        const themeRoot = this.closest('.core-ux-root');
-        if (themeRoot) {
-            popup.classList.add('core-ux-root');
-            const theme = themeRoot.getAttribute('data-core-theme');
-            if (theme) {
-                popup.setAttribute('data-core-theme', theme);
-            }
-        }
-    }
-
-    /**
      * @param {HTMLElement} triggerWrap
      * @returns {DOMRect}
      */
@@ -254,95 +222,6 @@ export class CoreTooltip extends Core_UXSlotElement {
             'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
         );
         return (focusable || triggerWrap).getBoundingClientRect();
-    }
-
-    /**
-     * @param {HTMLElement} popup
-     * @param {HTMLElement} triggerWrap
-     */
-    _positionFloating(popup, triggerWrap) {
-        const gap = 8;
-        const margin = 8;
-        const anchor = this._getAnchorRect(triggerWrap);
-
-        popup.style.visibility = 'hidden';
-        popup.style.top = '0px';
-        popup.style.left = '0px';
-
-        const width = popup.offsetWidth;
-        const height = popup.offsetHeight;
-        let placement = this.position;
-        let coords = this._coordsForPlacement(placement, anchor, width, height, gap);
-
-        if (placement === 'top' && coords.top < margin) {
-            placement = FLIP_MAP.top;
-            coords = this._coordsForPlacement(placement, anchor, width, height, gap);
-        } else if (placement === 'bottom' && coords.top + height > window.innerHeight - margin) {
-            placement = FLIP_MAP.bottom;
-            coords = this._coordsForPlacement(placement, anchor, width, height, gap);
-        } else if (placement === 'left' && coords.left < margin) {
-            placement = FLIP_MAP.left;
-            coords = this._coordsForPlacement(placement, anchor, width, height, gap);
-        } else if (placement === 'right' && coords.left + width > window.innerWidth - margin) {
-            placement = FLIP_MAP.right;
-            coords = this._coordsForPlacement(placement, anchor, width, height, gap);
-        }
-
-        coords = this._clampCoords(coords, width, height, margin);
-        popup.style.top = `${Math.round(coords.top)}px`;
-        popup.style.left = `${Math.round(coords.left)}px`;
-        popup.dataset.placement = placement;
-        popup.style.visibility = '';
-    }
-
-    /**
-     * @param {string} placement
-     * @param {DOMRect} anchor
-     * @param {number} width
-     * @param {number} height
-     * @param {number} gap
-     * @returns {{ top: number, left: number }}
-     */
-    _coordsForPlacement(placement, anchor, width, height, gap) {
-        switch (placement) {
-            case 'bottom':
-                return {
-                    top: anchor.bottom + gap,
-                    left: anchor.left + (anchor.width - width) / 2
-                };
-            case 'left':
-                return {
-                    top: anchor.top + (anchor.height - height) / 2,
-                    left: anchor.left - width - gap
-                };
-            case 'right':
-                return {
-                    top: anchor.top + (anchor.height - height) / 2,
-                    left: anchor.right + gap
-                };
-            case 'top':
-            default:
-                return {
-                    top: anchor.top - height - gap,
-                    left: anchor.left + (anchor.width - width) / 2
-                };
-        }
-    }
-
-    /**
-     * @param {{ top: number, left: number }} coords
-     * @param {number} width
-     * @param {number} height
-     * @param {number} margin
-     * @returns {{ top: number, left: number }}
-     */
-    _clampCoords(coords, width, height, margin) {
-        const maxLeft = Math.max(margin, window.innerWidth - width - margin);
-        const maxTop = Math.max(margin, window.innerHeight - height - margin);
-        return {
-            top: Math.min(Math.max(coords.top, margin), maxTop),
-            left: Math.min(Math.max(coords.left, margin), maxLeft)
-        };
     }
 
     _clearShowTimer() {
@@ -363,6 +242,8 @@ export class CoreTooltip extends Core_UXSlotElement {
         this._clearShowTimer();
         this._clearHideTimer();
         this._hide();
+        this._floating?.destroy();
+        this._floating = null;
 
         const trigger = this.querySelector('.core-tooltip__trigger');
         if (trigger) {

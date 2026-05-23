@@ -59,6 +59,21 @@ Structure: **`CORE_UX/doc/`** — one page per component with doc + live demos (
 - JSON attrs: `parseJsonAttr` with safe fallback.
 - Register via `registerCoreComponent`; apps may import subsets (e.g. `core-ux-myjourney.js`).
 
+## DOM helpers (CORE_JS)
+
+Import from `CORE_JS/lib/utils/dom.js` or use `$svc('dom')` when AppCore is bootstrapped:
+
+| API | Use |
+|-----|-----|
+| `createElement(tag, { text })` | Plain text — user/API content |
+| `createElement(tag, { trustedHtml })` | Author-controlled markup only |
+| `mountTrustedHtml(parent, html)` | Append template/light-DOM fragments |
+| `hasBoolAttr`, `parseJsonAttr`, `mirrorAttributes` | Host attribute helpers |
+
+**Security:** never pass user input or API data to `trustedHtml` / `mountTrustedHtml`. Use `text` instead.
+
+Slot components (`Core_UXSlotElement`, card/modal/side-panel) capture template light DOM via `lib/dom/trusted-html.js`, then re-inject with `mountTrustedHtml`. `core-multi-select` option field: `trustedHtml` (legacy `html` alias still accepted in JSON).
+
 ## i18n
 
 - Form controls mirror `data-core-lang` to inner controls.

@@ -1,8 +1,16 @@
 /**
  * Doc demo shim — mirrors CORE_JS/lib/utils/dom.js for static pages (php -S from CORE_UX).
  * Keep in sync when dom helpers change in CORE_JS.
+ *
+ * SECURITY: use `trustedHtml` / `mountTrustedHtml` only for author-controlled markup
+ * (compiled templates, static UI fragments). Never pass user input or API data — use `text`.
  */
 
+/**
+ * @param {string} tag
+ * @param {{ className?: string, text?: string, trustedHtml?: string, attrs?: Record<string, string|boolean>, children?: Node[] }} [options]
+ * @returns {HTMLElement}
+ */
 export function createElement(tag, options = {}) {
     const el = document.createElement(tag);
     if (options.className) {
@@ -11,8 +19,8 @@ export function createElement(tag, options = {}) {
     if (options.text != null && options.text !== '') {
         el.textContent = options.text;
     }
-    if (options.html) {
-        el.innerHTML = options.html;
+    if (options.trustedHtml) {
+        el.innerHTML = options.trustedHtml;
     }
     if (options.attrs) {
         Object.entries(options.attrs).forEach(([name, value]) => {
@@ -34,17 +42,26 @@ export function createElement(tag, options = {}) {
     return el;
 }
 
-export function mountHtml(parent, html) {
-    if (!html) {
+/**
+ * @param {HTMLElement} parent
+ * @param {string} trustedHtml Author-controlled HTML only.
+ */
+export function mountTrustedHtml(parent, trustedHtml) {
+    if (!trustedHtml) {
         return;
     }
     const wrap = document.createElement('div');
-    wrap.innerHTML = html;
+    wrap.innerHTML = trustedHtml;
     while (wrap.firstChild) {
         parent.appendChild(wrap.firstChild);
     }
 }
 
+/**
+ * @param {HTMLElement} el
+ * @param {string} name
+ * @returns {boolean}
+ */
 export function hasBoolAttr(el, name) {
     if (!el.hasAttribute(name)) {
         return false;
@@ -53,6 +70,12 @@ export function hasBoolAttr(el, name) {
     return value === '' || value === 'true';
 }
 
+/**
+ * @param {HTMLElement} el
+ * @param {string} name
+ * @param {*} fallback
+ * @returns {*}
+ */
 export function parseJsonAttr(el, name, fallback = []) {
     const raw = el.getAttribute(name);
     if (!raw) {
@@ -65,6 +88,11 @@ export function parseJsonAttr(el, name, fallback = []) {
     }
 }
 
+/**
+ * @param {HTMLElement} host
+ * @param {HTMLElement} target
+ * @param {string[]} names
+ */
 export function mirrorAttributes(host, target, names) {
     names.forEach((name) => {
         if (host.hasAttribute(name)) {
@@ -75,6 +103,10 @@ export function mirrorAttributes(host, target, names) {
     });
 }
 
+/**
+ * @param {string} tagName
+ * @param {typeof HTMLElement} Class
+ */
 export function registerCustomElement(tagName, Class) {
     if (!customElements.get(tagName)) {
         customElements.define(tagName, Class);

@@ -1,5 +1,6 @@
 import { Core_UXSlotElement } from '../../lib/base/core-ux-slot-element.js';
-import { createElement, mountHtml, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
+import { createElement, mountTrustedHtml, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
+import { parseTrustedHtmlFragment, readTrustedLightDom } from '../../lib/dom/trusted-html.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
@@ -46,8 +47,7 @@ export class CoreSidePanel extends Core_UXSlotElement {
     }
 
     _captureParts() {
-        const temp = document.createElement('div');
-        temp.innerHTML = this.innerHTML.trim();
+        const temp = parseTrustedHtmlFragment(readTrustedLightDom(this));
         const footer = temp.querySelector('[data-core-footer]');
         if (footer) {
             this._footerContent = footer.innerHTML;
@@ -130,12 +130,12 @@ export class CoreSidePanel extends Core_UXSlotElement {
         panel.appendChild(header);
 
         const body = createElement('div', { className: 'core-side-panel__body' });
-        mountHtml(body, this._slotContent);
+        mountTrustedHtml(body, this._slotContent);
         panel.appendChild(body);
 
         if (this._footerContent) {
             const footer = createElement('footer', { className: 'core-side-panel__footer' });
-            mountHtml(footer, this._footerContent);
+            mountTrustedHtml(footer, this._footerContent);
             panel.appendChild(footer);
         }
 

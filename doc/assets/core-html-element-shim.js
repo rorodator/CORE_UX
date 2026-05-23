@@ -50,6 +50,7 @@ export class Core_HTMLElement extends HTMLElement {
     cleanFunctional() {}
 
     ui_render() {
+        /* Default: clear only — subclasses inject via createElement / mountTrustedHtml */
         this.innerHTML = '';
     }
 

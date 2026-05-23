@@ -6,15 +6,6 @@
     <title>core-multi-select — CORE_UX</title>
     <link rel="stylesheet" href="../../dist/core-ux.css">
     <link rel="stylesheet" href="../assets/doc.css">
-<script type="importmap">
-{
-    "imports": {
-        "CORE_JS/lib/utils/dom.js": "../assets/core-dom-shim.js",
-        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
-    }
-}
-</script>
-<script src="../assets/bootstrap.js"></script>
 </head>
 <body>
 <div class="layout">
@@ -42,6 +33,7 @@
                 <tr><td><code>select-all</code></td><td>false</td><td>Buttons: Select visible / Clear all.</td></tr>
                 <tr><td><code>placeholder</code></td><td>Select…</td><td>Trigger text when nothing is selected (dropdown mode).</td></tr>
                 <tr><td><code>always-open</code></td><td>false</td><td>Keep the full list visible (no collapsed trigger).</td></tr>
+                <tr><td><code>floating</code></td><td>true</td><td>Portal dropdown panel to <code>document.body</code> (set <code>floating="false"</code> to keep in-flow).</td></tr>
                 <tr><td colspan="3"><em>Default: dropdown — collapsed trigger; panel opens on focus/click.</em></td></tr>
                 <tr><td colspan="3"><em>Plus shared form attributes (<a href="../form-controls.html">form controls</a>).</em></td></tr>
             </tbody>
@@ -56,16 +48,42 @@
   "imageAlt": "France",
   "description": "Optional subtitle",
   "keywords": "extra search terms",
-  "html": "&lt;span class='badge'&gt;Custom&lt;/span&gt;",
+  "trustedHtml": "&lt;span class='badge'&gt;Custom&lt;/span&gt;",
   "disabled": false
 }</code></pre>
-        <p>If <code>html</code> is set, it replaces the default label/image layout for that row.</p>
+        <p>If <code>trustedHtml</code> is set, it replaces the default label/image layout for that row (author-controlled markup only). Legacy key <code>html</code> is still accepted as an alias.</p>
 
         <h3>Events</h3>
         <p><code>multiselect-change</code> · <code>multiselect-select</code> · <code>multiselect-deselect</code> · <code>multiselect-open</code> · <code>multiselect-close</code></p>
 
         <h3>API</h3>
         <p><code>open()</code> · <code>close()</code> · <code>toggle()</code> · <code>getSelectedValues()</code> · <code>getSelectedItems()</code> · <code>setSelected(values)</code> · <code>setOptions(options)</code> · <code>clearSelection()</code> · <code>selectVisible()</code></p>
+
+        <section class="demo-section">
+            <h3>Inside overflow container</h3>
+            <p>
+                With <code>floating</code> (default), the panel is portaled to <code>document.body</code>
+                so it is not clipped by scrollable parents.
+            </p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <div style="height:140px;overflow:auto;border:1px solid var(--core-color-border,#e0e1e2);border-radius:8px;padding:1rem;">
+                        <p style="margin:0 0 0.75rem;font-size:0.875rem;color:var(--core-color-text-muted,#767676);">
+                            Scroll this box — the dropdown should stay fully visible.
+                        </p>
+                        <core-multi-select
+                            id="demo-overflow"
+                            label="Pick one"
+                            max-visible="5"
+                            options='[{"value":"a","label":"Option A"},{"value":"b","label":"Option B"},{"value":"c","label":"Option C"},{"value":"d","label":"Option D"},{"value":"e","label":"Option E"},{"value":"f","label":"Option F"},{"value":"g","label":"Option G"}]'
+                        ></core-multi-select>
+                        <div style="height:120px"></div>
+                    </div>
+                </div>
+                <pre class="demo__code"><code>&lt;!-- floating is true by default --&gt;
+&lt;core-multi-select floating="true" …&gt;&lt;/core-multi-select&gt;</code></pre>
+            </div>
+        </section>
 
         <section class="demo-section">
             <h3>Dropdown mode (default)</h3>
@@ -162,12 +180,16 @@ el.addEventListener('multiselect-change', (e) =&gt; {
                 </div>
                 <pre class="demo__code"><code>{
   "value": "php",
-  "html": "&lt;span style='display:flex;align-items:center;gap:.5rem'&gt;&lt;span style='background:#777;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px'&gt;PHP&lt;/span&gt;&lt;span&gt;Backend API&lt;/span&gt;&lt;/span&gt;"
+  "trustedHtml": "&lt;span style='display:flex;align-items:center;gap:.5rem'&gt;&lt;span style='background:#777;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px'&gt;PHP&lt;/span&gt;&lt;span&gt;Backend API&lt;/span&gt;&lt;/span&gt;"
 }</code></pre>
             </div>
         </section>
     </main>
 </div>
+<script src="../assets/bootstrap.js"></script>
+<script type="importmap">
+{"imports":{"CORE_JS/lib/utils/dom.js":"../assets/core-dom-shim.js","CORE_JS/lib/base/core-html-element.js":"../assets/core-html-element-shim.js","CORE_UX/":"../../"}}
+</script>
 <script src="../assets/sidebar.js"></script>
 <script type="module" src="../assets/load-kit.js"></script>
 <script type="module">
@@ -207,20 +229,20 @@ document.getElementById('demo-images').setOptions([
 document.getElementById('demo-custom').setOptions([
     {
         value: 'js',
-        html: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#f7df1e;color:#111;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700">JS</span><span>Frontend SPA</span></span>'
+        trustedHtml: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#f7df1e;color:#111;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700">JS</span><span>Frontend SPA</span></span>'
     },
     {
         value: 'php',
-        html: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#777BB4;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700">PHP</span><span>REST API</span></span>',
+        trustedHtml: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#777BB4;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700">PHP</span><span>REST API</span></span>',
         selected: true
     },
     {
         value: 'sqlite',
-        html: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#003B57;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px">SQLite</span><span>Embedded database</span></span>'
+        trustedHtml: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#003B57;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px">SQLite</span><span>Embedded database</span></span>'
     },
     {
         value: 'rxjs',
-        html: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#B7178C;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px">RxJS</span><span>Reactive streams</span></span>'
+        trustedHtml: '<span style="display:flex;align-items:center;gap:.5rem"><span style="background:#B7178C;color:#fff;padding:2px 6px;border-radius:4px;font-size:11px">RxJS</span><span>Reactive streams</span></span>'
     }
 ]);
 </script>

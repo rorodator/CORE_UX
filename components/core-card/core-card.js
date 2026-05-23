@@ -1,5 +1,6 @@
 import { Core_UXSlotElement } from '../../lib/base/core-ux-slot-element.js';
-import { createElement, mountHtml } from 'CORE_JS/lib/utils/dom.js';
+import { createElement, mountTrustedHtml } from 'CORE_JS/lib/utils/dom.js';
+import { parseTrustedHtmlFragment, readTrustedLightDom } from '../../lib/dom/trusted-html.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
@@ -29,8 +30,7 @@ export class CoreCard extends Core_UXSlotElement {
     }
 
     captureSlotParts() {
-        const temp = document.createElement('div');
-        temp.innerHTML = this.innerHTML.trim();
+        const temp = parseTrustedHtmlFragment(readTrustedLightDom(this));
         const footer = temp.querySelector('[data-core-footer]');
         if (footer) {
             this._footerContent = footer.innerHTML;
@@ -66,12 +66,12 @@ export class CoreCard extends Core_UXSlotElement {
         }
 
         const body = createElement('div', { className: 'core-card__body' });
-        mountHtml(body, this._slotContent);
+        mountTrustedHtml(body, this._slotContent);
         article.appendChild(body);
 
         if (this._footerContent) {
             const footer = createElement('footer', { className: 'core-card__footer' });
-            mountHtml(footer, this._footerContent);
+            mountTrustedHtml(footer, this._footerContent);
             article.appendChild(footer);
         }
 

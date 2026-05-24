@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-menu — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/utils/dom.js": "../assets/core-dom-shim.js",
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-menu"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-menu&gt;</span> <span class="badge badge--slot">composable</span> <span class="badge badge--event">event</span></h1>
+            <p class="lead">Dropdown menu with a trigger label and live <code>&lt;core-menu-item&gt;</code> / <code>&lt;core-menu-separator&gt;</code> children. Closes on outside click, Escape, or Tab. Arrow keys navigate items when open.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Tag / attribute</th><th>Values</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>core-menu</code> · <code>label</code></td><td>string</td><td>Trigger text (required).</td></tr>
+                <tr><td><code>core-menu</code> · <code>align</code></td><td>start · end</td><td>Panel alignment (default: end).</td></tr>
+                <tr><td><code>core-menu</code> · <code>open</code></td><td>boolean</td><td>Show / hide panel.</td></tr>
+                <tr><td><code>core-menu</code> · <code>disabled</code></td><td>boolean</td><td>Disable trigger.</td></tr>
+                <tr><td><code>core-menu-item</code> · <code>value</code></td><td>string</td><td>Item key (required).</td></tr>
+                <tr><td><code>core-menu-item</code> · <code>label</code></td><td>string</td><td>Static fallback when light-DOM body is empty.</td></tr>
+                <tr><td><code>core-menu-item</code> · <code>data-core-lang</code></td><td>JSON</td><td>On the host; <code>child</code> defaults to the inner label hook.</td></tr>
+                <tr><td><code>core-menu-separator</code></td><td>—</td><td>Horizontal rule between items (<code>role="separator"</code>).</td></tr>
+            </tbody>
+        </table>
+        <p>Events: <code>core-menu-select</code> — <code>detail.value</code>. Also <code>core-menu-open</code> / <code>core-menu-close</code>.</p>
+        <p>Methods: <code>setLabel(label)</code>, <code>refresh()</code> (after dynamic children).</p>
+        <p>Keyboard: trigger — ↓ / Enter / Space opens; ↑ opens and focuses last item; panel — ↑↓ move, Home / End, Escape closes.</p>
+
+        <section class="demo-section">
+            <h3>User menu (align end)</h3>
+            <div class="demo">
+                <div class="demo__preview" style="display:flex;justify-content:flex-end;">
+                    <core-menu id="menu-user" label="Alex" align="end">
+                        <core-menu-item value="profile" label="Profile"></core-menu-item>
+                        <core-menu-separator></core-menu-separator>
+                        <core-menu-item value="settings" label="Settings"></core-menu-item>
+                        <core-menu-item value="logout" label="Sign out"></core-menu-item>
+                    </core-menu>
+                    <div class="event-log" id="log-menu" style="margin-top:1rem;">Selected action will appear here.</div>
+                </div>
+                <pre class="demo__code"><code>&lt;core-menu label="Alex" align="end"&gt;
+  &lt;core-menu-item value="profile" label="Profile"&gt;&lt;/core-menu-item&gt;
+  &lt;core-menu-separator&gt;&lt;/core-menu-separator&gt;
+  &lt;core-menu-item value="logout" label="Sign out"&gt;&lt;/core-menu-item&gt;
+&lt;/core-menu&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/bootstrap.js"></script>
+<script type="importmap">
+{"imports":{"CORE_JS/lib/utils/dom.js":"../assets/core-dom-shim.js","CORE_JS/lib/base/core-html-element.js":"../assets/core-html-element-shim.js","CORE_UX/":"../../"}}
+</script>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+<script type="module">
+await customElements.whenDefined('core-menu');
+document.getElementById('menu-user').addEventListener('core-menu-select', (event) => {
+    document.getElementById('log-menu').textContent = 'Selected: ' + event.detail.value;
+});
+</script>
+</body>
+</html>

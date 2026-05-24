@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-tabs — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/utils/dom.js": "../assets/core-dom-shim.js",
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-tabs"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-tabs&gt;</span> <span class="badge badge--slot">slot</span> <span class="badge badge--event">event</span></h1>
+            <p class="lead">Accessible tablist with declarative <code>&lt;core-tab&gt;</code> labels and <code>&lt;core-tab-panel&gt;</code> bodies. Keyboard: arrows, Home, End.</p>
+            <div class="callout callout--theme">
+                Companion tags: <code>&lt;core-tab&gt;</code>, <code>&lt;core-tab-panel&gt;</code> — captured from light DOM on first render.
+            </div>
+        </header>
+
+        <table>
+            <thead><tr><th>Tag / attribute</th><th>Values</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>core-tabs</code> · <code>value</code></td><td>string</td><td>Active tab key (required).</td></tr>
+                <tr><td><code>core-tabs</code> · <code>layout</code></td><td>pills · underline</td><td>Visual style (default: pills).</td></tr>
+                <tr><td><code>core-tab</code> · <code>value</code></td><td>string</td><td>Tab key (required).</td></tr>
+                <tr><td><code>core-tab</code> · <code>label</code></td><td>string</td><td>Visible tab label.</td></tr>
+                <tr><td><code>core-tab</code> · <code>disabled</code></td><td>boolean</td><td>Non-interactive tab.</td></tr>
+                <tr><td><code>core-tab-panel</code> · <code>value</code></td><td>string</td><td>Panel key matching a tab (required).</td></tr>
+            </tbody>
+        </table>
+        <p>Event: <code>core-tabs-change</code> — <code>detail.value</code>, <code>detail.previousValue</code>.</p>
+        <p>Method: <code>setTabLabel(value, label)</code> — update a tab label after capture (e.g. i18n).</p>
+        <p>Changing <code>value</code> programmatically syncs the UI without emitting <code>core-tabs-change</code>.</p>
+
+        <section class="demo-section">
+            <h3>Pills layout (default)</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-tabs id="tabs-pills" value="account">
+                        <core-tab value="account" label="Account"></core-tab>
+                        <core-tab value="security" label="Security"></core-tab>
+                        <core-tab value="billing" label="Billing"></core-tab>
+                        <core-tab-panel value="account">
+                            <p>Profile name, avatar, and locale preferences.</p>
+                        </core-tab-panel>
+                        <core-tab-panel value="security">
+                            <p>Password, two-factor authentication, active sessions.</p>
+                        </core-tab-panel>
+                        <core-tab-panel value="billing">
+                            <p>Plan, invoices, and payment method.</p>
+                        </core-tab-panel>
+                    </core-tabs>
+                    <div class="event-log" id="log-pills">Selected tab will appear here.</div>
+                </div>
+                <pre class="demo__code"><code>&lt;core-tabs value="account"&gt;
+  &lt;core-tab value="account" label="Account"&gt;&lt;/core-tab&gt;
+  &lt;core-tab value="security" label="Security"&gt;&lt;/core-tab&gt;
+  &lt;core-tab-panel value="account"&gt;…&lt;/core-tab-panel&gt;
+  &lt;core-tab-panel value="security"&gt;…&lt;/core-tab-panel&gt;
+&lt;/core-tabs&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Underline layout</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-tabs id="tabs-underline" value="overview" layout="underline">
+                        <core-tab value="overview" label="Overview"></core-tab>
+                        <core-tab value="activity" label="Activity"></core-tab>
+                        <core-tab value="settings" label="Settings" disabled></core-tab>
+                        <core-tab-panel value="overview">
+                            <p>Summary metrics and recent highlights.</p>
+                        </core-tab-panel>
+                        <core-tab-panel value="activity">
+                            <p>Timeline of recent events.</p>
+                        </core-tab-panel>
+                        <core-tab-panel value="settings">
+                            <p>Settings panel (tab disabled in demo).</p>
+                        </core-tab-panel>
+                    </core-tabs>
+                </div>
+                <pre class="demo__code"><code>&lt;core-tabs value="overview" layout="underline"&gt;…&lt;/core-tabs&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Programmatic value</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-stack direction="row" gap="2">
+                        <core-button id="btn-tab-a" variant="secondary" label="Show tab A"></core-button>
+                        <core-button id="btn-tab-b" variant="secondary" label="Show tab B"></core-button>
+                    </core-stack>
+                    <core-tabs id="tabs-programmatic" value="a">
+                        <core-tab value="a" label="Tab A"></core-tab>
+                        <core-tab value="b" label="Tab B"></core-tab>
+                        <core-tab-panel value="a"><p>Content A</p></core-tab-panel>
+                        <core-tab-panel value="b"><p>Content B</p></core-tab-panel>
+                    </core-tabs>
+                </div>
+                <pre class="demo__code"><code>tabs.setAttribute('value', 'b'); // no core-tabs-change event</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/bootstrap.js"></script>
+<script type="importmap">
+{"imports":{"CORE_JS/lib/utils/dom.js":"../assets/core-dom-shim.js","CORE_JS/lib/base/core-html-element.js":"../assets/core-html-element-shim.js","CORE_UX/":"../../"}}
+</script>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+<script type="module">
+await customElements.whenDefined('core-tabs');
+
+document.getElementById('tabs-pills').addEventListener('core-tabs-change', (event) => {
+    document.getElementById('log-pills').textContent =
+        'Selected: ' + event.detail.value + ' (was: ' + event.detail.previousValue + ')';
+});
+
+document.getElementById('btn-tab-a').addEventListener('click', () => {
+    document.getElementById('tabs-programmatic').setAttribute('value', 'a');
+});
+document.getElementById('btn-tab-b').addEventListener('click', () => {
+    document.getElementById('tabs-programmatic').setAttribute('value', 'b');
+});
+</script>
+</body>
+</html>

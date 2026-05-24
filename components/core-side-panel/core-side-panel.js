@@ -178,14 +178,12 @@ export class CoreSidePanel extends Core_UXSlotElement {
     }
 
     ui_toFunctional() {
-        this.querySelector('[data-core-side-panel-backdrop]')
-            ?.addEventListener('click', () => this._close('backdrop'));
-        this.querySelectorAll('[data-core-side-panel-close]').forEach((btn) => {
-            btn.addEventListener('click', () => this._close('close'));
-        });
+        this.bindDelegated('click', '[data-core-side-panel-backdrop]', () => this._close('backdrop'));
+        this.bindDelegated('click', '[data-core-side-panel-close]', () => this._close('close'));
     }
 
     cleanFunctional() {
+        super.cleanFunctional();
         document.removeEventListener('keydown', this._onKeyDown);
     }
 }

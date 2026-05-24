@@ -40,9 +40,18 @@ export class CoreModal extends Core_UXSlotElement {
             this._syncOpen();
             return;
         }
-        if (this._slotCaptured) {
-            this.render();
+        if (!this._slotCaptured) {
+            return;
+        }
+        if (name === 'title') {
+            this._syncTitle();
             this._syncOpen();
+            return;
+        }
+        if (name === 'size') {
+            this._syncSize();
+            this._syncOpen();
+            return;
         }
     }
 
@@ -129,6 +138,54 @@ export class CoreModal extends Core_UXSlotElement {
         this.replaceChildren(host);
     }
 
+    /**
+     * Updates the dialog title without rebuilding body/footer slot content.
+     */
+    _syncTitle() {
+        const dialog = this.querySelector('.core-modal');
+        const header = dialog?.querySelector('.core-modal__header');
+        if (!dialog || !header) {
+            this.render();
+            return;
+        }
+
+        const title = this.title;
+        let titleEl = header.querySelector('.core-modal__title');
+
+        if (title) {
+            dialog.setAttribute('aria-labelledby', `${this.dialogId}-title`);
+            if (titleEl) {
+                titleEl.textContent = title;
+            } else {
+                titleEl = createElement('h2', {
+                    className: 'core-modal__title',
+                    text: title,
+                    attrs: { id: `${this.dialogId}-title` }
+                });
+                header.insertBefore(titleEl, header.firstChild);
+            }
+            return;
+        }
+
+        dialog.removeAttribute('aria-labelledby');
+        titleEl?.remove();
+    }
+
+    /**
+     * Updates modal size classes without rebuilding slot content.
+     */
+    _syncSize() {
+        const dialog = this.querySelector('.core-modal');
+        if (!dialog) {
+            this.render();
+            return;
+        }
+        dialog.classList.remove('core-modal--sm', 'core-modal--lg', 'core-modal--full');
+        if (this.sizeClass) {
+            dialog.classList.add(this.sizeClass);
+        }
+    }
+
     _syncOpen() {
         const host = this.querySelector('.core-modal-host');
         if (!host) {
@@ -159,14 +216,12 @@ export class CoreModal extends Core_UXSlotElement {
     }
 
     ui_toFunctional() {
-        this.querySelector('[data-core-modal-backdrop]')
-            ?.addEventListener('click', () => this._close('backdrop'));
-        this.querySelectorAll('[data-core-modal-close]').forEach((btn) => {
-            btn.addEventListener('click', () => this._close('close'));
-        });
+        this.bindDelegated('click', '[data-core-modal-backdrop]', () => this._close('backdrop'));
+        this.bindDelegated('click', '[data-core-modal-close]', () => this._close('close'));
     }
 
     cleanFunctional() {
+        super.cleanFunctional();
         document.removeEventListener('keydown', this._onKeyDown);
     }
 }

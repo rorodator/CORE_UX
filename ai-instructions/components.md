@@ -19,6 +19,8 @@
 
 1. Create `components/core-<name>/core-<name>.js`.
 2. Extend the appropriate base class; implement `onConnect()`, `ui_render()`, `ui_toFunctional()` if needed.
+   - Wire DOM events with `bindDelegated()` / `bindUI()` from `Core_HTMLElement` — cleaned automatically each `render()`.
+   - When overriding `cleanFunctional()`, call `super.cleanFunctional()` first.
 3. Call `registerCoreComponent('core-<name>', Class)` at module bottom.
 4. Import in `index.js` (barrel) if part of the full kit.
 5. Add Tailwind/classes in `styles/core-ux.css`; run `npm run build`.
@@ -76,5 +78,6 @@ Slot components (`Core_UXSlotElement`, card/modal/side-panel) capture template l
 
 ## i18n
 
-- Form controls mirror `data-core-lang` to inner controls.
+- Form controls mirror `data-core-lang` to inner controls when needed.
+- `core-menu-item`: classic `data-core-lang` on the host; `projectLangDecl()` on the inner label span each render.
 - Autocomplete supports `*-container` / `*-key` pairs resolved via `$svc('lang')` when available.

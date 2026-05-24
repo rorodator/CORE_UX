@@ -341,6 +341,7 @@ export class CoreMultiSelect extends Core_UXFormControl {
     }
 
     cleanFunctional() {
+        super.cleanFunctional();
         this._floating?.destroy();
         this._floating = null;
         this.querySelector('.core-multi-select__search')

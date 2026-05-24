@@ -24,7 +24,8 @@
             title: 'Actions',
             links: [
                 { id: 'core-button', href: comp + 'core-button.html', label: 'core-button' },
-                { id: 'core-link', href: comp + 'core-link.html', label: 'core-link' }
+                { id: 'core-link', href: comp + 'core-link.html', label: 'core-link' },
+                { id: 'core-menu', href: comp + 'core-menu.html', label: 'core-menu' }
             ]
         },
         {
@@ -56,7 +57,8 @@
                 { id: 'core-stack', href: comp + 'core-stack.html', label: 'core-stack' },
                 { id: 'core-grid', href: comp + 'core-grid.html', label: 'core-grid' },
                 { id: 'core-divider', href: comp + 'core-divider.html', label: 'core-divider' },
-                { id: 'core-card', href: comp + 'core-card.html', label: 'core-card' }
+                { id: 'core-card', href: comp + 'core-card.html', label: 'core-card' },
+                { id: 'core-tabs', href: comp + 'core-tabs.html', label: 'core-tabs' }
             ]
         },
         {
@@ -69,7 +71,7 @@
     ];
 
     var html = '<div class="sidebar__brand"><h1><a href="' + root + 'index.html">CORE_UX</a></h1>'
-        + '<p>Doc + live demos · 21 tags</p></div>';
+        + '<p>Doc + live demos · 26 tags</p></div>';
 
     groups.forEach(function (group) {
         html += '<div class="nav-group"><div class="nav-group__title">' + group.title + '</div>';

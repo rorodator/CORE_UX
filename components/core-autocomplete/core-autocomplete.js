@@ -287,6 +287,7 @@ export class CoreAutocomplete extends Core_UXElement {
     }
 
     cleanFunctional() {
+        super.cleanFunctional();
         if (this._searchTimeout) {
             clearTimeout(this._searchTimeout);
             this._searchTimeout = null;

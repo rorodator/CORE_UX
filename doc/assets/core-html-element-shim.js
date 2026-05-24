@@ -7,6 +7,8 @@ export class Core_HTMLElement extends HTMLElement {
         super();
         /** @type {Array<{ unsubscribe?: () => void }>} */
         this._subs = [];
+        /** @type {AbortController|null} */
+        this._uiAbort = null;
         this.langContainer = null;
         this._reuseMode = false;
     }
@@ -47,7 +49,48 @@ export class Core_HTMLElement extends HTMLElement {
         this.ui_toFunctional();
     }
 
-    cleanFunctional() {}
+    cleanFunctional() {
+        if (this._uiAbort) {
+            this._uiAbort.abort();
+            this._uiAbort = null;
+        }
+    }
+
+    /**
+     * @returns {AbortSignal}
+     */
+    _getUiSignal() {
+        if (!this._uiAbort) {
+            this._uiAbort = new AbortController();
+        }
+        return this._uiAbort.signal;
+    }
+
+    /**
+     * @param {string} type
+     * @param {EventListener} handler
+     * @param {AddEventListenerOptions} [options]
+     */
+    bindUI(type, handler, options = {}) {
+        const { signal: _ignored, ...rest } = options;
+        this.addEventListener(type, handler, { ...rest, signal: this._getUiSignal() });
+    }
+
+    /**
+     * @param {string} type
+     * @param {string} selector
+     * @param {(event: Event, match: Element) => void} handler
+     * @param {AddEventListenerOptions} [options]
+     */
+    bindDelegated(type, selector, handler, options = {}) {
+        const { signal: _ignored, ...rest } = options;
+        this.addEventListener(type, (event) => {
+            const match = event.target instanceof Element ? event.target.closest(selector) : null;
+            if (match) {
+                handler.call(this, event, match);
+            }
+        }, { ...rest, signal: this._getUiSignal() });
+    }
 
     ui_render() {
         /* Default: clear only — subclasses inject via createElement / mountTrustedHtml */

@@ -9,6 +9,8 @@ import '../../components/core-select/core-select.js';
 import '../../components/core-checkbox/core-checkbox.js';
 import '../../components/core-radio-group/core-radio-group.js';
 import '../../components/core-card/core-card.js';
+import '../../components/core-tabs/core-tabs.js';
+import '../../components/core-menu/core-menu.js';
 import '../../components/core-modal/core-modal.js';
 import '../../components/core-side-panel/core-side-panel.js';
 import '../../components/core-alert/core-alert.js';

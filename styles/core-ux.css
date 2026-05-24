@@ -128,6 +128,113 @@
     @apply flex-row flex-wrap gap-4;
   }
 
+  /* —— Tabs —— */
+  core-tab,
+  core-tab-panel {
+    @apply hidden;
+  }
+
+  .core-tabs {
+    @apply flex w-full flex-col gap-4 font-core;
+  }
+
+  .core-tabs__list {
+    @apply flex gap-1;
+  }
+
+  .core-tabs--pills .core-tabs__list {
+    @apply rounded-core bg-core-surface-muted p-1;
+  }
+
+  .core-tabs--pills .core-tabs__tab {
+    @apply flex-1 cursor-pointer rounded-core border-0 bg-transparent px-3 py-2 text-sm
+      font-medium text-core-text-muted transition-colors
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary
+      focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .core-tabs--pills .core-tabs__tab--active {
+    @apply bg-core-surface text-core-text shadow-core-sm;
+  }
+
+  .core-tabs--underline .core-tabs__list {
+    @apply gap-4 border-b border-core-border;
+  }
+
+  .core-tabs--underline .core-tabs__tab {
+    @apply -mb-px cursor-pointer border-0 border-b-2 border-transparent bg-transparent px-1
+      py-2 text-sm font-medium text-core-text-muted transition-colors
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary
+      disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .core-tabs--underline .core-tabs__tab--active {
+    @apply border-core-primary text-core-text;
+  }
+
+  .core-tabs__panel {
+    @apply w-full;
+  }
+
+  /* —— Menu —— */
+  core-menu > core-menu-item,
+  core-menu > core-menu-separator {
+    @apply hidden;
+  }
+
+  .core-menu {
+    @apply relative inline-block font-core;
+  }
+
+  .core-menu__trigger {
+    @apply inline-flex max-w-[12rem] items-center gap-1.5 rounded-core border border-core-border
+      bg-core-surface px-3 py-2 text-sm font-medium text-core-text shadow-core-sm
+      transition-colors hover:bg-core-surface-hover
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary
+      focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .core-menu__label {
+    @apply min-w-0 truncate;
+  }
+
+  .core-menu__chevron {
+    @apply shrink-0 text-xs text-core-text-muted;
+  }
+
+  .core-menu__panel {
+    @apply absolute z-50 mt-1 min-w-[10rem] overflow-hidden rounded-core border
+      border-core-border bg-core-surface py-1 shadow-core-lg;
+  }
+
+  .core-menu--align-end .core-menu__panel {
+    @apply right-0;
+  }
+
+  .core-menu--align-start .core-menu__panel {
+    @apply left-0;
+  }
+
+  .core-menu__item {
+    @apply block w-full cursor-pointer border-0 bg-transparent px-3 py-2 text-left text-sm
+      text-core-text transition-colors hover:bg-core-surface-hover
+      focus:bg-core-surface-hover focus:outline-none
+      disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .core-menu__item-label {
+    @apply inline-flex items-center gap-2;
+  }
+
+  .core-menu__separator {
+    @apply my-1 h-px bg-core-border;
+  }
+
+  core-menu-item,
+  core-menu-separator {
+    @apply block;
+  }
+
   /* —— Multi select —— */
   .core-multi-select {
     @apply w-full font-core;

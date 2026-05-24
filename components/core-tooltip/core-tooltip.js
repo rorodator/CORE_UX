@@ -239,6 +239,7 @@ export class CoreTooltip extends Core_UXSlotElement {
     }
 
     cleanFunctional() {
+        super.cleanFunctional();
         this._clearShowTimer();
         this._clearHideTimer();
         this._hide();

@@ -14,6 +14,9 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 |-----|--------|
 | `<core-button>` | `variant` primary \| secondary \| ghost \| danger; `size` sm \| lg; `block`; `label` |
 | `<core-link>` | `href`, `label`, `external` |
+| `<core-menu>` | `label`, `align` start \| end, `open`; children `<core-menu-item>`, `<core-menu-separator>`; keyboard nav; event `core-menu-select` |
+| `<core-menu-item>` | `value`, `label`, `disabled`, `data-core-lang` on host (projected to inner label) |
+| `<core-menu-separator>` | non-interactive rule between items |
 
 ## Forms
 
@@ -46,6 +49,9 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 | `<core-grid>` | `cols` 1 \| 2 \| 3 \| 4 \| auto |
 | `<core-divider>` | optional `label` |
 | `<core-card>` | `title`, `subtitle`; body = children; footer = child with `data-core-footer` |
+| `<core-tabs>` | `value`, `layout` pills \| underline; children `<core-tab>` + `<core-tab-panel>`; event `core-tabs-change` |
+| `<core-tab>` | `value`, `label`, `disabled` — declarative marker for `<core-tabs>` |
+| `<core-tab-panel>` | `value` — declarative panel content for `<core-tabs>` |
 
 ## Overlay
 

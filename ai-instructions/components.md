@@ -79,5 +79,5 @@ Slot components (`Core_UXSlotElement`, card/modal/side-panel) capture template l
 ## i18n
 
 - Form controls mirror `data-core-lang` to inner controls when needed.
-- `core-menu-item`: classic `data-core-lang` on the host; `projectLangDecl()` on the inner label span each render.
+- `core-menu-item`: classic `data-core-lang` on the host; patches `"child": "[data-core-menu-item-label]"` before render.
 - Autocomplete supports `*-container` / `*-key` pairs resolved via `$svc('lang')` when available.

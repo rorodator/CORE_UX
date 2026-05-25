@@ -16,6 +16,8 @@ import './components/core-menu/core-menu.js';
 import './components/core-modal/core-modal.js';
 import './components/core-side-panel/core-side-panel.js';
 import './components/core-alert/core-alert.js';
+import './components/core-notif/core-notif.js';
+import './components/core-notif-host/core-notif-host.js';
 import './components/core-tooltip/core-tooltip.js';
 import './components/core-badge/core-badge.js';
 import './components/core-spinner/core-spinner.js';

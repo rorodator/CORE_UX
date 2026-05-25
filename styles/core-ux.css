@@ -431,6 +431,92 @@
       focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
   }
 
+  /* —— Notifications (toast stack) —— */
+  .core-notif-host {
+    @apply pointer-events-none fixed z-[9998] w-full max-w-sm font-core;
+  }
+
+  .core-notif-host--top-start {
+    top: var(--core-notif-offset-top, 1rem);
+    left: var(--core-notif-offset-left, 1rem);
+    right: auto;
+    bottom: auto;
+  }
+
+  .core-notif-host--top-end {
+    top: var(--core-notif-offset-top, 1rem);
+    right: var(--core-notif-offset-right, 1rem);
+    left: auto;
+    bottom: auto;
+  }
+
+  .core-notif-host--bottom-start {
+    bottom: var(--core-notif-offset-bottom, 1rem);
+    left: var(--core-notif-offset-left, 1rem);
+    right: auto;
+    top: auto;
+  }
+
+  .core-notif-host--bottom-end {
+    bottom: var(--core-notif-offset-bottom, 1rem);
+    right: var(--core-notif-offset-right, 1rem);
+    left: auto;
+    top: auto;
+  }
+
+  .core-notif-host__stack {
+    @apply flex w-full flex-col;
+    gap: var(--core-notif-gap, 0.5rem);
+    pointer-events: none;
+  }
+
+  .core-notif-host--bottom-start .core-notif-host__stack,
+  .core-notif-host--bottom-end .core-notif-host__stack {
+    @apply flex-col-reverse;
+  }
+
+  .core-notif {
+    @apply pointer-events-auto relative w-full rounded-core border px-4 py-3 pr-10 text-sm
+      shadow-core transition-[opacity,transform] duration-200 ease-out;
+  }
+
+  .core-notif--enter,
+  .core-notif--closing {
+    @apply -translate-y-2 opacity-0;
+  }
+
+  .core-notif-host--bottom-start .core-notif--enter,
+  .core-notif-host--bottom-start .core-notif--closing,
+  .core-notif-host--bottom-end .core-notif--enter,
+  .core-notif-host--bottom-end .core-notif--closing {
+    @apply translate-y-2 opacity-0;
+  }
+
+  .core-notif--info {
+    @apply border-core-info-border bg-core-info-muted text-core-text;
+  }
+
+  .core-notif--success {
+    @apply border-core-success-border bg-core-success-muted text-core-text;
+  }
+
+  .core-notif--warning {
+    @apply border-core-warning-border bg-core-warning-muted text-core-text;
+  }
+
+  .core-notif--error {
+    @apply border-core-error-border bg-core-error-muted text-core-text;
+  }
+
+  .core-notif__content {
+    @apply pr-1 leading-snug;
+  }
+
+  .core-notif__dismiss {
+    @apply absolute right-2 top-2 rounded p-1 text-core-text-muted hover:bg-core-overlay-subtle
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
+  }
+
   /* —— Tooltip —— */
   .core-tooltip {
     @apply relative inline-flex max-w-full font-core;

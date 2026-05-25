@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-notif — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-notif"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-notif-host&gt;</span> · <span class="tag">&lt;core-notif&gt;</span></h1>
+            <p class="lead">
+                Viewport corner toasts — stacked with configurable offsets. Unlike
+                <a href="core-alert.html">core-alert</a> (inline banner), these float above the page.
+            </p>
+            <div class="callout callout--theme">
+                Semantic tokens match <code>core-alert</code> —
+                <a href="../theming.html">Theming reference</a>
+            </div>
+        </header>
+
+        <h2>core-notif-host</h2>
+        <table>
+            <thead><tr><th>Attribute</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>position</code></td><td>top-end</td><td>top-start · top-end · bottom-start · bottom-end</td></tr>
+                <tr><td><code>offset-top</code></td><td>1rem</td><td>Distance from top viewport edge (CSS length).</td></tr>
+                <tr><td><code>offset-bottom</code></td><td>1rem</td><td>Distance from bottom edge.</td></tr>
+                <tr><td><code>offset-left</code></td><td>1rem</td><td>Distance from left edge.</td></tr>
+                <tr><td><code>offset-right</code></td><td>1rem</td><td>Distance from right edge.</td></tr>
+                <tr><td><code>gap</code></td><td>0.5rem</td><td>Space between stacked toasts.</td></tr>
+            </tbody>
+        </table>
+        <p>Portals to <code>document.body</code> while connected. API: <code>show(options)</code>, <code>clear()</code>.</p>
+
+        <h2>core-notif</h2>
+        <table>
+            <thead><tr><th>Attribute</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>variant</code></td><td>info</td><td>info · success · warning · error</td></tr>
+                <tr><td><code>message</code></td><td>—</td><td>Plain text body (never user HTML).</td></tr>
+                <tr><td><code>duration</code></td><td>5000</td><td>Auto-dismiss delay in ms; <code>0</code> = manual only.</td></tr>
+                <tr><td><code>dismissible</code></td><td>true</td><td>Show × button (<code>dismissible="false"</code> to hide).</td></tr>
+            </tbody>
+        </table>
+        <p>Events: <code>core-notif-show</code> · <code>core-notif-close</code> (bubbles). Method: <code>close()</code>.</p>
+
+        <core-notif-host id="doc-notif-host" position="top-end" offset-top="5rem" offset-right="1.5rem"></core-notif-host>
+
+        <section class="demo-section">
+            <h3>Imperative API</h3>
+            <p>Click to push toasts on the host above (top-right, below doc header offset).</p>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked" style="max-width:28rem">
+                    <core-button id="btn-info" variant="secondary" label="Info"></core-button>
+                    <core-button id="btn-success" variant="primary" label="Success"></core-button>
+                    <core-button id="btn-warning" variant="secondary" label="Warning"></core-button>
+                    <core-button id="btn-error" variant="danger" label="Error"></core-button>
+                    <core-button id="btn-stack" variant="ghost" label="Stack 3"></core-button>
+                    <core-button id="btn-clear" variant="ghost" label="Clear all"></core-button>
+                </div>
+                <pre class="demo__code"><code>const host = document.getElementById('my-notif-host');
+host.show({ variant: 'success', message: 'Saved.', duration: 4000 });
+host.show({ variant: 'error', message: 'Failed.', duration: 0 }); // manual dismiss</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Custom offsets</h3>
+            <p>Bottom-left host with larger margins — open several to see stacking.</p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-notif-host id="demo-bottom" position="bottom-start"
+                        offset-bottom="2rem" offset-left="2rem" gap="0.75rem"></core-notif-host>
+                    <core-button id="btn-bottom" variant="secondary" label="Show bottom toast"></core-button>
+                </div>
+                <pre class="demo__code"><code>&lt;core-notif-host position="bottom-start"
+  offset-bottom="2rem" offset-left="2rem" gap="0.75rem"&gt;&lt;/core-notif-host&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Declarative child</h3>
+            <p>Optional: place <code>&lt;core-notif&gt;</code> inside the host (moved into the stack on connect).</p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-notif-host id="demo-decl" position="top-end" offset-top="5rem" offset-right="1.5rem">
+                        <core-notif variant="info" message="Declarative toast (8s)." duration="8000"></core-notif>
+                    </core-notif-host>
+                </div>
+                <pre class="demo__code"><code>&lt;core-notif-host position="top-end"&gt;
+  &lt;core-notif variant="info" message="Hello" duration="8000"&gt;&lt;/core-notif&gt;
+&lt;/core-notif-host&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/bootstrap.js"></script>
+<script type="importmap">
+{"imports":{"CORE_JS/lib/utils/dom.js":"../assets/core-dom-shim.js","CORE_JS/lib/base/core-html-element.js":"../assets/core-html-element-shim.js","CORE_UX/":"../../"}}
+</script>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+<script type="module">
+await Promise.all([
+    customElements.whenDefined('core-notif-host'),
+    customElements.whenDefined('core-notif')
+]);
+
+const host = document.getElementById('doc-notif-host');
+const bottomHost = document.getElementById('demo-bottom');
+
+document.getElementById('btn-info').addEventListener('click', () => {
+    host.show({ variant: 'info', message: 'Profile updated.', duration: 4000 });
+});
+document.getElementById('btn-success').addEventListener('click', () => {
+    host.show({ variant: 'success', message: 'Changes saved.', duration: 4000 });
+});
+document.getElementById('btn-warning').addEventListener('click', () => {
+    host.show({ variant: 'warning', message: 'Session expires soon.', duration: 6000 });
+});
+document.getElementById('btn-error').addEventListener('click', () => {
+    host.show({ variant: 'error', message: 'Connection failed.', duration: 0 });
+});
+document.getElementById('btn-stack').addEventListener('click', () => {
+    host.show({ variant: 'info', message: 'First notification.', duration: 8000 });
+    host.show({ variant: 'success', message: 'Second notification.', duration: 8000 });
+    host.show({ variant: 'warning', message: 'Third notification.', duration: 8000 });
+});
+document.getElementById('btn-clear').addEventListener('click', () => host.clear());
+
+document.getElementById('btn-bottom').addEventListener('click', () => {
+    bottomHost.show({
+        variant: 'info',
+        message: 'Bottom-start toast with custom offsets.',
+        duration: 5000
+    });
+});
+</script>
+</body>
+</html>

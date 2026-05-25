@@ -3,6 +3,9 @@ import { createElement, hasBoolAttr, mountTrustedHtml } from 'CORE_JS/lib/utils/
 import { readTrustedLightDom } from '../../lib/dom/trusted-html.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
 
+/** Stable hook for data-core-lang child on {@link CoreMenuItem}. */
+const MENU_ITEM_LABEL_CHILD = '[data-core-menu-item-label]';
+
 /**
  * Interactive menu entry — button menuitem inside {@link CoreMenu}.
  */
@@ -36,6 +39,39 @@ export class CoreMenuItem extends Core_UXElement {
     }
 
     /**
+     * Adds child selector to host data-core-lang so lang.process targets the inner label hook.
+     */
+    _patchLangAttr() {
+        const raw = this.getAttribute('data-core-lang');
+        if (!raw) {
+            return;
+        }
+
+        try {
+            const parsed = JSON.parse(raw);
+            const isArray = Array.isArray(parsed);
+            const entries = isArray ? parsed : [parsed];
+            let changed = false;
+
+            entries.forEach((entry) => {
+                if (entry?.container && entry?.name && !entry.child) {
+                    entry.child = MENU_ITEM_LABEL_CHILD;
+                    changed = true;
+                }
+            });
+
+            if (changed) {
+                this.setAttribute(
+                    'data-core-lang',
+                    JSON.stringify(isArray ? entries : entries[0]),
+                );
+            }
+        } catch (_) {
+            // Invalid JSON — Core_LangService logs on process.
+        }
+    }
+
+    /**
      * Captures author light-DOM markup once (icons, rich labels).
      */
     _captureSlot() {
@@ -46,40 +82,36 @@ export class CoreMenuItem extends Core_UXElement {
         this._slotCaptured = true;
     }
 
+    render() {
+        this._patchLangAttr();
+        super.render();
+    }
+
     ui_render() {
-        const btnAttrs = {
-            type: 'button',
-            role: 'menuitem',
-            'data-core-menu-item': true,
-            'data-value': this.value,
-            tabindex: '-1',
-            disabled: hasBoolAttr(this, 'disabled') || undefined,
-        };
-
-        if (this.langDecl) {
-            btnAttrs['data-core-lang'] = this.langDecl;
-        }
-
         const btn = createElement('button', {
             className: 'core-menu__item',
-            attrs: btnAttrs,
+            attrs: {
+                type: 'button',
+                role: 'menuitem',
+                'data-core-menu-item': true,
+                'data-value': this.value,
+                tabindex: '-1',
+                disabled: hasBoolAttr(this, 'disabled') || undefined,
+            },
         });
 
-        if( this.langDecl ) {
-            btn.setAttribute('data-core-lang', this.langDecl);
-        }
-        
+        const labelEl = createElement('span', {
+            className: 'core-menu__item-label',
+            attrs: { 'data-core-menu-item-label': true },
+        });
+
         if (this._slotContent) {
-            const labelEl = createElement('span', {
-                className: 'core-menu__item-label',
-                attrs: { 'data-core-menu-item-label': true },
-            });
             mountTrustedHtml(labelEl, this._slotContent);
-            btn.appendChild(labelEl);
-        } else if (!this.langDecl && this.getAttribute('label')) {
-            btn.textContent = this.getAttribute('label') || '';
+        } else if (!this.getAttribute('data-core-lang') && this.getAttribute('label')) {
+            labelEl.textContent = this.getAttribute('label') || '';
         }
 
+        btn.appendChild(labelEl);
         this.replaceChildren(btn);
     }
 

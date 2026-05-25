@@ -127,7 +127,7 @@ Apps can also define their own dark overrides on `.core-ux-root[data-core-theme=
 |------|-------------|
 | `core-button` | primary, surface, on-primary, error-hover, primary-subtle |
 | Form controls | surface, border, text, primary-ring, error-ring |
-| `core-alert` / `core-badge` | semantic *-muted, *-border, *-on-muted |
+| `core-alert` / `core-notif` / `core-badge` | semantic *-muted, *-border, *-on-muted |
 | `core-card`, layout | surface, surface-muted, border, shadow |
 | `core-modal`, `core-side-panel` | overlay, surface, shadow-lg |
 | `core-autocomplete`, `core-multi-select` | surface, info-muted, text-muted |

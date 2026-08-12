@@ -44,5 +44,5 @@ Built-in: `data-core-theme="dark"` on `.core-ux-root`. Apps may define their own
 | Wrong | Right |
 |-------|-------|
 | Patch `.core-button` rules in app CSS | Override `--core-*` on `.core-ux-root` |
-| Hardcode colours in MyJourney templates | Use kit components + tokens |
+| Hardcode colours in app templates | Use kit components + tokens |
 | Rebuild CORE_UX for one app brand | Runtime variable overrides |

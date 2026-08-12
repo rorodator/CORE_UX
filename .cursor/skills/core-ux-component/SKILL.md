@@ -7,9 +7,9 @@ description: Adds or modifies a CORE_UX core-* kit component. Use when creating 
 
 ## Before coding
 
-1. Confirm **presentation-only** — no `$svc('ajax')`, no app domain. See `ai-instructions/README.md`.
+1. Confirm **presentation-only** — no `$svc('ajax')`, no app domain. See `ai-instructions/README.md`, `ai-instructions/layering.md`.
 2. Read `.cursor/rules/core-ux-components.mdc` and `ai-instructions/components.md`.
-3. Lifecycle/bindings: `CORE_JS/.cursor/rules/core-js-components.mdc`.
+3. Lifecycle/bindings: `CORE_JS/.cursor/rules/core-js-components.mdc` when CORE_JS is in the workspace; otherwise `CORE_JS/ai-instructions/components.md`.
 
 ## Steps
 
@@ -31,7 +31,7 @@ description: Adds or modifies a CORE_UX core-* kit component. Use when creating 
 | Handlebars template | `ui_render()` pure DOM |
 | `gray-500`, hex in CSS | `--core-*` tokens |
 | Ship without doc page | Update `doc/components/` always |
-| Import from MyJourney | Forbidden — kit is generic |
+| Import from a consuming app | Forbidden — kit is generic |
 
 ## References
 
@@ -39,6 +39,6 @@ description: Adds or modifies a CORE_UX core-* kit component. Use when creating 
 - `ai-instructions/theming.md`
 - `doc/index.html`
 
-## App follow-up
+## App follow-up (outside this repo)
 
-If app templates use the new tag → add import in app's `core-ux-<app>.js` — see `ai-instructions/app-integration.md`.
+If app templates use the new tag → add import in the app's curated entry file — see `ai-instructions/app-integration.md`.

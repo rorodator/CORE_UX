@@ -1,6 +1,6 @@
 # App integration — CORE_UX
 
-How consuming apps (MyJourney, etc.) use the kit without importing the full barrel.
+How **consuming apps** use the kit without importing the full barrel. Works whether CORE_UX is symlinked or installed as a sibling dependency.
 
 ## Recommended pattern (subset imports)
 
@@ -27,13 +27,13 @@ import 'CORE_UX/components/core-modal/core-modal.js';
 import 'CORE_UX/index.js';  // barrel — loads ALL components + CSS as ES module
 ```
 
-Use `index.js` only for full-kit demos or rapid prototyping. Apps keep an explicit entry file (e.g. MyJourney `JS/core-ux-myjourney.js`) so webpack tree-shakes unused tags.
+Use `index.js` only for full-kit demos or rapid prototyping. Apps keep an explicit entry file (e.g. `core-ux-<appname>.js`) so webpack tree-shakes unused tags.
 
 ## When adding a `<core-*>` tag to an app template
 
-1. Add static import in the app's CORE_UX entry file (`core-ux-<app>.js`).
+1. Add static import in the app's CORE_UX entry file.
 2. Rebuild app webpack bundle.
-3. If the tag is **new in CORE_UX**, follow kit skill — doc page + sidebar required in CORE_UX repo.
+3. If the tag is **new in CORE_UX**, follow skill `core-ux-component` — doc page + sidebar required **in this repo**.
 
 ## CSS build
 
@@ -43,7 +43,7 @@ Kit styles change in **CORE_UX** only:
 cd CORE_UX && npm run build   # → dist/core-ux.css
 ```
 
-Apps typically run this in `prebuild` (MyJourney: `npm run build:core-ux` before webpack).
+Consuming apps typically run this in `prebuild`.
 
 ## Theming
 
@@ -51,14 +51,11 @@ Override `--core-*` on `.core-ux-root` — see [theming.md](./theming.md).
 
 ## Reference catalog
 
-- Browser doc + live demos: `CORE_UX/doc/index.html` (serve via HTTP, not `file://`).
+- Browser doc + live demos: `doc/index.html` (serve via HTTP, not `file://`).
 - Component conventions: [components.md](./components.md).
 
-## MyJourney example
+## Example (optional)
 
-| File | Role |
-|------|------|
-| `JS/core-ux-myjourney.js` | Curated `<core-*>` imports for this app |
-| `JS/index.js` | Imports `core-ux-myjourney.js` in bootstrap chain |
+Some apps keep a curated entry file next to their webpack sources, e.g. `JS/core-ux-myjourney.js` importing only the tags used in that product's templates. The exact path is **app-specific** — the pattern above is what matters.
 
-MyJourney bridge rule: `.cursor/rules/core-ux-app.mdc`.
+Consuming apps may also add a **bridge rule** in their own `.cursor/rules/` for import reminders; that lives in the app repo, not here.

@@ -2,7 +2,7 @@
 
 Guidance for AI-assisted work on the shared UI kit.
 
-**Cursor rules:** `.cursor/rules/core-ux-components.mdc`, `.cursor/rules/core-ux-theming.mdc`  
+**Cursor rules:** `.cursor/rules/core-ux-components.mdc`, `.cursor/rules/core-ux-theming.mdc`, `.cursor/rules/encapsulation.mdc`  
 **Workflow skill:** `.cursor/skills/core-ux-component/SKILL.md`
 
 ## Maintaining rules & skills
@@ -11,7 +11,7 @@ Add or update **`.cursor/rules/`**, **`ai-instructions/`**, and **`.cursor/skill
 
 - `<core-*>` components, kit CSS/tokens, theming, or doc pages under `doc/components/`.
 
-Do **not** put kit rules in MyJourney — apps keep `core-ux-app.mdc` (subset imports only). Cross-repo encapsulation: MyJourney `ai-instructions/layering.md`, `.cursor/rules/encapsulation.mdc`.
+Do **not** put kit rules in consuming apps — apps keep a thin bridge rule for subset imports. See [encapsulation.md](./encapsulation.md), [layering.md](./layering.md).
 
 ## Layering (mandatory)
 
@@ -19,15 +19,17 @@ CORE_UX is the **middle doll**: generic `<core-*>` presentation on top of **CORE
 
 | Put in CORE_UX | Put elsewhere |
 |----------------|---------------|
-| Reusable UI (`<core-button>`, `<core-tooltip>`, tokens, kit CSS) | **MyJourney** — feature UI, business logic, app services |
+| Reusable UI (`<core-button>`, `<core-tooltip>`, tokens, kit CSS) | **Consuming app** — feature UI, business logic, app services |
 | Pure DOM rendering, no `$svc('ajax')`, no domain rules | **CORE_JS** — base classes, utils, platform `$svc()` |
 
-**Never** import from MyJourney. **Never** add code that belongs in CORE_JS (promote primitives downward).
+**Never** import from a consuming app. **Never** add code that belongs in CORE_JS (promote primitives downward).
 
-Full nesting rules: MyJourney `ai-instructions/layering.md`.
+Full nesting rules: [layering.md](./layering.md).
 
 | File | Topic |
 |------|--------|
+| [encapsulation.md](./encapsulation.md) | Repo boundaries, dual context |
+| [layering.md](./layering.md) | Stack placement (standalone-safe) |
 | [components.md](./components.md) | `<core-*>` conventions, doc maintenance |
 | [theming.md](./theming.md) | `--core-*` tokens, app overrides |
 | [app-integration.md](./app-integration.md) | Subset imports, CSS, app entry pattern |

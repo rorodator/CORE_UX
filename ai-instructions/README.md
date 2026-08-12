@@ -2,6 +2,17 @@
 
 Guidance for AI-assisted work on the shared UI kit.
 
+**Cursor rules:** `.cursor/rules/core-ux-components.mdc`, `.cursor/rules/core-ux-theming.mdc`  
+**Workflow skill:** `.cursor/skills/core-ux-component/SKILL.md`
+
+## Maintaining rules & skills
+
+Add or update **`.cursor/rules/`**, **`ai-instructions/`**, and **`.cursor/skills/`** in **this repo** when the change is:
+
+- `<core-*>` components, kit CSS/tokens, theming, or doc pages under `doc/components/`.
+
+Do **not** put kit rules in MyJourney — apps keep `core-ux-app.mdc` (subset imports only). Cross-repo encapsulation: MyJourney `ai-instructions/layering.md`, `.cursor/rules/encapsulation.mdc`.
+
 ## Layering (mandatory)
 
 CORE_UX is the **middle doll**: generic `<core-*>` presentation on top of **CORE_JS** only.
@@ -13,12 +24,15 @@ CORE_UX is the **middle doll**: generic `<core-*>` presentation on top of **CORE
 
 **Never** import from MyJourney. **Never** add code that belongs in CORE_JS (promote primitives downward).
 
-Full rules: MyJourney `ai-instructions/layering.md`.
+Full nesting rules: MyJourney `ai-instructions/layering.md`.
 
 | File | Topic |
 |------|--------|
-| [components.md](./components.md) | Component conventions, doc maintenance |
-| [../THEMING.md](../THEMING.md) | Runtime `--core-*` CSS variables (public API) |
+| [components.md](./components.md) | `<core-*>` conventions, doc maintenance |
+| [theming.md](./theming.md) | `--core-*` tokens, app overrides |
+| [app-integration.md](./app-integration.md) | Subset imports, CSS, app entry pattern |
+| [../THEMING.md](../THEMING.md) | Human-readable theming reference |
+| [../COMPONENTS.md](../COMPONENTS.md) | Short component index |
 
 ## HTML reference
 

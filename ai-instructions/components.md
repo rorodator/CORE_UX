@@ -1,11 +1,14 @@
 # CORE_UX components
 
+Cursor rule: `.cursor/rules/core-ux-components.mdc`. Skill: `.cursor/skills/core-ux-component/SKILL.md`.
+
 ## Role
 
 - Reusable presentation layer: `<core-*>` custom elements + prebuilt CSS.
 - No business logic, no `$svc('ajax')` in CORE_UX.
 - Renders with `ui_render()` (pure DOM) — no Handlebars in this repo.
 - Extends `Core_HTMLElement` from CORE_JS via `Core_UXElement`.
+- Lifecycle/bindings: `CORE_JS/ai-instructions/components.md`.
 
 ## Base classes
 
@@ -24,7 +27,7 @@
 3. Call `registerCoreComponent('core-<name>', Class)` at module bottom.
 4. Import in `index.js` (barrel) if part of the full kit.
 5. Add Tailwind/classes in `styles/core-ux.css`; run `npm run build`.
-   - Use only `core-*` token utilities — no raw `gray-*`, hex, or Tailwind palette colours (see [THEMING.md](../THEMING.md)).
+   - Use only `core-*` token utilities — no raw `gray-*`, hex, or Tailwind palette colours (see [theming.md](./theming.md)).
 6. **Update documentation** (same change set):
    - `doc/components/core-<name>.html` — attributes, events, API, **live demos**
    - `doc/assets/sidebar.js` — if adding/removing a tag from the catalog
@@ -42,24 +45,20 @@
 | New/changed attribute | Attribute table + demo on component page |
 | New/changed event or public method | Events/API section + demo if applicable |
 | Slot or footer pattern change | Architecture page and affected component pages |
-| New/changed design token | `styles/tokens.css`, `tailwind.preset.js`, [THEMING.md](../THEMING.md), `doc/theming.html` |
+| New/changed design token | `styles/tokens.css`, `tailwind.preset.js`, [theming.md](./theming.md), `doc/theming.html` |
 
 Structure: **`CORE_UX/doc/`** — one page per component with doc + live demos (English). Do not ship component changes without syncing the doc.
 
 ## Theming (mandatory for styles)
 
-- All kit colours/shadows/radius → semantic `--core-*` variables in `styles/tokens.css`.
-- `tailwind.preset.js` maps utilities to `var(--core-…)` — never hardcoded hex in preset.
-- `styles/core-ux.css` uses `@apply` with `core-*` utilities only.
-- Document new tokens in [THEMING.md](../THEMING.md) and [doc/theming.html](../doc/theming.html).
-- Apps theme by overriding variables on `.core-ux-root` — they must not patch `.core-*` rules.
+See [theming.md](./theming.md) and `.cursor/rules/core-ux-theming.mdc`.
 
 ## Conventions
 
 - Tag names: `core-<name>` (kebab-case).
 - Boolean attrs: present and not `"false"` → true (`hasBoolAttr`).
 - JSON attrs: `parseJsonAttr` with safe fallback.
-- Register via `registerCoreComponent`; apps may import subsets (e.g. `core-ux-myjourney.js`).
+- Register via `registerCoreComponent`; apps import subsets — see [app-integration.md](./app-integration.md).
 
 ## DOM helpers (CORE_JS)
 
@@ -81,3 +80,4 @@ Slot components (`Core_UXSlotElement`, card/modal/side-panel) capture template l
 - Form controls mirror `data-core-lang` to inner controls when needed.
 - `core-menu-item`: classic `data-core-lang` on the host; patches `"child": "[data-core-menu-item-label]"` before render.
 - Autocomplete supports `*-container` / `*-key` pairs resolved via `$svc('lang')` when available.
+- Client i18n mechanics: `CORE_JS/ai-instructions/internationalization.md`.

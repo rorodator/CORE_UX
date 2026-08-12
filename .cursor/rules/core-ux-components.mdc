@@ -1,0 +1,40 @@
+---
+description: CORE_UX kit components — core-* tags, base classes, doc maintenance, presentation-only
+globs: CORE_UX/**/*.js
+alwaysApply: false
+---
+
+# CORE_UX — components
+
+Generic `<core-*>` presentation on **CORE_JS** only. Details: `ai-instructions/components.md`, `ai-instructions/README.md`.
+
+## Role (mandatory)
+
+- Reusable UI kit — **no business logic**, **no `$svc('ajax')`**, no app routes/entities.
+- Renders with **`ui_render()`** (pure DOM) — **no Handlebars** in this repo.
+- Lifecycle/bindings: follow `CORE_JS/.cursor/rules/core-js-components.mdc` (`Core_HTMLElement` base).
+
+## Base classes
+
+| Class | Use |
+|-------|-----|
+| `Core_UXElement` | Default base |
+| `Core_UXSlotElement` | Preserves light-DOM children (modal, card, …) |
+| `Core_UXFormControl` | Labelled inputs |
+
+## Conventions
+
+- Tag names: `core-<name>` (kebab-case).
+- Register: `registerCoreComponent('core-<name>', Class)` at module bottom.
+- Events: `bindDelegated()` / `bindUI()` — never manual `addEventListener` in `ui_toFunctional`.
+- Boolean attrs: `hasBoolAttr`; JSON attrs: `parseJsonAttr`.
+- DOM: `createElement({ text })` for user/API strings; `trustedHtml` / `mountTrustedHtml` for author markup only.
+
+## Styles & doc (same change set)
+
+- Tailwind in `styles/core-ux.css` — **core-* token utilities only** — see `core-ux-theming.mdc`.
+- **Mandatory:** update `doc/components/core-<name>.html` + `doc/assets/sidebar.js` when adding/changing tags.
+
+## App consumption
+
+Apps import subsets — not `index.js` barrel. See `ai-instructions/app-integration.md`.

@@ -1,0 +1,26 @@
+---
+description: CORE_UX theming — semantic --core-* tokens, Tailwind preset, no hardcoded palette
+globs: CORE_UX/styles/**,CORE_UX/tailwind.preset.js,CORE_UX/**/*.css
+alwaysApply: false
+---
+
+# CORE_UX — theming
+
+Token-first kit. Details: `ai-instructions/theming.md`, `THEMING.md`, `doc/theming.html`.
+
+## Rules
+
+- All colours/shadows/radius → semantic **`--core-*`** variables in `styles/tokens.css`.
+- `tailwind.preset.js` maps utilities to `var(--core-…)` — **no hardcoded hex** in preset.
+- `styles/core-ux.css` uses `@apply` with **`core-*` utilities only** — no raw `gray-*`, `blue-*`, palette colours.
+- New/changed tokens → update `THEMING.md`, `doc/theming.html`, and affected component doc pages.
+
+## App theming (consuming apps)
+
+- Scope overrides on **`.core-ux-root`** — load app theme **after** `dist/core-ux.css`.
+- Override **`--core-*` variables**, not `.core-*` class rules.
+- Apps must **not** patch kit CSS or rebuild CORE_UX for brand colours.
+
+## Build
+
+`npm run build` in CORE_UX → `dist/core-ux.css`. Apps run this via their own `prebuild` when kit styles change.

@@ -1,6 +1,6 @@
 ---
 description: CORE_UX theming — semantic --core-* tokens, Tailwind preset, no hardcoded palette
-globs: CORE_UX/styles/**,CORE_UX/tailwind.preset.js,CORE_UX/**/*.css
+globs: styles/**,tailwind.preset.js,**/*.css
 alwaysApply: false
 ---
 

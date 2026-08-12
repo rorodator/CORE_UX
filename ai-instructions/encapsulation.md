@@ -28,7 +28,7 @@ When you add or change a **kit pattern** (component, token, theming):
 
 ## Dual context
 
-All paths in CORE_UX docs are **relative to this repository root**. They work standalone or symlinked (`CORE_UX/` in an app workspace).
+All paths in CORE_UX docs are **relative to this repository root**. Rules use **repo-relative globs** (`**/*.js`, `styles/**`, …). Kit lifecycle minimum is documented locally; CORE_JS docs are an optional deep dive.
 
 CORE docs must **never require** an app file. App-specific import lists and bridge rules live in the **consuming app** — see [app-integration.md](./app-integration.md) for the generic pattern (with optional examples).
 

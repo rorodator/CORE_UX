@@ -8,7 +8,8 @@ Cursor rule: `.cursor/rules/core-ux-components.mdc`. Skill: `.cursor/skills/core
 - No business logic, no `$svc('ajax')` in CORE_UX.
 - Renders with `ui_render()` (pure DOM) — no Handlebars in this repo.
 - Extends `Core_HTMLElement` from CORE_JS via `Core_UXElement`.
-- Lifecycle/bindings: `CORE_JS/ai-instructions/components.md`.
+- Lifecycle/bindings (daily minimum): see rule `core-ux-components.mdc` — `onConnect` → `render` → `bindDelegated`/`bindUI`.
+- Optional deep dive: `CORE_JS/ai-instructions/components.md` when the sibling repo is in the workspace.
 
 ## Base classes
 
@@ -80,4 +81,4 @@ Slot components (`Core_UXSlotElement`, card/modal/side-panel) capture template l
 - Form controls mirror `data-core-lang` to inner controls when needed.
 - `core-menu-item`: classic `data-core-lang` on the host; patches `"child": "[data-core-menu-item-label]"` before render.
 - Autocomplete supports `*-container` / `*-key` pairs resolved via `$svc('lang')` when available.
-- Client i18n mechanics: `CORE_JS/ai-instructions/internationalization.md`.
+- Client i18n mechanics: see `data-core-lang` usage above; optional `CORE_JS/ai-instructions/internationalization.md` for full `$svc('lang')` API.

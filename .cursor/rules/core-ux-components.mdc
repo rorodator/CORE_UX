@@ -1,18 +1,26 @@
 ---
 description: CORE_UX kit components — core-* tags, base classes, doc maintenance, presentation-only
-globs: CORE_UX/**/*.js
+globs: **/*.js
 alwaysApply: false
 ---
 
 # CORE_UX — components
 
-Generic `<core-*>` presentation on **CORE_JS** only. Details: `ai-instructions/components.md`, `ai-instructions/README.md`.
+Generic `<core-*>` presentation on **CORE_JS** (`Core_HTMLElement`). Details: `ai-instructions/components.md`.
 
 ## Role (mandatory)
 
 - Reusable UI kit — **no business logic**, **no `$svc('ajax')`**, no app routes/entities.
 - Renders with **`ui_render()`** (pure DOM) — **no Handlebars** in this repo.
-- Lifecycle/bindings: follow `CORE_JS/.cursor/rules/core-js-components.mdc` (`Core_HTMLElement` base).
+
+## Lifecycle (Core_HTMLElement — daily minimum)
+
+1. **`onConnect()`** — `addSub()` for long-lived streams, then `this.render()`.
+2. **`render()`** — `cleanFunctional()` → `ui_render()` → `$svc('lang').process(this)` if lang active → `ui_toFunctional()`.
+3. **`ui_toFunctional()`** — `bindDelegated()` / `bindUI()` only; never manual `addEventListener`.
+4. **`cleanFunctional()` override** — call `super.cleanFunctional()` first.
+
+Optional deep dive (sibling repo): `CORE_JS/ai-instructions/components.md`.
 
 ## Base classes
 
@@ -26,7 +34,6 @@ Generic `<core-*>` presentation on **CORE_JS** only. Details: `ai-instructions/c
 
 - Tag names: `core-<name>` (kebab-case).
 - Register: `registerCoreComponent('core-<name>', Class)` at module bottom.
-- Events: `bindDelegated()` / `bindUI()` — never manual `addEventListener` in `ui_toFunctional`.
 - Boolean attrs: `hasBoolAttr`; JSON attrs: `parseJsonAttr`.
 - DOM: `createElement({ text })` for user/API strings; `trustedHtml` / `mountTrustedHtml` for author markup only.
 

@@ -8,8 +8,7 @@ description: Adds or modifies a CORE_UX core-* kit component. Use when creating 
 ## Before coding
 
 1. Confirm **presentation-only** — no `$svc('ajax')`, no app domain. See `ai-instructions/README.md`, `ai-instructions/layering.md`.
-2. Read `.cursor/rules/core-ux-components.mdc` and `ai-instructions/components.md`.
-3. Lifecycle/bindings: `CORE_JS/.cursor/rules/core-js-components.mdc` when CORE_JS is in the workspace; otherwise `CORE_JS/ai-instructions/components.md`.
+2. Read `.cursor/rules/core-ux-components.mdc` and `ai-instructions/components.md` (includes Core_HTMLElement lifecycle minimum).
 
 ## Steps
 
@@ -38,6 +37,10 @@ description: Adds or modifies a CORE_UX core-* kit component. Use when creating 
 - `ai-instructions/components.md`
 - `ai-instructions/theming.md`
 - `doc/index.html`
+
+## Optional (sibling CORE_JS repo)
+
+Full platform lifecycle: `CORE_JS/ai-instructions/components.md`.
 
 ## App follow-up (outside this repo)
 

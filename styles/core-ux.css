@@ -678,12 +678,44 @@
     @apply gap-4;
   }
 
+  .core-stack--gap-5 {
+    @apply gap-5;
+  }
+
   .core-stack--gap-6 {
     @apply gap-6;
   }
 
+  .core-stack--gap-8 {
+    @apply gap-8;
+  }
+
+  .core-stack--align-start {
+    @apply items-start;
+  }
+
   .core-stack--align-center {
     @apply items-center;
+  }
+
+  .core-stack--align-end {
+    @apply items-end;
+  }
+
+  .core-stack--align-stretch {
+    @apply items-stretch;
+  }
+
+  .core-stack--justify-start {
+    @apply justify-start;
+  }
+
+  .core-stack--justify-center {
+    @apply justify-center;
+  }
+
+  .core-stack--justify-end {
+    @apply justify-end;
   }
 
   .core-stack--justify-between {

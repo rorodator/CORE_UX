@@ -29,6 +29,7 @@
             <thead><tr><th>Attribute</th><th>Default</th><th>Description</th></tr></thead>
             <tbody>
                 <tr><td><code>rows</code></td><td>4</td><td>Visible row count.</td></tr>
+                <tr><td><code>maxlength</code></td><td>—</td><td>Maximum number of characters when set to a positive integer.</td></tr>
                 <tr><td colspan="3"><em>Plus shared form attributes.</em></td></tr>
             </tbody>
         </table>
@@ -47,9 +48,9 @@
             <h3>Custom rows</h3>
             <div class="demo">
                 <div class="demo__preview">
-                    <core-textarea label="Short note" rows="2" name="note" placeholder="Brief comment"></core-textarea>
+                    <core-textarea label="Short note" rows="2" maxlength="140" name="note" placeholder="Brief comment"></core-textarea>
                 </div>
-                <pre class="demo__code"><code>&lt;core-textarea label="Short note" rows="2"&gt;&lt;/core-textarea&gt;</code></pre>
+                <pre class="demo__code"><code>&lt;core-textarea label="Short note" rows="2" maxlength="140"&gt;&lt;/core-textarea&gt;</code></pre>
             </div>
         </section>
 

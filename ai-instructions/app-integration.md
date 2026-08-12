@@ -21,6 +21,8 @@ import 'CORE_UX/components/core-modal/core-modal.js';
 
 4. Optional app theme CSS loaded after kit CSS — see [theming.md](./theming.md).
 
+5. Compose global chrome once in the app shell (header, overlays, notification host, skip link). Routed pages own only page content and page actions.
+
 ## Do not use in production apps
 
 ```javascript
@@ -53,6 +55,7 @@ Override `--core-*` on `.core-ux-root` — see [theming.md](./theming.md).
 
 - Browser doc + live demos: `doc/index.html` (serve via HTTP, not `file://`).
 - Component conventions: [components.md](./components.md).
+- Composition, state, and accessibility baseline: [ux-quality.md](./ux-quality.md).
 
 ## Example (optional)
 

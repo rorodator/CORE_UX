@@ -8,7 +8,7 @@ description: Adds or modifies a CORE_UX core-* kit component. Use when creating 
 ## Before coding
 
 1. Confirm **presentation-only** — no `$svc('ajax')`, no app domain. See `ai-instructions/README.md`, `ai-instructions/layering.md`.
-2. Read `.cursor/rules/core-ux-components.mdc` and `ai-instructions/components.md` (includes Core_HTMLElement lifecycle minimum).
+2. Read `.cursor/rules/core-ux-components.mdc`, `ai-instructions/components.md`, and `ai-instructions/ux-quality.md`.
 
 ## Steps
 
@@ -21,6 +21,7 @@ description: Adds or modifies a CORE_UX core-* kit component. Use when creating 
    - `doc/components/core-<name>.html` — attributes, events, live demos
    - `doc/assets/sidebar.js` if catalog changes
 7. `npm run build` if styles changed.
+8. Verify keyboard behavior, accessible names, focus visibility, narrow layout, reduced motion, and every exposed state.
 
 ## Anti-patterns
 
@@ -31,6 +32,7 @@ description: Adds or modifies a CORE_UX core-* kit component. Use when creating 
 | `gray-500`, hex in CSS | `--core-*` tokens |
 | Ship without doc page | Update `doc/components/` always |
 | Import from a consuming app | Forbidden — kit is generic |
+| Undocumented attribute value used by an app | Add implementation + styles + docs + demo, or use a documented value |
 
 ## References
 

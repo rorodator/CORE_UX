@@ -23,7 +23,7 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 | Tag | Notes |
 |-----|--------|
 | `<core-field>` | `type` text \| email \| password \| number \| tel \| url \| search; `label`, `hint`, `error` |
-| `<core-textarea>` | `rows`, `label`, `hint`, `error` |
+| `<core-textarea>` | `rows`, `maxlength`, `label`, `hint`, `error` |
 | `<core-select>` | `options` JSON `[{ "value", "label", "selected"? }]` |
 | `<core-checkbox>` | `label`, `checked`, `value` |
 | `<core-radio-group>` | `name`, `options` JSON, `layout` stack \| inline |
@@ -47,7 +47,7 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 | Tag | Notes |
 |-----|--------|
 | `<core-container>` | `size` sm \| md \| lg \| xl \| fluid — wraps light DOM |
-| `<core-stack>` | `direction` col \| row; `gap` 1–6; `align` center; `justify` between |
+| `<core-stack>` | `direction` col \| row; `gap` 1 \| 2 \| 3 \| 4 \| 5 \| 6 \| 8; `align` start \| center \| end \| stretch; `justify` start \| center \| end \| between |
 | `<core-grid>` | `cols` 1 \| 2 \| 3 \| 4 \| auto |
 | `<core-divider>` | optional `label` |
 | `<core-card>` | `title`, `subtitle`; body = children; footer = child with `data-core-footer` |

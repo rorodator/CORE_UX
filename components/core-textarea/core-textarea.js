@@ -10,7 +10,7 @@ export class CoreTextarea extends Core_UXFormControl {
     static get observedAttributes() {
         return [
             'label', 'hint', 'error', 'name', 'value', 'placeholder',
-            'input-id', 'rows', 'required', 'disabled'
+            'input-id', 'rows', 'maxlength', 'required', 'disabled'
         ];
     }
 
@@ -42,7 +42,12 @@ export class CoreTextarea extends Core_UXFormControl {
     }
 
     ui_toFunctional() {
-        this.wireControl(this.querySelector('textarea'));
+        const control = this.querySelector('textarea');
+        this.wireControl(control);
+        const maxLength = parseInt(this.getAttribute('maxlength') || '', 10);
+        if (control && Number.isFinite(maxLength) && maxLength > 0) {
+            control.maxLength = maxLength;
+        }
     }
 }
 

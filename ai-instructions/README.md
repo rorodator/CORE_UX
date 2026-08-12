@@ -31,6 +31,7 @@ Full nesting rules: [layering.md](./layering.md).
 | [encapsulation.md](./encapsulation.md) | Repo boundaries, dual context |
 | [layering.md](./layering.md) | Stack placement (standalone-safe) |
 | [components.md](./components.md) | `<core-*>` conventions, doc maintenance |
+| [ux-quality.md](./ux-quality.md) | Semantic composition, shared shell, complete states, accessibility |
 | [theming.md](./theming.md) | `--core-*` tokens, app overrides |
 | [app-integration.md](./app-integration.md) | Subset imports, CSS, app entry pattern |
 | [../THEMING.md](../THEMING.md) | Human-readable theming reference |

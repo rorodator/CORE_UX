@@ -37,6 +37,14 @@ Optional deep dive (sibling repo): `CORE_JS/ai-instructions/components.md`.
 - Boolean attrs: `hasBoolAttr`; JSON attrs: `parseJsonAttr`.
 - DOM: `createElement({ text })` for user/API strings; `trustedHtml` / `mountTrustedHtml` for author markup only.
 
+## UX contract
+
+- Component APIs are semantic: expose and document labels, hints, errors, states, keyboard behavior, and accessible names where relevant.
+- Supported attribute values are explicit and documented; do not rely on silent fallback as an app convention.
+- Every interactive component must work by keyboard, retain visible focus, and avoid color-only meaning.
+- Generic layout or state patterns belong here only when reusable unchanged; product hierarchy and wording stay in the app.
+- Composition/state guidance: `ai-instructions/ux-quality.md`.
+
 ## Styles & doc (same change set)
 
 - Tailwind in `styles/core-ux.css` — **core-* token utilities only** — see `core-ux-theming.mdc`.

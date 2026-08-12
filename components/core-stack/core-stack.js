@@ -18,11 +18,15 @@ export class CoreStack extends Core_UXSlotElement {
     ui_render() {
         const direction = this.getAttribute('direction') === 'row' ? 'row' : 'col';
         const gap = this.getAttribute('gap') || '4';
-        const allowedGaps = ['1', '2', '3', '4', '6'];
+        const allowedGaps = ['1', '2', '3', '4', '5', '6', '8'];
         const gapClass = `core-stack--gap-${allowedGaps.includes(gap) ? gap : '4'}`;
-        const alignClass = this.getAttribute('align') === 'center' ? 'core-stack--align-center' : '';
-        const justifyClass = this.getAttribute('justify') === 'between'
-            ? 'core-stack--justify-between'
+        const align = this.getAttribute('align');
+        const allowedAlignments = ['start', 'center', 'end', 'stretch'];
+        const alignClass = allowedAlignments.includes(align) ? `core-stack--align-${align}` : '';
+        const justify = this.getAttribute('justify');
+        const allowedJustifications = ['start', 'center', 'end', 'between'];
+        const justifyClass = allowedJustifications.includes(justify)
+            ? `core-stack--justify-${justify}`
             : '';
 
         const stack = createElement('div', {

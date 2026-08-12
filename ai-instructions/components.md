@@ -34,6 +34,7 @@ Cursor rule: `.cursor/rules/core-ux-components.mdc`. Skill: `.cursor/skills/core
    - `doc/assets/sidebar.js` — if adding/removing a tag from the catalog
    - Optionally `COMPONENTS.md` (short index)
 7. Run `npm run build` if styles changed.
+8. Review semantics, keyboard behavior, accessible names, focus, responsive behavior, and documented states against [ux-quality.md](./ux-quality.md).
 
 ## Documentation maintenance (mandatory)
 
@@ -60,6 +61,7 @@ See [theming.md](./theming.md) and `.cursor/rules/core-ux-theming.mdc`.
 - Boolean attrs: present and not `"false"` → true (`hasBoolAttr`).
 - JSON attrs: `parseJsonAttr` with safe fallback.
 - Register via `registerCoreComponent`; apps import subsets — see [app-integration.md](./app-integration.md).
+- Keep supported attribute values explicit. Update implementation, styles, the attribute table, and a live demo together.
 
 ## DOM helpers (CORE_JS)
 

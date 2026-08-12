@@ -29,9 +29,9 @@
             <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
             <tbody>
                 <tr><td><code>direction</code></td><td>col · row</td><td>Flex direction (default: col).</td></tr>
-                <tr><td><code>gap</code></td><td>1 · 2 · 3 · 4 · 6</td><td>Spacing scale (default: 4).</td></tr>
-                <tr><td><code>align</code></td><td>center</td><td>Cross-axis alignment when set.</td></tr>
-                <tr><td><code>justify</code></td><td>between</td><td>Main-axis justification when set.</td></tr>
+                <tr><td><code>gap</code></td><td>1 · 2 · 3 · 4 · 5 · 6 · 8</td><td>Spacing scale (default: 4).</td></tr>
+                <tr><td><code>align</code></td><td>start · center · end · stretch</td><td>Cross-axis alignment when set.</td></tr>
+                <tr><td><code>justify</code></td><td>start · center · end · between</td><td>Main-axis justification when set.</td></tr>
             </tbody>
         </table>
 
@@ -48,6 +48,22 @@
                 <pre class="demo__code"><code>&lt;core-stack gap="3"&gt;
   &lt;core-badge variant="primary" label="Step 1"&gt;&lt;/core-badge&gt;
   …
+&lt;/core-stack&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>End-aligned actions</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-stack direction="row" gap="3" justify="end">
+                        <core-button variant="ghost" label="Cancel"></core-button>
+                        <core-button variant="primary" label="Save"></core-button>
+                    </core-stack>
+                </div>
+                <pre class="demo__code"><code>&lt;core-stack direction="row" gap="3" justify="end"&gt;
+  &lt;core-button variant="ghost" label="Cancel"&gt;&lt;/core-button&gt;
+  &lt;core-button variant="primary" label="Save"&gt;&lt;/core-button&gt;
 &lt;/core-stack&gt;</code></pre>
             </div>
         </section>

@@ -28,7 +28,9 @@
         <table>
             <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
             <tbody>
-                <tr><td><code>type</code></td><td>text · email · password · number · tel · url · search</td><td>Input type (default: text).</td></tr>
+                <tr><td><code>type</code></td><td>text · email · password · number · date · tel · url · search</td><td>Native input type (default: text). Date uses the browser calendar UI.</td></tr>
+                <tr><td><code>min</code> / <code>max</code></td><td>Valid input values</td><td>Forwarded to number and date inputs.</td></tr>
+                <tr><td><code>step</code></td><td>Number or <code>any</code></td><td>Forwarded to number and date inputs.</td></tr>
                 <tr><td colspan="3"><em>Plus shared form attributes.</em></td></tr>
             </tbody>
         </table>
@@ -48,15 +50,17 @@
         </section>
 
         <section class="demo-section">
-            <h3>Number, tel, url, search</h3>
+            <h3>Number, date, tel, url, search</h3>
             <div class="demo">
                 <div class="demo__preview demo__preview--stacked">
                     <core-field label="Age" type="number" name="age" value="30"></core-field>
+                    <core-field label="Date" type="date" name="date" min="2026-01-01" max="2026-12-31"></core-field>
                     <core-field label="Phone" type="tel" name="phone" placeholder="+33 6 12 34 56 78"></core-field>
                     <core-field label="Website" type="url" name="site" placeholder="https://"></core-field>
                     <core-field label="Search" type="search" name="q" placeholder="Filter…"></core-field>
                 </div>
                 <pre class="demo__code"><code>&lt;core-field label="Age" type="number" value="30"&gt;&lt;/core-field&gt;
+&lt;core-field label="Date" type="date" min="2026-01-01" max="2026-12-31"&gt;&lt;/core-field&gt;
 &lt;core-field label="Phone" type="tel"&gt;&lt;/core-field&gt;
 &lt;core-field label="Website" type="url"&gt;&lt;/core-field&gt;
 &lt;core-field label="Search" type="search"&gt;&lt;/core-field&gt;</code></pre>

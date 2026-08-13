@@ -22,7 +22,7 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 
 | Tag | Notes |
 |-----|--------|
-| `<core-field>` | `type` text \| email \| password \| number \| tel \| url \| search; `label`, `hint`, `error` |
+| `<core-field>` | `type` text \| email \| password \| number \| date \| tel \| url \| search; `min`, `max`, `step`, `label`, `hint`, `error` |
 | `<core-textarea>` | `rows`, `maxlength`, `label`, `hint`, `error` |
 | `<core-select>` | `options` JSON `[{ "value", "label", "selected"? }]` |
 | `<core-checkbox>` | `label`, `checked`, `value` |

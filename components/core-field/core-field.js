@@ -3,14 +3,14 @@ import { createElement } from 'CORE_JS/lib/utils/dom.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
- * Text field — types: text | email | password | number | tel | url | search.
+ * Single-line field — types: text | email | password | number | date | tel | url | search.
  */
 export class CoreField extends Core_UXFormControl {
 
     static get observedAttributes() {
         return [
             'label', 'hint', 'error', 'name', 'value', 'placeholder',
-            'input-id', 'type', 'required', 'disabled'
+            'input-id', 'type', 'required', 'disabled', 'min', 'max', 'step'
         ];
     }
 
@@ -26,7 +26,7 @@ export class CoreField extends Core_UXFormControl {
 
     get inputType() {
         const type = this.getAttribute('type') || 'text';
-        const allowed = ['text', 'email', 'password', 'number', 'tel', 'url', 'search'];
+        const allowed = ['text', 'email', 'password', 'number', 'date', 'tel', 'url', 'search'];
         return allowed.includes(type) ? type : 'text';
     }
 
@@ -43,7 +43,16 @@ export class CoreField extends Core_UXFormControl {
     }
 
     ui_toFunctional() {
-        this.wireControl(this.querySelector('input'));
+        const input = this.querySelector('input');
+        this.wireControl(input);
+        if (!input) {
+            return;
+        }
+        for (const attribute of ['min', 'max', 'step']) {
+            if (this.hasAttribute(attribute)) {
+                input.setAttribute(attribute, this.getAttribute(attribute) || '');
+            }
+        }
     }
 }
 

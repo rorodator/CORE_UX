@@ -60,6 +60,26 @@
     height: 2rem;
   }
 
+  @media (pointer: coarse) {
+    .core-btn--icon-only {
+      min-height: 2.5rem;
+      min-width: 2.5rem;
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    .core-btn--icon-only.core-btn--sm {
+      min-height: 2.25rem;
+      min-width: 2.25rem;
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+  }
+
+  .core-btn--icon-only.core-btn--invalid {
+    @apply pointer-events-none opacity-40;
+  }
+
   .core-btn--icon-only.core-btn--ghost.core-btn--icon-danger {
     @apply text-core-text-muted hover:bg-core-error-muted hover:text-core-error-on-muted;
   }

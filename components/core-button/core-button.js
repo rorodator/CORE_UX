@@ -68,8 +68,22 @@ export class CoreButton extends Core_UXElement {
     }
 
     ui_render() {
+        if (this.iconOnly && !this.label.trim()) {
+            if (!this._missingIconLabelWarned) {
+                console.warn(
+                    '[core-button] icon-only requires a non-empty label attribute for an accessible name.'
+                );
+                this._missingIconLabelWarned = true;
+            }
+            this.replaceChildren(createElement('span', {
+                className: 'core-btn core-btn--icon-only core-btn--invalid',
+                attrs: { 'aria-hidden': 'true' },
+            }));
+            return;
+        }
+
         const button = this._buildButton();
-        if (this.iconOnly && this.label.trim()) {
+        if (this.iconOnly) {
             const tooltip = createElement('core-tooltip', {
                 attrs: {
                     text: this.label,

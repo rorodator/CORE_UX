@@ -1,7 +1,15 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import '../components/core-icon/core-icon.js';
 import '../components/core-button/core-button.js';
+
+const stylesPath = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../styles/core-ux.css'
+);
 
 /**
  * @param {string} html
@@ -32,6 +40,34 @@ test('core-button icon-only requires label for tooltip wiring', async () => {
     assert.ok(buttonHost?.querySelector('core-tooltip'));
 });
 
+test('core-button icon-only without label renders no interactive control', async () => {
+    const warnings = [];
+    const originalWarn = console.warn;
+    console.warn = (...args) => {
+        warnings.push(args.join(' '));
+    };
+    try {
+        const buttonHost = mount(
+            '<core-button variant="ghost" icon="edit" icon-only></core-button>'
+        );
+        await customElements.whenDefined('core-button');
+        assert.equal(buttonHost?.querySelector('button'), null);
+        assert.ok(buttonHost?.querySelector('.core-btn--invalid'));
+        assert.ok(warnings.some((message) => message.includes('icon-only requires')));
+    } finally {
+        console.warn = originalWarn;
+    }
+});
+
+test('core-button icon-only with empty label renders no interactive control', async () => {
+    const buttonHost = mount(
+        '<core-button variant="ghost" icon="edit" icon-only label="   "></core-button>'
+    );
+    await customElements.whenDefined('core-button');
+    assert.equal(buttonHost?.querySelector('button'), null);
+    assert.ok(buttonHost?.querySelector('.core-btn--invalid'));
+});
+
 test('core-button disabled state is forwarded', async () => {
     const buttonHost = mount(
         '<core-button variant="ghost" icon="delete" icon-only icon-danger disabled label="Remove item"></core-button>'
@@ -39,4 +75,11 @@ test('core-button disabled state is forwarded', async () => {
     await customElements.whenDefined('core-button');
     const button = buttonHost?.querySelector('button');
     assert.ok(button?.hasAttribute('disabled'));
+});
+
+test('icon-only styles enlarge coarse-pointer touch targets', () => {
+    const css = fs.readFileSync(stylesPath, 'utf8');
+    assert.match(css, /@media\s*\(\s*pointer:\s*coarse\s*\)/);
+    assert.match(css, /\.core-btn--icon-only[\s\S]*min-height:\s*2\.5rem/);
+    assert.match(css, /\.core-btn--icon-only\.core-btn--sm[\s\S]*min-height:\s*2\.25rem/);
 });

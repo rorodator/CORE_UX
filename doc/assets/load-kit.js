@@ -2,6 +2,7 @@
  * Registers all CORE_UX custom elements for doc demos.
  * CSS is linked in HTML — do not import index.js (it pulls CSS as a module).
  */
+import '../../components/core-icon/core-icon.js';
 import '../../components/core-button/core-button.js';
 import '../../components/core-field/core-field.js';
 import '../../components/core-textarea/core-textarea.js';

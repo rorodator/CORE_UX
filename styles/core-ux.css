@@ -45,6 +45,33 @@
     @apply bg-core-error text-core-on-primary hover:bg-core-error-hover;
   }
 
+  .core-btn--icon-only {
+    @apply inline-flex shrink-0 items-center justify-center p-0;
+    min-height: 2.25rem;
+    min-width: 2.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .core-btn--icon-only.core-btn--sm {
+    min-height: 2rem;
+    min-width: 2rem;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .core-btn--icon-only.core-btn--ghost.core-btn--icon-danger {
+    @apply text-core-text-muted hover:bg-core-error-muted hover:text-core-error-on-muted;
+  }
+
+  .core-icon {
+    @apply inline-flex shrink-0 items-center justify-center text-current;
+  }
+
+  .core-icon svg {
+    @apply block;
+  }
+
   /* —— Form —— */
   .core-field {
     @apply flex w-full flex-col gap-1.5 font-core;

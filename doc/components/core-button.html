@@ -26,7 +26,10 @@
                 <tr><td><code>variant</code></td><td>primary · secondary · ghost · danger</td><td>Visual style (default: primary).</td></tr>
                 <tr><td><code>size</code></td><td>sm · lg · (default)</td><td>Size modifier.</td></tr>
                 <tr><td><code>type</code></td><td>button · submit · reset</td><td>Native button type.</td></tr>
-                <tr><td><code>label</code></td><td>string</td><td>Button text.</td></tr>
+                <tr><td><code>label</code></td><td>string</td><td>Button text, or accessible name when <code>icon-only</code>.</td></tr>
+                <tr><td><code>icon</code></td><td>edit · delete · story · add · close</td><td>Semantic icon for icon-only mode.</td></tr>
+                <tr><td><code>icon-only</code></td><td>boolean</td><td>Hides visible text; requires <code>label</code> + tooltip.</td></tr>
+                <tr><td><code>icon-danger</code></td><td>boolean</td><td>Subtle destructive styling for ghost icon-only delete actions.</td></tr>
                 <tr><td><code>block</code></td><td>boolean</td><td>Full width.</td></tr>
                 <tr><td><code>disabled</code></td><td>boolean</td><td>Disabled state.</td></tr>
             </tbody>
@@ -63,6 +66,21 @@
                 <pre class="demo__code"><code>&lt;core-button size="sm" label="Small"&gt;&lt;/core-button&gt;
 &lt;core-button label="Default"&gt;&lt;/core-button&gt;
 &lt;core-button size="lg" label="Large"&gt;&lt;/core-button&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Icon-only row actions</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <div class="demo-row">
+                        <core-button variant="ghost" size="sm" icon="story" icon-only label="Tell the story"></core-button>
+                        <core-button variant="ghost" size="sm" icon="edit" icon-only label="Edit"></core-button>
+                        <core-button variant="ghost" size="sm" icon="delete" icon-only icon-danger label="Delete"></core-button>
+                    </div>
+                </div>
+                <pre class="demo__code"><code>&lt;core-button variant="ghost" size="sm" icon="edit" icon-only label="Edit"&gt;&lt;/core-button&gt;
+&lt;core-button variant="ghost" size="sm" icon="delete" icon-only icon-danger label="Delete"&gt;&lt;/core-button&gt;</code></pre>
             </div>
         </section>
 

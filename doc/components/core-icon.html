@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-icon — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-icon"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-icon&gt;</span></h1>
+            <p class="lead">Semantic icon glyph mapped to Lucide sources. Presentation only — inherits <code>currentColor</code>.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>name</code></td><td>edit · delete · story · add · close</td><td>Semantic icon id (required).</td></tr>
+                <tr><td><code>size</code></td><td>number · default 16</td><td>Rendered width/height in px.</td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Catalog</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <div class="demo-row">
+                        <core-icon name="edit"></core-icon>
+                        <core-icon name="delete"></core-icon>
+                        <core-icon name="story"></core-icon>
+                        <core-icon name="add"></core-icon>
+                        <core-icon name="close"></core-icon>
+                    </div>
+                </div>
+                <pre class="demo__code"><code>&lt;core-icon name="edit"&gt;&lt;/core-icon&gt;
+&lt;core-icon name="delete"&gt;&lt;/core-icon&gt;
+&lt;core-icon name="story"&gt;&lt;/core-icon&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/bootstrap.js"></script>
+<script type="importmap">
+{"imports":{"CORE_JS/lib/utils/dom.js":"../assets/core-dom-shim.js","CORE_JS/lib/base/core-html-element.js":"../assets/core-html-element-shim.js","CORE_UX/":"../../","lucide":"../../node_modules/lucide/dist/esm/lucide.js"}}
+</script>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+</body>
+</html>

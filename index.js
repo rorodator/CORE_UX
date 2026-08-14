@@ -4,6 +4,7 @@
  */
 import './dist/core-ux.css';
 
+import './components/core-icon/core-icon.js';
 import './components/core-button/core-button.js';
 import './components/core-field/core-field.js';
 import './components/core-textarea/core-textarea.js';

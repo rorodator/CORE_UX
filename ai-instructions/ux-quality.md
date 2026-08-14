@@ -42,6 +42,22 @@ Use the smallest CORE_UX primitives that express those states consistently.
 - Design mobile-first and test narrow layouts.
 - Respect `prefers-reduced-motion`; motion must not be required to understand state.
 
+## Icon-only actions in dense lists
+
+Icon-only buttons fit **repeated, conventional local actions** in compact collections
+(edit, delete, narrate a row) when the symbol is widely understood.
+
+Requirements:
+
+- mandatory accessible `label` on `<core-button icon-only>` (`aria-label`);
+- tooltip via `<core-tooltip>` wrapper (label is not replaced by tooltip text);
+- comfortable hit target (`core-btn--icon-only`);
+- visible focus ring;
+- delete uses trash semantics — reserve `close` / X for dismiss/cancel flows.
+
+Prefer **visible text** for important, structural, or ambiguous actions (primary CTAs,
+create flows, save/cancel). Do not default the whole app to icon-only controls.
+
 ## Product truth
 
 Reusable components remain neutral. Consuming apps must not use polished mock UI or copy to imply unavailable capabilities. A UI may describe future work only when it is explicitly marked as such by the product.

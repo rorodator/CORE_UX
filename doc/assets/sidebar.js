@@ -23,6 +23,7 @@
         {
             title: 'Actions',
             links: [
+                { id: 'core-icon', href: comp + 'core-icon.html', label: 'core-icon' },
                 { id: 'core-button', href: comp + 'core-button.html', label: 'core-button' },
                 { id: 'core-link', href: comp + 'core-link.html', label: 'core-link' },
                 { id: 'core-menu', href: comp + 'core-menu.html', label: 'core-menu' }
@@ -72,7 +73,7 @@
     ];
 
     var html = '<div class="sidebar__brand"><h1><a href="' + root + 'index.html">CORE_UX</a></h1>'
-        + '<p>Doc + live demos · 28 tags</p></div>';
+        + '<p>Doc + live demos · 29 tags</p></div>';
 
     groups.forEach(function (group) {
         html += '<div class="nav-group"><div class="nav-group__title">' + group.title + '</div>';

@@ -51,7 +51,26 @@
   "trustedHtml": "&lt;span class='badge'&gt;Custom&lt;/span&gt;",
   "disabled": false
 }</code></pre>
-        <p>If <code>trustedHtml</code> is set, it replaces the default label/image layout for that row (author-controlled markup only). Legacy key <code>html</code> is still accepted as an alias.</p>
+        <p>
+            If <code>trustedHtml</code> is set, it replaces the default label/image layout for
+            that row. This is an author-controlled markup API only: it does not sanitize HTML and
+            must never receive unsanitized user input or API data. Use <code>label</code> and
+            <code>description</code> for those values. Legacy key <code>html</code> is still
+            accepted as an alias.
+        </p>
+
+        <h3>Keyboard and ARIA</h3>
+        <p>
+            The component uses one listbox focus model. Opening focuses search when present;
+            <kbd>Arrow Down</kbd> enters the listbox. Without search, opening focuses the listbox
+            directly. In the listbox, <kbd>Arrow Down</kbd>/<kbd>Arrow Up</kbd> move the active
+            option, <kbd>Home</kbd>/<kbd>End</kbd> move to the first/last enabled option, and
+            <kbd>Enter</kbd> or <kbd>Space</kbd> toggles selection. <kbd>Escape</kbd> closes the
+            dropdown and returns focus to its trigger. The listbox exposes
+            <code>aria-activedescendant</code>, and every option exposes
+            <code>aria-selected</code>. Checkboxes are visual selection indicators and are not
+            separate keyboard stops.
+        </p>
 
         <h3>Events</h3>
         <p><code>multiselect-change</code> · <code>multiselect-select</code> · <code>multiselect-deselect</code> · <code>multiselect-open</code> · <code>multiselect-close</code></p>

@@ -394,6 +394,10 @@
       text-sm text-core-text transition-colors last:border-b-0 hover:bg-core-surface-muted;
   }
 
+  .core-multi-select__option--active {
+    @apply bg-core-surface-muted;
+  }
+
   .core-multi-select__option--disabled {
     @apply cursor-not-allowed opacity-50 hover:bg-transparent;
   }

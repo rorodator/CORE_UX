@@ -53,15 +53,6 @@ function mountMultiSelect(attributes = '') {
 
 /**
  * @param {Element} list
- * @returns {Element|null}
- */
-function activeDescendantElement(list) {
-    const id = list.getAttribute('aria-activedescendant');
-    return id ? document.getElementById(id) : null;
-}
-
-/**
- * @param {Element} list
  * @param {string} value
  * @returns {Element|undefined}
  */

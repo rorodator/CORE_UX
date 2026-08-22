@@ -118,7 +118,6 @@ export class CoreNotif extends Core_UXElement {
         }
         this._closing = true;
         this._clearTimer();
-        this.classList.add('core-notif--closing');
 
         let finished = false;
         const finish = () => {
@@ -130,6 +129,12 @@ export class CoreNotif extends Core_UXElement {
             this.remove();
         };
 
+        if (this._prefersReducedMotion()) {
+            finish();
+            return;
+        }
+
+        this.classList.add('core-notif--closing');
         this.addEventListener('transitionend', (event) => {
             if (event.target === this && event.propertyName === 'opacity') {
                 finish();
@@ -139,12 +144,22 @@ export class CoreNotif extends Core_UXElement {
     }
 
     _startEnterAnimation() {
+        if (this._prefersReducedMotion()) {
+            return;
+        }
         this.classList.add('core-notif--enter');
         window.requestAnimationFrame(() => {
             window.requestAnimationFrame(() => {
                 this.classList.remove('core-notif--enter');
             });
         });
+    }
+
+    /**
+     * @returns {boolean}
+     */
+    _prefersReducedMotion() {
+        return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     }
 
     _startTimer() {

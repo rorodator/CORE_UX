@@ -14,20 +14,48 @@ export class CoreField extends Core_UXFormControl {
         ];
     }
 
-    onConnect() {
-        this.render();
+    get structuralAttributes() {
+        return ['type'];
     }
 
-    attributeChangedCallback() {
-        if (this.isConnected) {
-            this.render();
-        }
+    onConnect() {
+        this.render();
     }
 
     get inputType() {
         const type = this.getAttribute('type') || 'text';
         const allowed = ['text', 'email', 'password', 'number', 'date', 'tel', 'url', 'search'];
         return allowed.includes(type) ? type : 'text';
+    }
+
+    _getControl() {
+        return this.querySelector('input');
+    }
+
+    /**
+     * @param {string} name
+     */
+    _handleAttributeChange(name) {
+        if (['min', 'max', 'step'].includes(name)) {
+            this._syncNumericAttributes(name);
+            return;
+        }
+        super._handleAttributeChange(name);
+    }
+
+    /**
+     * @param {string} name
+     */
+    _syncNumericAttributes(name) {
+        const input = this._getControl();
+        if (!input) {
+            return;
+        }
+        if (this.hasAttribute(name)) {
+            input.setAttribute(name, this.getAttribute(name) || '');
+        } else {
+            input.removeAttribute(name);
+        }
     }
 
     ui_render() {
@@ -43,15 +71,13 @@ export class CoreField extends Core_UXFormControl {
     }
 
     ui_toFunctional() {
-        const input = this.querySelector('input');
+        const input = this._getControl();
         this.wireControl(input);
         if (!input) {
             return;
         }
         for (const attribute of ['min', 'max', 'step']) {
-            if (this.hasAttribute(attribute)) {
-                input.setAttribute(attribute, this.getAttribute(attribute) || '');
-            }
+            this._syncNumericAttributes(attribute);
         }
     }
 }

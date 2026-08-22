@@ -40,7 +40,7 @@ Use the smallest CORE_UX primitives that express those states consistently.
 - Keep all actions keyboard reachable and preserve visible focus.
 - Do not rely on color alone for status.
 - Design mobile-first and test narrow layouts.
-- Respect `prefers-reduced-motion`; motion must not be required to understand state.
+- Respect `prefers-reduced-motion`; motion must not be required to understand state. The kit implements this in `styles/core-ux.css` (side panel, notifications, spinners, and related transitions) and skips enter/exit animation classes in `core-notif` when the user prefers reduced motion.
 
 Modal overlays (`core-modal`, `core-side-panel`) require a non-empty `title` or
 `aria-label`. The components move focus inside only on opening, contain Tab and

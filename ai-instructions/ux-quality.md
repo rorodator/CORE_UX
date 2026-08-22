@@ -42,6 +42,14 @@ Use the smallest CORE_UX primitives that express those states consistently.
 - Design mobile-first and test narrow layouts.
 - Respect `prefers-reduced-motion`; motion must not be required to understand state.
 
+Modal overlays (`core-modal`, `core-side-panel`) require a non-empty `title` or
+`aria-label`. The components move focus inside only on opening, contain Tab and
+Shift+Tab, support Escape, and restore a valid pre-open focus target on close.
+Simple attribute updates must preserve focus and stateful slotted content.
+Focus containment with `aria-modal="true"` is the baseline; `inert` and body
+scroll locking are intentionally deferred until they can be coordinated safely
+across concurrent overlays.
+
 ## Icon-only actions in dense lists
 
 Icon-only buttons fit **repeated, conventional local actions** in compact collections

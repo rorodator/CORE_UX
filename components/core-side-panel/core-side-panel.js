@@ -1,6 +1,7 @@
 import { Core_UXSlotElement } from '../../lib/base/core-ux-slot-element.js';
 import { createElement, mountTrustedHtml, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
 import { parseTrustedHtmlFragment, readTrustedLightDom } from '../../lib/dom/trusted-html.js';
+import { OverlayFocusController } from '../../lib/overlays/overlay-focus-controller.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
@@ -9,14 +10,18 @@ import { registerCoreComponent } from '../../lib/register-core-component.js';
 export class CoreSidePanel extends Core_UXSlotElement {
 
     static get observedAttributes() {
-        return ['open', 'title', 'position', 'size'];
+        return ['open', 'title', 'position', 'size', 'aria-label'];
     }
 
     constructor() {
         super();
         this._footerContent = '';
         this._uid = Math.random().toString(36).slice(2, 9);
-        this._onKeyDown = this._onKeyDown.bind(this);
+        this._nameWarningShown = false;
+        this._focusController = new OverlayFocusController({
+            getDialog: () => this.querySelector('.core-side-panel'),
+            onEscape: () => this._close('escape')
+        });
     }
 
     onConnect() {
@@ -29,7 +34,7 @@ export class CoreSidePanel extends Core_UXSlotElement {
     }
 
     onDisconnect() {
-        document.removeEventListener('keydown', this._onKeyDown);
+        this._focusController.deactivate();
     }
 
     attributeChangedCallback(name) {
@@ -40,9 +45,23 @@ export class CoreSidePanel extends Core_UXSlotElement {
             this._syncOpen();
             return;
         }
-        if (this._slotCaptured) {
-            this.render();
-            this._syncOpen();
+        if (!this._slotCaptured) {
+            return;
+        }
+        if (name === 'title') {
+            this._syncTitle();
+            return;
+        }
+        if (name === 'position') {
+            this._syncPosition();
+            return;
+        }
+        if (name === 'size') {
+            this._syncSize();
+            return;
+        }
+        if (name === 'aria-label') {
+            this._syncAccessibleName();
         }
     }
 
@@ -61,7 +80,11 @@ export class CoreSidePanel extends Core_UXSlotElement {
     }
 
     get title() {
-        return this.getAttribute('title') || '';
+        return (this.getAttribute('title') || '').trim();
+    }
+
+    get accessibleLabel() {
+        return (this.getAttribute('aria-label') || '').trim();
     }
 
     get panelId() {
@@ -106,6 +129,8 @@ export class CoreSidePanel extends Core_UXSlotElement {
         };
         if (this.title) {
             panelAttrs['aria-labelledby'] = `${this.panelId}-title`;
+        } else if (this.accessibleLabel) {
+            panelAttrs['aria-label'] = this.accessibleLabel;
         }
 
         const panel = createElement('aside', { className: panelClasses, attrs: panelAttrs });
@@ -141,28 +166,123 @@ export class CoreSidePanel extends Core_UXSlotElement {
 
         host.appendChild(panel);
         this.replaceChildren(host);
+        this._warnIfUnnamed();
+    }
+
+    /**
+     * Updates the panel title without rebuilding body/footer slot content.
+     */
+    _syncTitle() {
+        const panel = this.querySelector('.core-side-panel');
+        const header = panel?.querySelector('.core-side-panel__header');
+        if (!panel || !header) {
+            this.render();
+            return;
+        }
+
+        const title = this.title;
+        let titleEl = header.querySelector('.core-side-panel__title');
+        if (title) {
+            panel.setAttribute('aria-labelledby', `${this.panelId}-title`);
+            panel.removeAttribute('aria-label');
+            if (titleEl) {
+                titleEl.textContent = title;
+            } else {
+                titleEl = createElement('h2', {
+                    className: 'core-side-panel__title',
+                    text: title,
+                    attrs: { id: `${this.panelId}-title` }
+                });
+                header.insertBefore(titleEl, header.firstChild);
+            }
+            return;
+        }
+
+        panel.removeAttribute('aria-labelledby');
+        titleEl?.remove();
+        this._syncAccessibleName();
+    }
+
+    /**
+     * Mirrors the host aria-label when no visible title names the panel.
+     */
+    _syncAccessibleName() {
+        const panel = this.querySelector('.core-side-panel');
+        if (!panel) {
+            return;
+        }
+        if (this.title) {
+            panel.setAttribute('aria-labelledby', `${this.panelId}-title`);
+            panel.removeAttribute('aria-label');
+            return;
+        }
+
+        panel.removeAttribute('aria-labelledby');
+        if (this.accessibleLabel) {
+            panel.setAttribute('aria-label', this.accessibleLabel);
+            return;
+        }
+        panel.removeAttribute('aria-label');
+        this._warnIfUnnamed();
+    }
+
+    _warnIfUnnamed() {
+        if (this.title || this.accessibleLabel || this._nameWarningShown) {
+            return;
+        }
+        this._nameWarningShown = true;
+        console.warn('<core-side-panel> requires a non-empty title or aria-label.');
+    }
+
+    /**
+     * Updates panel position classes without rebuilding slot content.
+     */
+    _syncPosition() {
+        const panel = this.querySelector('.core-side-panel');
+        if (!panel) {
+            this.render();
+            return;
+        }
+        panel.classList.remove(
+            'core-side-panel--left',
+            'core-side-panel--right',
+            'core-side-panel--top',
+            'core-side-panel--bottom'
+        );
+        panel.classList.add(`core-side-panel--${this.position}`);
+    }
+
+    /**
+     * Updates panel size classes without rebuilding slot content.
+     */
+    _syncSize() {
+        const panel = this.querySelector('.core-side-panel');
+        if (!panel) {
+            this.render();
+            return;
+        }
+        panel.classList.remove(
+            'core-side-panel--sm',
+            'core-side-panel--md',
+            'core-side-panel--lg',
+            'core-side-panel--full'
+        );
+        panel.classList.add(this.sizeClass);
     }
 
     _syncOpen() {
         const host = this.querySelector('.core-side-panel-host');
-        if (!host) {
-            return;
-        }
         if (this.open) {
+            if (!host) {
+                return;
+            }
             host.removeAttribute('hidden');
             host.classList.add('core-side-panel-host--open');
-            document.addEventListener('keydown', this._onKeyDown);
-            this.querySelector('[data-core-side-panel-close]')?.focus();
+            this._focusController.activate();
         } else {
-            host.classList.remove('core-side-panel-host--open');
-            host.setAttribute('hidden', '');
-            document.removeEventListener('keydown', this._onKeyDown);
-        }
-    }
-
-    _onKeyDown(event) {
-        if (event.key === 'Escape' && this.open) {
-            this._close('escape');
+            host?.classList.remove('core-side-panel-host--open');
+            host?.setAttribute('hidden', '');
+            this._focusController.deactivate();
         }
     }
 
@@ -184,7 +304,6 @@ export class CoreSidePanel extends Core_UXSlotElement {
 
     cleanFunctional() {
         super.cleanFunctional();
-        document.removeEventListener('keydown', this._onKeyDown);
     }
 }
 

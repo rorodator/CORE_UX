@@ -18,15 +18,40 @@ export class CoreTextarea extends Core_UXFormControl {
         this.render();
     }
 
-    attributeChangedCallback() {
-        if (this.isConnected) {
-            this.render();
-        }
-    }
-
     get rows() {
         const parsed = parseInt(this.getAttribute('rows') || '4', 10);
         return Number.isFinite(parsed) && parsed > 0 ? parsed : 4;
+    }
+
+    _getControl() {
+        return this.querySelector('textarea');
+    }
+
+    /**
+     * @param {string} name
+     */
+    _handleAttributeChange(name) {
+        if (name === 'rows') {
+            const control = this._getControl();
+            if (control) {
+                control.setAttribute('rows', String(this.rows));
+            }
+            return;
+        }
+        if (name === 'maxlength') {
+            const control = this._getControl();
+            if (!control) {
+                return;
+            }
+            const maxLength = parseInt(this.getAttribute('maxlength') || '', 10);
+            if (Number.isFinite(maxLength) && maxLength > 0) {
+                control.maxLength = maxLength;
+            } else {
+                control.removeAttribute('maxlength');
+            }
+            return;
+        }
+        super._handleAttributeChange(name);
     }
 
     ui_render() {
@@ -42,12 +67,9 @@ export class CoreTextarea extends Core_UXFormControl {
     }
 
     ui_toFunctional() {
-        const control = this.querySelector('textarea');
+        const control = this._getControl();
         this.wireControl(control);
-        const maxLength = parseInt(this.getAttribute('maxlength') || '', 10);
-        if (control && Number.isFinite(maxLength) && maxLength > 0) {
-            control.maxLength = maxLength;
-        }
+        this._handleAttributeChange('maxlength');
     }
 }
 

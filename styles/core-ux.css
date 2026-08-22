@@ -1061,3 +1061,28 @@
     margin: -1px;
   }
 }
+
+/* Reduced motion — keep state changes instant without removing visual feedback */
+@media (prefers-reduced-motion: reduce) {
+  .core-spinner,
+  .core-autocomplete__spinner {
+    animation: none;
+  }
+
+  .core-side-panel-backdrop,
+  .core-side-panel,
+  .core-notif,
+  .core-multi-select__chevron {
+    transition: none;
+  }
+
+  .core-notif--enter,
+  .core-notif--closing,
+  .core-notif-host--bottom-start .core-notif--enter,
+  .core-notif-host--bottom-start .core-notif--closing,
+  .core-notif-host--bottom-end .core-notif--enter,
+  .core-notif-host--bottom-end .core-notif--closing {
+    transform: none;
+    opacity: 1;
+  }
+}

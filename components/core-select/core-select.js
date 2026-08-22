@@ -18,12 +18,6 @@ export class CoreSelect extends Core_UXFormControl {
         this.render();
     }
 
-    attributeChangedCallback() {
-        if (this.isConnected) {
-            this.render();
-        }
-    }
-
     get options() {
         const list = parseJsonAttr(this, 'options', []);
         if (!Array.isArray(list)) {
@@ -37,6 +31,44 @@ export class CoreSelect extends Core_UXFormControl {
                 || (selectedValue !== null && value === selectedValue);
             return { value, label, selected };
         });
+    }
+
+    _getControl() {
+        return this.querySelector('select');
+    }
+
+    /**
+     * @param {string} name
+     */
+    _handleAttributeChange(name) {
+        if (name === 'options') {
+            this._syncOptions();
+            return;
+        }
+        super._handleAttributeChange(name);
+    }
+
+    _syncOptions() {
+        const select = this._getControl();
+        if (!select) {
+            return;
+        }
+        const currentValue = select.value;
+        select.replaceChildren();
+        this.options.forEach((option) => {
+            select.appendChild(createElement('option', {
+                text: option.label,
+                attrs: {
+                    value: option.value,
+                    selected: option.selected || false
+                }
+            }));
+        });
+        if (currentValue && [...select.options].some((item) => item.value === currentValue)) {
+            select.value = currentValue;
+        } else if (this.hasAttribute('value')) {
+            select.value = this.getAttribute('value') || '';
+        }
     }
 
     ui_render() {
@@ -65,7 +97,7 @@ export class CoreSelect extends Core_UXFormControl {
     }
 
     ui_toFunctional() {
-        this.wireControl(this.querySelector('select'));
+        this.wireControl(this._getControl());
     }
 }
 

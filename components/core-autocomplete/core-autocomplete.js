@@ -478,17 +478,31 @@ export class CoreAutocomplete extends Core_UXElement {
      */
     _handleKeyDown(event) {
         if (!this._panelOpen) {
+            if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)
+                && this._optionCount() > 0) {
+                event.preventDefault();
+                this._openPanel();
+                this._setHighlightIndex(
+                    event.key === 'ArrowUp' || event.key === 'End'
+                        ? this._optionCount() - 1
+                        : 0
+                );
+            }
             return;
         }
         const max = this._optionCount() - 1;
         if (event.key === 'ArrowDown') {
             event.preventDefault();
-            this._highlightIndex = Math.min(max, this._highlightIndex + 1);
-            this._renderResults();
+            this._setHighlightIndex(Math.min(max, this._highlightIndex + 1));
         } else if (event.key === 'ArrowUp') {
             event.preventDefault();
-            this._highlightIndex = Math.max(0, this._highlightIndex - 1);
-            this._renderResults();
+            this._setHighlightIndex(Math.max(0, this._highlightIndex - 1));
+        } else if (event.key === 'Home') {
+            event.preventDefault();
+            this._setHighlightIndex(0);
+        } else if (event.key === 'End') {
+            event.preventDefault();
+            this._setHighlightIndex(max);
         } else if (event.key === 'Enter') {
             event.preventDefault();
             const item = this._highlightedItem();
@@ -516,7 +530,12 @@ export class CoreAutocomplete extends Core_UXElement {
                     'core-autocomplete__option',
                     index === this._highlightIndex ? 'core-autocomplete__option--active' : ''
                 ].filter(Boolean).join(' '),
-                attrs: { role: 'option', 'data-index': String(index) }
+                attrs: {
+                    id: this._optionId(index),
+                    role: 'option',
+                    'aria-selected': index === this._highlightIndex ? 'true' : 'false',
+                    'data-index': String(index)
+                }
             });
             option.appendChild(createElement('span', {
                 className: 'core-autocomplete__option-title',
@@ -545,7 +564,12 @@ export class CoreAutocomplete extends Core_UXElement {
                     'core-autocomplete__option--add',
                     addIndex === this._highlightIndex ? 'core-autocomplete__option--active' : ''
                 ].filter(Boolean).join(' '),
-                attrs: { role: 'option', 'data-index': String(addIndex) }
+                attrs: {
+                    id: this._optionId(addIndex),
+                    role: 'option',
+                    'aria-selected': addIndex === this._highlightIndex ? 'true' : 'false',
+                    'data-index': String(addIndex)
+                }
             });
             addOption.appendChild(createElement('span', {
                 className: 'core-autocomplete__option-title',
@@ -568,6 +592,37 @@ export class CoreAutocomplete extends Core_UXElement {
 
         if (this._panelOpen) {
             window.requestAnimationFrame(() => this._floating?.reposition());
+        }
+        this._syncActiveDescendant();
+    }
+
+    /**
+     * Keep visual and ARIA active-option state tied to the same index.
+     *
+     * @param {number} index
+     */
+    _setHighlightIndex(index) {
+        const max = this._optionCount() - 1;
+        this._highlightIndex = index < 0 || max < 0
+            ? -1
+            : Math.min(index, max);
+        this._list()?.querySelectorAll('[role="option"]').forEach((option, optionIndex) => {
+            const active = optionIndex === this._highlightIndex;
+            option.classList.toggle('core-autocomplete__option--active', active);
+            option.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        this._syncActiveDescendant();
+    }
+
+    _syncActiveDescendant() {
+        const input = this._input();
+        const activeOption = this._panelOpen && this._highlightIndex >= 0
+            ? this._list()?.querySelector(`#${this._optionId(this._highlightIndex)}`)
+            : null;
+        if (input && activeOption) {
+            input.setAttribute('aria-activedescendant', activeOption.id);
+        } else {
+            input?.removeAttribute('aria-activedescendant');
         }
     }
 
@@ -604,10 +659,14 @@ export class CoreAutocomplete extends Core_UXElement {
         }
         list.removeAttribute('hidden');
         input.setAttribute('aria-expanded', 'true');
+        if (this._highlightIndex < 0 && this._optionCount() > 0) {
+            this._setHighlightIndex(0);
+        }
         if (!this._panelOpen) {
             this._panelOpen = true;
             this.dispatchEvent(new CustomEvent('autocomplete-open', { bubbles: true }));
         }
+        this._syncActiveDescendant();
         this._floating?.open();
         window.requestAnimationFrame(() => this._floating?.reposition());
     }
@@ -621,6 +680,7 @@ export class CoreAutocomplete extends Core_UXElement {
         this._floating?.close();
         list.setAttribute('hidden', '');
         input.setAttribute('aria-expanded', 'false');
+        this._setHighlightIndex(-1);
         if (this._panelOpen) {
             this._panelOpen = false;
             this.dispatchEvent(new CustomEvent('autocomplete-close', { bubbles: true }));
@@ -662,6 +722,14 @@ export class CoreAutocomplete extends Core_UXElement {
 
     _listId() {
         return `${this._inputId()}-list`;
+    }
+
+    /**
+     * @param {number} index
+     * @returns {string}
+     */
+    _optionId(index) {
+        return `${this._listId()}-option-${index}`;
     }
 
     /** @returns {HTMLInputElement|null} */

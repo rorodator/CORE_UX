@@ -13,7 +13,7 @@
     <main class="main">
         <header class="hero">
             <h1><span class="tag">&lt;core-autocomplete&gt;</span></h1>
-            <p class="lead">Combobox with local array or async data source. Keyboard: ↑ ↓ Enter Escape.</p>
+            <p class="lead">Combobox with local array or async data source and an ARIA listbox popup.</p>
         </header>
 
         <table>
@@ -32,6 +32,17 @@
                 <tr><td><code>floating</code></td><td>true</td><td>Portal results list to <code>document.body</code> (set <code>floating="false"</code> for in-flow).</td></tr>
             </tbody>
         </table>
+
+        <h3>Keyboard and ARIA</h3>
+        <p>
+            DOM focus stays on the combobox input. <kbd>Arrow Down</kbd> and <kbd>Arrow Up</kbd>
+            move the active suggestion, <kbd>Home</kbd> and <kbd>End</kbd> move to the first and
+            last suggestion, <kbd>Enter</kbd> selects it, and <kbd>Escape</kbd> closes the popup.
+            Each option has a stable ID and <code>aria-selected</code>; while the popup has an
+            active option, the input references that ID with <code>aria-activedescendant</code>.
+            Closing, selecting, or blurring removes the active descendant. Reopening starts at
+            the first available option.
+        </p>
 
         <h3>Events</h3>
         <p><code>autocomplete-select</code>, <code>autocomplete-search</code>, <code>autocomplete-results</code>, <code>autocomplete-open</code>, <code>autocomplete-close</code>, <code>autocomplete-focus</code>, <code>autocomplete-blur</code>, <code>autocomplete-change</code></p>

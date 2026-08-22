@@ -39,10 +39,16 @@ export class CoreMultiSelect extends Core_UXFormControl {
         this._suppressFocusOpen = false;
         /** @type {boolean} */
         this._ignoreFocusOut = false;
+        /** @type {number} */
+        this._activeOptionIndex = -1;
         /** @type {((event: Event) => void)|null} */
         this._onSearchInput = null;
+        /** @type {((event: KeyboardEvent) => void)|null} */
+        this._onSearchKeyDown = null;
         /** @type {((event: Event) => void)|null} */
         this._onListChange = null;
+        /** @type {((event: KeyboardEvent) => void)|null} */
+        this._onListKeyDown = null;
         /** @type {((event: Event) => void)|null} */
         this._onSelectVisible = null;
         /** @type {((event: Event) => void)|null} */
@@ -166,6 +172,7 @@ export class CoreMultiSelect extends Core_UXFormControl {
         }
         this._open = true;
         this._ignoreFocusOut = true;
+        this._resetActiveOption();
         this._syncOpenState();
         this._floating?.open();
         this.dispatchEvent(new CustomEvent('multiselect-open', { bubbles: true }));
@@ -176,6 +183,8 @@ export class CoreMultiSelect extends Core_UXFormControl {
             const search = this.querySelector('.core-multi-select__search');
             if (search instanceof HTMLInputElement) {
                 search.focus();
+            } else {
+                this._focusList();
             }
         }, 0);
     }
@@ -187,6 +196,7 @@ export class CoreMultiSelect extends Core_UXFormControl {
         this._floating?.close();
         this._open = false;
         this._query = '';
+        this._activeOptionIndex = -1;
         const search = this.querySelector('.core-multi-select__search');
         if (search instanceof HTMLInputElement) {
             search.value = '';
@@ -316,6 +326,7 @@ export class CoreMultiSelect extends Core_UXFormControl {
         this._syncHiddenInputs();
         this._updateCount();
         this._updateTriggerSummary();
+        this._syncActiveOption();
         this._syncScrollLayout();
 
         if (this._open && this.dropdown) {
@@ -346,8 +357,12 @@ export class CoreMultiSelect extends Core_UXFormControl {
         this._floating = null;
         this.querySelector('.core-multi-select__search')
             ?.removeEventListener('input', this._onSearchInput);
+        this.querySelector('.core-multi-select__search')
+            ?.removeEventListener('keydown', this._onSearchKeyDown);
         this.querySelector('.core-multi-select__list')
             ?.removeEventListener('change', this._onListChange);
+        this.querySelector('.core-multi-select__list')
+            ?.removeEventListener('keydown', this._onListKeyDown);
         this.querySelector('[data-core-multiselect-select-visible]')
             ?.removeEventListener('click', this._onSelectVisible);
         this.querySelector('[data-core-multiselect-clear-all]')
@@ -364,7 +379,9 @@ export class CoreMultiSelect extends Core_UXFormControl {
             document.removeEventListener('mousedown', this._onDocumentClick);
         }
         this._onSearchInput = null;
+        this._onSearchKeyDown = null;
         this._onListChange = null;
+        this._onListKeyDown = null;
         this._onSelectVisible = null;
         this._onClearAll = null;
         this._onTriggerMouseDown = null;
@@ -381,9 +398,21 @@ export class CoreMultiSelect extends Core_UXFormControl {
         }
         this._onSearchInput = () => {
             this._query = search.value.trim();
+            this._activeOptionIndex = -1;
             this._refreshList();
         };
+        this._onSearchKeyDown = (event) => {
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                this._resetActiveOption();
+                this._focusList();
+            } else if (event.key === 'Escape' && this.dropdown) {
+                event.preventDefault();
+                this._closeAndFocusTrigger();
+            }
+        };
         search.addEventListener('input', this._onSearchInput);
+        search.addEventListener('keydown', this._onSearchKeyDown);
         search.disabled = this.disabled;
     }
 
@@ -402,27 +431,15 @@ export class CoreMultiSelect extends Core_UXFormControl {
             if (!option || option.disabled) {
                 return;
             }
-            if (target.checked) {
-                this._selected.add(option.value);
-                this.dispatchEvent(new CustomEvent('multiselect-select', {
-                    bubbles: true,
-                    detail: { item: this._publicItem(option) }
-                }));
-            } else {
-                this._selected.delete(option.value);
-                this.dispatchEvent(new CustomEvent('multiselect-deselect', {
-                    bubbles: true,
-                    detail: { item: this._publicItem(option) }
-                }));
-            }
-            this._syncValueAttribute();
-            this._updateCount();
-            this._updateTriggerSummary();
-            this._syncHiddenInputs();
-            this._emitChange();
+            const row = target.closest('[role="option"]');
+            this._setActiveOptionIndex(Number(row?.getAttribute('data-visible-index') || 0));
+            this._setOptionSelected(option, target.checked);
+            this._focusList();
         };
-        this.querySelector('.core-multi-select__list')
-            ?.addEventListener('change', this._onListChange);
+        this._onListKeyDown = (event) => this._handleListKeyDown(event);
+        const list = this.querySelector('.core-multi-select__list');
+        list?.addEventListener('change', this._onListChange);
+        list?.addEventListener('keydown', this._onListKeyDown);
     }
 
     _wireBulkActions() {
@@ -592,6 +609,7 @@ export class CoreMultiSelect extends Core_UXFormControl {
                 role: 'listbox',
                 'aria-multiselectable': 'true',
                 'aria-labelledby': this.label ? `${this.fieldId}-label` : undefined,
+                tabindex: this.disabled ? '-1' : '0',
                 style: `--core-multiselect-list-rows:${this.maxVisible};max-height:${this.listMaxHeight}`
             }
         });
@@ -799,22 +817,31 @@ export class CoreMultiSelect extends Core_UXFormControl {
             return;
         }
 
-        options.forEach((option) => {
-            list.appendChild(this._buildOptionRow(option));
+        options.forEach((option, index) => {
+            list.appendChild(this._buildOptionRow(option, index));
         });
+        this._syncActiveOption();
     }
 
     /**
      * @param {Record<string, unknown>} option
+     * @param {number} visibleIndex
      * @returns {HTMLElement}
      */
-    _buildOptionRow(option) {
+    _buildOptionRow(option, visibleIndex) {
         const row = createElement('label', {
             className: [
                 'core-multi-select__option',
+                visibleIndex === this._activeOptionIndex ? 'core-multi-select__option--active' : '',
                 option.disabled ? 'core-multi-select__option--disabled' : ''
             ].filter(Boolean).join(' '),
-            attrs: { role: 'option' }
+            attrs: {
+                id: this._optionId(option),
+                role: 'option',
+                'aria-selected': this._selected.has(option.value) ? 'true' : 'false',
+                'aria-disabled': option.disabled ? 'true' : undefined,
+                'data-visible-index': String(visibleIndex)
+            }
         });
 
         row.appendChild(createElement('input', {
@@ -823,6 +850,8 @@ export class CoreMultiSelect extends Core_UXFormControl {
                 type: 'checkbox',
                 checked: this._selected.has(option.value) || false,
                 disabled: this.disabled || option.disabled || false,
+                tabindex: '-1',
+                'aria-hidden': 'true',
                 'data-value': this._serializeOptionValue(option.value)
             }
         }));
@@ -870,15 +899,161 @@ export class CoreMultiSelect extends Core_UXFormControl {
         body.appendChild(textWrap);
     }
 
-    _refreshList() {
-        if (this.dropdown && !this._open) {
+    /**
+     * The listbox owns keyboard navigation. Its checkboxes are visual selection indicators,
+     * not a second tab stop or focus model.
+     *
+     * @param {KeyboardEvent} event
+     */
+    _handleListKeyDown(event) {
+        if (event.key === 'Escape' && this.dropdown) {
+            event.preventDefault();
+            this._closeAndFocusTrigger();
             return;
         }
+
+        const options = this.visibleOptions;
+        if (options.length === 0) {
+            return;
+        }
+
+        if (event.key === 'Home') {
+            event.preventDefault();
+            this._setActiveOptionIndex(this._enabledOptionIndex(0, 1));
+        } else if (event.key === 'End') {
+            event.preventDefault();
+            this._setActiveOptionIndex(this._enabledOptionIndex(options.length - 1, -1));
+        } else if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            const start = this._activeOptionIndex < 0 ? 0 : this._activeOptionIndex + 1;
+            const next = this._enabledOptionIndex(start, 1);
+            if (next >= 0) {
+                this._setActiveOptionIndex(next);
+            }
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            const start = this._activeOptionIndex < 0
+                ? options.length - 1
+                : this._activeOptionIndex - 1;
+            const next = this._enabledOptionIndex(start, -1);
+            if (next >= 0) {
+                this._setActiveOptionIndex(next);
+            }
+        } else if (event.key === 'Enter' || event.key === ' ') {
+            const option = options[this._activeOptionIndex];
+            if (!option || option.disabled) {
+                return;
+            }
+            event.preventDefault();
+            this._setOptionSelected(option, !this._selected.has(option.value));
+            this._focusList();
+        }
+    }
+
+    /**
+     * @param {number} start
+     * @param {1|-1} direction
+     * @returns {number}
+     */
+    _enabledOptionIndex(start, direction) {
+        const options = this.visibleOptions;
+        for (let index = start; index >= 0 && index < options.length; index += direction) {
+            if (!options[index].disabled) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    _resetActiveOption() {
+        this._setActiveOptionIndex(this._enabledOptionIndex(0, 1));
+    }
+
+    _normalizeActiveOption() {
+        const active = this.visibleOptions[this._activeOptionIndex];
+        if (active && !active.disabled) {
+            this._syncActiveOption();
+            return;
+        }
+        this._resetActiveOption();
+    }
+
+    /**
+     * @param {number} index
+     */
+    _setActiveOptionIndex(index) {
+        this._activeOptionIndex = index;
+        this._syncActiveOption();
+        const active = this.querySelectorAll('.core-multi-select__option')[index];
+        active?.scrollIntoView?.({ block: 'nearest' });
+    }
+
+    _syncActiveOption() {
+        const list = this.querySelector('.core-multi-select__list');
+        if (!list) {
+            return;
+        }
+        const rows = list.querySelectorAll('[role="option"]');
+        rows.forEach((row, index) => {
+            row.classList.toggle(
+                'core-multi-select__option--active',
+                index === this._activeOptionIndex
+            );
+        });
+        const active = rows[this._activeOptionIndex];
+        if (active) {
+            list.setAttribute('aria-activedescendant', active.id);
+        } else {
+            list.removeAttribute('aria-activedescendant');
+        }
+    }
+
+    _focusList() {
+        this.querySelector('.core-multi-select__list')?.focus();
+    }
+
+    _closeAndFocusTrigger() {
+        this.close();
+        this._suppressFocusOpen = true;
+        this.querySelector('.core-multi-select__trigger')?.focus();
+    }
+
+    /**
+     * @param {Record<string, unknown>} option
+     * @param {boolean} selected
+     */
+    _setOptionSelected(option, selected) {
+        if (selected) {
+            this._selected.add(option.value);
+            this.dispatchEvent(new CustomEvent('multiselect-select', {
+                bubbles: true,
+                detail: { item: this._publicItem(option) }
+            }));
+        } else {
+            this._selected.delete(option.value);
+            this.dispatchEvent(new CustomEvent('multiselect-deselect', {
+                bubbles: true,
+                detail: { item: this._publicItem(option) }
+            }));
+        }
+        this._syncValueAttribute();
+        this._refreshList();
+        this._updateTriggerSummary();
+        this._syncHiddenInputs();
+        this._emitChange();
+    }
+
+    _refreshList() {
         const list = this.querySelector('.core-multi-select__list');
         if (!list) {
             return;
         }
         this._mountOptions(list, this.visibleOptions);
+        if (this.dropdown && !this._open) {
+            this._syncActiveOption();
+        } else {
+            this._normalizeActiveOption();
+        }
         this._updateCount();
         if (this._open) {
             window.requestAnimationFrame(() => this._floating?.reposition());
@@ -944,6 +1119,14 @@ export class CoreMultiSelect extends Core_UXFormControl {
      */
     _serializeOptionValue(value) {
         return encodeURIComponent(JSON.stringify(value));
+    }
+
+    /**
+     * @param {Record<string, unknown>} option
+     * @returns {string}
+     */
+    _optionId(option) {
+        return `${this.fieldId}-option-${this._options.indexOf(option)}`;
     }
 
     /**

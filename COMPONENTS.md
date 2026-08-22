@@ -60,8 +60,8 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 
 | Tag | Notes |
 |-----|--------|
-| `<core-modal>` | `open`, `title`, `size` sm \| lg \| full; event `core-modal-close` |
-| `<core-side-panel>` | `open`, `title`, `position` left \| right \| top \| bottom, `size` sm \| lg \| full; event `core-side-panel-close` |
+| `<core-modal>` | `open`, accessible `title` or `aria-label`, `size` sm \| lg \| full; trapped focus, Escape, focus restoration; event `core-modal-close` |
+| `<core-side-panel>` | `open`, accessible `title` or `aria-label`, `position` left \| right \| top \| bottom, `size` sm \| lg \| full; trapped focus, Escape, focus restoration; event `core-side-panel-close` |
 
 ## Examples
 

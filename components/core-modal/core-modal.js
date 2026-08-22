@@ -1,6 +1,7 @@
 import { Core_UXSlotElement } from '../../lib/base/core-ux-slot-element.js';
 import { createElement, mountTrustedHtml, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
 import { parseTrustedHtmlFragment, readTrustedLightDom } from '../../lib/dom/trusted-html.js';
+import { OverlayFocusController } from '../../lib/overlays/overlay-focus-controller.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
 
 /**
@@ -9,14 +10,18 @@ import { registerCoreComponent } from '../../lib/register-core-component.js';
 export class CoreModal extends Core_UXSlotElement {
 
     static get observedAttributes() {
-        return ['open', 'title', 'size'];
+        return ['open', 'title', 'size', 'aria-label'];
     }
 
     constructor() {
         super();
         this._footerContent = '';
         this._uid = Math.random().toString(36).slice(2, 9);
-        this._onKeyDown = this._onKeyDown.bind(this);
+        this._nameWarningShown = false;
+        this._focusController = new OverlayFocusController({
+            getDialog: () => this.querySelector('.core-modal'),
+            onEscape: () => this._close('escape')
+        });
     }
 
     onConnect() {
@@ -29,7 +34,7 @@ export class CoreModal extends Core_UXSlotElement {
     }
 
     onDisconnect() {
-        document.removeEventListener('keydown', this._onKeyDown);
+        this._focusController.deactivate();
     }
 
     attributeChangedCallback(name) {
@@ -45,13 +50,14 @@ export class CoreModal extends Core_UXSlotElement {
         }
         if (name === 'title') {
             this._syncTitle();
-            this._syncOpen();
             return;
         }
         if (name === 'size') {
             this._syncSize();
-            this._syncOpen();
             return;
+        }
+        if (name === 'aria-label') {
+            this._syncAccessibleName();
         }
     }
 
@@ -70,7 +76,11 @@ export class CoreModal extends Core_UXSlotElement {
     }
 
     get title() {
-        return this.getAttribute('title') || '';
+        return (this.getAttribute('title') || '').trim();
+    }
+
+    get accessibleLabel() {
+        return (this.getAttribute('aria-label') || '').trim();
     }
 
     get dialogId() {
@@ -102,6 +112,8 @@ export class CoreModal extends Core_UXSlotElement {
         };
         if (this.title) {
             dialogAttrs['aria-labelledby'] = `${this.dialogId}-title`;
+        } else if (this.accessibleLabel) {
+            dialogAttrs['aria-label'] = this.accessibleLabel;
         }
         const dialog = createElement('div', { className: modalClasses, attrs: dialogAttrs });
 
@@ -136,6 +148,7 @@ export class CoreModal extends Core_UXSlotElement {
 
         host.appendChild(dialog);
         this.replaceChildren(host);
+        this._warnIfUnnamed();
     }
 
     /**
@@ -154,6 +167,7 @@ export class CoreModal extends Core_UXSlotElement {
 
         if (title) {
             dialog.setAttribute('aria-labelledby', `${this.dialogId}-title`);
+            dialog.removeAttribute('aria-label');
             if (titleEl) {
                 titleEl.textContent = title;
             } else {
@@ -169,6 +183,38 @@ export class CoreModal extends Core_UXSlotElement {
 
         dialog.removeAttribute('aria-labelledby');
         titleEl?.remove();
+        this._syncAccessibleName();
+    }
+
+    /**
+     * Mirrors the host aria-label when no visible title names the dialog.
+     */
+    _syncAccessibleName() {
+        const dialog = this.querySelector('.core-modal');
+        if (!dialog) {
+            return;
+        }
+        if (this.title) {
+            dialog.setAttribute('aria-labelledby', `${this.dialogId}-title`);
+            dialog.removeAttribute('aria-label');
+            return;
+        }
+
+        dialog.removeAttribute('aria-labelledby');
+        if (this.accessibleLabel) {
+            dialog.setAttribute('aria-label', this.accessibleLabel);
+            return;
+        }
+        dialog.removeAttribute('aria-label');
+        this._warnIfUnnamed();
+    }
+
+    _warnIfUnnamed() {
+        if (this.title || this.accessibleLabel || this._nameWarningShown) {
+            return;
+        }
+        this._nameWarningShown = true;
+        console.warn('<core-modal> requires a non-empty title or aria-label.');
     }
 
     /**
@@ -188,22 +234,15 @@ export class CoreModal extends Core_UXSlotElement {
 
     _syncOpen() {
         const host = this.querySelector('.core-modal-host');
-        if (!host) {
-            return;
-        }
         if (this.open) {
+            if (!host) {
+                return;
+            }
             host.removeAttribute('hidden');
-            document.addEventListener('keydown', this._onKeyDown);
-            this.querySelector('[data-core-modal-close]')?.focus();
+            this._focusController.activate();
         } else {
-            host.setAttribute('hidden', '');
-            document.removeEventListener('keydown', this._onKeyDown);
-        }
-    }
-
-    _onKeyDown(event) {
-        if (event.key === 'Escape' && this.open) {
-            this._close('escape');
+            host?.setAttribute('hidden', '');
+            this._focusController.deactivate();
         }
     }
 
@@ -222,7 +261,6 @@ export class CoreModal extends Core_UXSlotElement {
 
     cleanFunctional() {
         super.cleanFunctional();
-        document.removeEventListener('keydown', this._onKeyDown);
     }
 }
 

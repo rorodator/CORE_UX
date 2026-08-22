@@ -10,3 +10,5 @@ globalThis.document = document;
 globalThis.customElements = customElements;
 globalThis.HTMLElement = HTMLElement;
 globalThis.Element = document.defaultView.Element;
+globalThis.Event = document.defaultView.Event;
+globalThis.CustomEvent = document.defaultView.CustomEvent;

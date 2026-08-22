@@ -78,6 +78,26 @@ Import from `CORE_JS/lib/utils/dom.js` or use `$svc('dom')` when AppCore is boot
 
 Slot components (`Core_UXSlotElement`, card/modal/side-panel) capture template light DOM via `lib/dom/trusted-html.js`, then re-inject with `mountTrustedHtml`. `core-multi-select` option field: `trustedHtml` (legacy `html` alias still accepted in JSON).
 
+## Modal overlays
+
+`core-modal` and `core-side-panel` use the small
+`lib/overlays/overlay-focus-controller.js` helper. A modal overlay must:
+
+- have a non-empty `title` (`aria-labelledby`) or host `aria-label`, which is
+  mirrored to the element carrying `role="dialog"`;
+- capture the previously active element only on the closed-to-open transition;
+- move focus inside, trap Tab and Shift+Tab, support Escape, and restore a
+  still-connected, focusable trigger when closed;
+- update simple attributes in place while open, without moving focus or
+  rebuilding slotted content.
+
+An unnamed overlay emits a console warning; the kit does not invent visible
+fallback text. Focus containment plus `aria-modal="true"` is the current
+baseline. The kit deliberately does not apply `inert` or body scroll locking:
+both require document-level coordination for nested/concurrent overlays, and a
+component-local implementation could inert an overlay ancestor or unlock the
+page while another overlay remains open.
+
 ## i18n
 
 - Form controls mirror `data-core-lang` to inner controls when needed.

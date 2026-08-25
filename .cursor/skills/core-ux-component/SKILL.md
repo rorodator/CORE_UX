@@ -8,7 +8,7 @@ description: Adds or modifies a CORE_UX core-* kit component. Use when creating 
 ## Before coding
 
 1. Confirm **presentation-only** — no `$svc('ajax')`, no app domain. See `ai-instructions/README.md`, `ai-instructions/layering.md`.
-2. Read `.cursor/rules/core-ux-components.mdc`, `ai-instructions/components.md`, and `ai-instructions/ux-quality.md`.
+2. Read `.cursor/rules/core-ux-components.mdc`, `.cursor/rules/core-ux-documentation.mdc`, `ai-instructions/components.md`, and `ai-instructions/ux-quality.md`.
 
 ## Steps
 
@@ -18,8 +18,12 @@ description: Adds or modifies a CORE_UX core-* kit component. Use when creating 
 4. `registerCoreComponent('core-<name>', Class)` at module bottom.
 5. Styles in `styles/core-ux.css` — token utilities only (`.cursor/rules/core-ux-theming.mdc`).
 6. **Documentation (mandatory, same change set):**
-   - `doc/components/core-<name>.html` — attributes, events, live demos
-   - `doc/assets/sidebar.js` if catalog changes
+   - `doc/components/core-<name>.html` — attributes, events, API, live demos
+   - `doc/assets/sidebar.js` — nav links + brand page/tag counts
+   - `doc/index.html` — hero counts + card-grid when catalog changes
+   - `COMPONENTS.md` — short index
+   - `doc/form-controls.html` when shared form attrs scope changes
+   - See `.cursor/rules/core-ux-documentation.mdc`
 7. `npm run build` if styles changed.
 8. Verify keyboard behavior, accessible names, focus visibility, narrow layout, reduced motion, and every exposed state.
 

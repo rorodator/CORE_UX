@@ -13,7 +13,7 @@ Token-first kit. Details: `ai-instructions/theming.md`, `THEMING.md`, `doc/themi
 - All colours/shadows/radius → semantic **`--core-*`** variables in `styles/tokens.css`.
 - `tailwind.preset.js` maps utilities to `var(--core-…)` — **no hardcoded hex** in preset.
 - `styles/core-ux.css` uses `@apply` with **`core-*` utilities only** — no raw `gray-*`, `blue-*`, palette colours.
-- New/changed tokens → update `THEMING.md`, `doc/theming.html`, and affected component doc pages.
+- New/changed tokens → update `THEMING.md`, `doc/theming.html`, and affected component doc pages. See `core-ux-documentation.mdc`.
 
 ## App theming (consuming apps)
 

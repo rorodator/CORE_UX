@@ -40,8 +40,8 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 | `<core-notif-host>` | Corner toast stack; `position`, offsets, `gap`; API `show()`, `clear()` |
 | `<core-notif>` | Single toast; `variant`, `message`, `duration` (ms), `dismissible` |
 | `<core-tooltip>` | `text`, `position` top \| bottom \| left \| right; `delay`, `hide-delay`; wraps trigger slot |
-| `<core-badge>` | `variant` neutral \| primary \| success \| warning \| error |
-| `<core-spinner>` | `size` sm \| md \| lg |
+| `<core-badge>` | `variant` neutral \| primary \| success \| warning \| error; `label` |
+| `<core-spinner>` | `size` sm \| md \| lg; `label` (accessible name) |
 
 ## Layout
 

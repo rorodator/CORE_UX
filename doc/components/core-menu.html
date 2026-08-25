@@ -34,12 +34,13 @@
                 <tr><td><code>core-menu</code> · <code>disabled</code></td><td>boolean</td><td>Disable trigger.</td></tr>
                 <tr><td><code>core-menu-item</code> · <code>value</code></td><td>string</td><td>Item key (required).</td></tr>
                 <tr><td><code>core-menu-item</code> · <code>label</code></td><td>string</td><td>Static fallback when light-DOM body is empty.</td></tr>
+                <tr><td><code>core-menu-item</code> · <code>disabled</code></td><td>boolean</td><td>Skip item in keyboard nav and block selection.</td></tr>
                 <tr><td><code>core-menu-item</code> · <code>data-core-lang</code></td><td>JSON</td><td>On the host; <code>child</code> defaults to the inner label hook.</td></tr>
                 <tr><td><code>core-menu-separator</code></td><td>—</td><td>Horizontal rule between items (<code>role="separator"</code>).</td></tr>
             </tbody>
         </table>
         <p>Events: <code>core-menu-select</code> — <code>detail.value</code>. Also <code>core-menu-open</code> / <code>core-menu-close</code>.</p>
-        <p>Methods: <code>setLabel(label)</code>, <code>refresh()</code> (after dynamic children).</p>
+        <p>Methods: <code>openMenu()</code>, <code>closeMenu()</code>, <code>toggleMenu()</code>, <code>setLabel(label)</code>, <code>refresh()</code> (after dynamic children).</p>
         <p>Keyboard: trigger — ↓ / Enter / Space opens; ↑ opens and focuses last item; panel — ↑↓ move, Home / End, Escape closes.</p>
 
         <section class="demo-section">

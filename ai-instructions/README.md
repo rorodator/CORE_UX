@@ -2,7 +2,7 @@
 
 Guidance for AI-assisted work on the shared UI kit.
 
-**Cursor rules:** `.cursor/rules/core-ux-components.mdc`, `.cursor/rules/core-ux-theming.mdc`, `.cursor/rules/encapsulation.mdc`  
+**Cursor rules:** `.cursor/rules/core-ux-components.mdc`, `.cursor/rules/core-ux-documentation.mdc`, `.cursor/rules/core-ux-theming.mdc`, `.cursor/rules/encapsulation.mdc`  
 **Workflow skill:** `.cursor/skills/core-ux-component/SKILL.md`
 
 ## Maintaining rules & skills
@@ -53,4 +53,4 @@ Shared assets: `doc/assets/doc.css`, `bootstrap.js`, `load-kit.js`, `sidebar.js`
 
 **Important:** open via HTTP (`php -S localhost:8765 -t .` → `/doc/`). `file://` will not load ES modules. When changing `CORE_JS/lib/utils/dom.js`, sync `doc/assets/core-dom-shim.js`.
 
-When adding, removing, or changing a `<core-*>` component, update the matching page under `doc/components/` (and sidebar in `doc/assets/sidebar.js` if the catalog changes).
+When adding, removing, or changing a `<core-*>` component, update the HTML reference in the same change set — see `.cursor/rules/core-ux-documentation.mdc` and [components.md](./components.md).

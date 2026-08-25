@@ -73,7 +73,7 @@
     ];
 
     var html = '<div class="sidebar__brand"><h1><a href="' + root + 'index.html">CORE_UX</a></h1>'
-        + '<p>Doc + live demos · 29 tags</p></div>';
+        + '<p>Doc + live demos · 25 pages · 30 tags</p></div>';
 
     groups.forEach(function (group) {
         html += '<div class="nav-group"><div class="nav-group__title">' + group.title + '</div>';

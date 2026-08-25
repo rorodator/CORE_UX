@@ -1,6 +1,6 @@
 # CORE_UX components
 
-Cursor rule: `.cursor/rules/core-ux-components.mdc`. Skill: `.cursor/skills/core-ux-component/SKILL.md`.
+Cursor rules: `.cursor/rules/core-ux-components.mdc`, `.cursor/rules/core-ux-documentation.mdc`. Skill: `.cursor/skills/core-ux-component/SKILL.md`.
 
 ## Role
 

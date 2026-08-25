@@ -50,7 +50,7 @@ Optional deep dive (sibling repo): `CORE_JS/ai-instructions/components.md`.
 ## Styles & doc (same change set)
 
 - Tailwind in `styles/core-ux.css` — **core-* token utilities only** — see `core-ux-theming.mdc`.
-- **Mandatory:** update `doc/components/core-<name>.html` + `doc/assets/sidebar.js` when adding/changing tags.
+- **Mandatory:** sync HTML reference on every catalog/API change — see **`core-ux-documentation.mdc`** (pages, sidebar, index, `COMPONENTS.md`, form-controls, theming).
 
 ## App consumption
 

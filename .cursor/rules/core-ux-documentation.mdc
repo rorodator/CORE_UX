@@ -1,0 +1,43 @@
+---
+description: CORE_UX HTML doc — mandatory sync on every kit change (doc/, index, sidebar, COMPONENTS.md)
+globs: components/**,styles/**,doc/**,index.js,COMPONENTS.md,THEMING.md,tailwind.preset.js
+alwaysApply: false
+---
+
+# CORE_UX — documentation (mandatory)
+
+The HTML reference in **`doc/`** is part of the kit contract. **Do not ship component, token, or catalog changes without updating the doc in the same change set.**
+
+Canonical detail: `ai-instructions/components.md` (section « Documentation maintenance »).
+
+## Same change set — always update
+
+| Change | Update |
+|--------|--------|
+| New `<core-*>` tag | `doc/components/core-<name>.html` + `doc/assets/sidebar.js` + `doc/index.html` card grid + `COMPONENTS.md` |
+| Removed tag | Delete page + sidebar entry + index card + `COMPONENTS.md` row |
+| New/changed attribute | Attribute table + live demo on component page |
+| New/changed event or public method | Events/API section + demo when applicable |
+| Composable sub-tag (menu-item, tab, notif-host, …) | Parent page documents **each tag** in the group (no separate sidebar entry required) |
+| New/changed design token | `styles/tokens.css`, `tailwind.preset.js`, `THEMING.md`, `doc/theming.html`, affected component pages |
+| Shared form-control attrs | `doc/form-controls.html` when scope changes |
+
+Also sync:
+
+- **`doc/index.html`** — hero tag/page counts and `card-grid` entries
+- **`doc/assets/sidebar.js`** — nav links and brand count (`25 pages · 30 tags` or current totals)
+- **`COMPONENTS.md`** — short index aligned with `index.js`
+
+## Doc page checklist
+
+- Attributes = `observedAttributes` + slot patterns (`data-core-footer`) + attrs read at connect (note if not reactive)
+- Events = outward `CustomEvent` names and `detail` shape
+- Methods = public imperative API (`openMenu`, `show`, `deselectVisible`, …)
+- Live demos for every documented variant/state
+- Valid HTML (no corrupted doctype or broken import maps)
+
+## Do not
+
+- Merge component/CSS/token changes without touching `doc/` when the public API or catalog changed
+- Add sidebar entries for composable sub-tags when the parent page already documents them
+- Rely on silent attribute fallbacks — document supported values explicitly

@@ -805,7 +805,8 @@ export class CoreAutocomplete extends Core_UXElement {
 
     /** @returns {HTMLElement|null} */
     _list() {
-        return this.querySelector('.core-autocomplete__list');
+        return this.querySelector('.core-autocomplete__list')
+            || (this._floating?.isOpen ? this._floating.getPanel() : null);
     }
 }
 

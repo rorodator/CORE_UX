@@ -64,6 +64,41 @@ test('core-autocomplete hides previous choices as soon as the query changes', as
     assert.equal(input.getAttribute('aria-expanded'), 'false');
 });
 
+test('core-autocomplete refreshes and closes choices while the list is portaled', async () => {
+    document.body.innerHTML = '<core-autocomplete></core-autocomplete>';
+    const component = document.body.firstElementChild;
+    component.configure({ delay: 0, minCharacters: 1 });
+    const pending = new Map();
+    component.setDataSource((query) => new Promise((resolve) => pending.set(query, resolve)));
+
+    const input = enterQuery(component, 'al');
+    await wait();
+    pending.get('al')(['Alice Martin']);
+    await wait();
+
+    const list = document.querySelector('.core-autocomplete__list');
+    assert.equal(list.parentNode, document.body);
+    assert.deepEqual(visibleChoices(document), ['Alice Martin']);
+
+    enterQuery(component, 'bo');
+
+    assert.equal(input.getAttribute('aria-expanded'), 'false');
+    assert.equal(list.parentNode, component.querySelector('.core-autocomplete'));
+    assert.deepEqual(visibleChoices(document), []);
+
+    await wait();
+    pending.get('bo')(['Bob Smith']);
+    await wait();
+
+    assert.equal(input.getAttribute('aria-expanded'), 'true');
+    assert.deepEqual(visibleChoices(document), ['Bob Smith']);
+
+    document.body.dispatchEvent(new Event('click', { bubbles: true }));
+
+    assert.equal(input.getAttribute('aria-expanded'), 'false');
+    assert.equal(list.parentNode, component.querySelector('.core-autocomplete'));
+});
+
 test('core-autocomplete unsubscribes and ignores emissions from an older Observable', async () => {
     const component = mountAutocomplete();
     const sources = new Map();

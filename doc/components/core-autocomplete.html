@@ -114,6 +114,10 @@ el.addEventListener('autocomplete-select', (e) =&gt; console.log(e.detail.result
   await new Promise((r) =&gt; setTimeout(r, 300));
   return users.filter((u) =&gt; u.title.toLowerCase().includes(query.toLowerCase()));
 });</code></pre>
+                <p>Only the latest search updates the choices. Older Observable
+                    sources are unsubscribed when possible, late async results are
+                    ignored, and existing choices are hidden as soon as the query changes.
+                    Input below <code>min-characters</code> stays empty.</p>
             </div>
         </section>
 

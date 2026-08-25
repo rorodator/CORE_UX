@@ -50,6 +50,9 @@ export class CoreAutocomplete extends Core_UXElement {
         this._lastQuery = '';
         /** @type {string} */
         this._committedValue = '';
+        this._searchSequence = 0;
+        /** @type {{ unsubscribe?: () => void }|null} */
+        this._activeSearchSubscription = null;
         this._uid = Math.random().toString(36).slice(2, 9);
         /** @type {((event: Event) => void)|null} */
         this._onInput = null;
@@ -117,7 +120,9 @@ export class CoreAutocomplete extends Core_UXElement {
      * @param {unknown} dataSource
      */
     setDataSource(dataSource) {
+        this._invalidateSearch();
         this._dataSource = dataSource;
+        this._clearResults();
     }
 
     getValue() {
@@ -137,10 +142,9 @@ export class CoreAutocomplete extends Core_UXElement {
     }
 
     clear() {
+        this._invalidateSearch();
         this.setValue('');
-        this._results = [];
-        this._closePanel();
-        this._renderResults();
+        this._clearResults();
     }
 
     focus() {
@@ -288,6 +292,7 @@ export class CoreAutocomplete extends Core_UXElement {
 
     cleanFunctional() {
         super.cleanFunctional();
+        this._invalidateSearch();
         if (this._searchTimeout) {
             clearTimeout(this._searchTimeout);
             this._searchTimeout = null;
@@ -373,16 +378,29 @@ export class CoreAutocomplete extends Core_UXElement {
         }));
         if (this._searchTimeout) {
             clearTimeout(this._searchTimeout);
+            this._searchTimeout = null;
+        }
+        const searchId = this._invalidateSearch();
+        this._lastQuery = value;
+        this._clearResults();
+        if (!value || value.length < this._config.minCharacters) {
+            this.performSearch(value, searchId);
+            return;
         }
         this._searchTimeout = setTimeout(() => {
-            this.performSearch(value);
+            this._searchTimeout = null;
+            this.performSearch(value, searchId);
         }, this._config.delay);
     }
 
     /**
      * @param {string} query
+     * @param {number} [searchId]
      */
-    async performSearch(query) {
+    async performSearch(query, searchId = this._invalidateSearch()) {
+        if (!this._isCurrentSearch(searchId)) {
+            return;
+        }
         this._lastQuery = query;
         this.dispatchEvent(new CustomEvent('autocomplete-search', {
             bubbles: true,
@@ -405,14 +423,34 @@ export class CoreAutocomplete extends Core_UXElement {
                 if (typeof this._dataSource === 'function') {
                     const sourceResult = this._dataSource(query);
                     if (sourceResult && typeof sourceResult.subscribe === 'function') {
-                        sourceResult.subscribe({
+                        let settled = false;
+                        const subscription = sourceResult.subscribe({
                             next: (data) => {
-                                this.updateResults({ results: normalizeResults(data) });
+                                if (this._isCurrentSearch(searchId)) {
+                                    this.updateResults(data);
+                                }
                             },
                             error: () => {
-                                this.updateResults({ results: [] });
+                                settled = true;
+                                if (this._isCurrentSearch(searchId)) {
+                                    this._activeSearchSubscription = null;
+                                    this.updateResults([]);
+                                    this.setLoading(false);
+                                }
+                            },
+                            complete: () => {
+                                settled = true;
+                                if (this._isCurrentSearch(searchId)) {
+                                    this._activeSearchSubscription = null;
+                                    this.setLoading(false);
+                                }
                             }
                         });
+                        if (this._isCurrentSearch(searchId) && !settled) {
+                            this._activeSearchSubscription = subscription || null;
+                        } else {
+                            subscription?.unsubscribe?.();
+                        }
                         return;
                     }
                     results = await sourceResult;
@@ -425,12 +463,40 @@ export class CoreAutocomplete extends Core_UXElement {
                 }
             }
 
-            this.updateResults(results);
+            if (this._isCurrentSearch(searchId)) {
+                this.updateResults(results);
+            }
         } catch (_) {
-            this.updateResults([]);
+            if (this._isCurrentSearch(searchId)) {
+                this.updateResults([]);
+            }
         } finally {
-            this.setLoading(false);
+            if (this._isCurrentSearch(searchId)) {
+                this.setLoading(false);
+            }
         }
+    }
+
+    _invalidateSearch() {
+        this._searchSequence += 1;
+        this._activeSearchSubscription?.unsubscribe?.();
+        this._activeSearchSubscription = null;
+        this.setLoading(false);
+        return this._searchSequence;
+    }
+
+    /**
+     * @param {number} searchId
+     * @returns {boolean}
+     */
+    _isCurrentSearch(searchId) {
+        return searchId === this._searchSequence;
+    }
+
+    _clearResults() {
+        this._results = [];
+        this._closePanel();
+        this._renderResults();
     }
 
     /**

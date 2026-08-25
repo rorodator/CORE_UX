@@ -41,6 +41,11 @@ el.setDataSource((query) =>
 );
 ```
 
+Only the latest search can update the choices. A newer query unsubscribes the
+previous Observable when possible; late Promise resolutions and Observable
+emissions are ignored. Existing choices are hidden as soon as the query changes;
+queries below `min-characters` stay empty.
+
 ## Chips
 
 ```html

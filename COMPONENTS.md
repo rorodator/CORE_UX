@@ -25,6 +25,7 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 |-----|--------|
 | `<core-field>` | `type` text \| email \| password \| number \| date \| tel \| url \| search; `min`, `max`, `step`, `label`, `hint`, `error` |
 | `<core-textarea>` | `rows`, `maxlength`, `label`, `hint`, `error` |
+| `<core-rich-text>` | WYSIWYG editor; `min-height`, `sanitize`; events `core-rich-text-input`, `core-rich-text-change`; methods `getHtml()`, `getText()`, `setHtml()`; helpers in `lib/html/rich-text-html.js` |
 | `<core-select>` | `options` JSON `[{ "value", "label", "selected"? }]` |
 | `<core-checkbox>` | `label`, `checked`, `value` |
 | `<core-radio-group>` | `name`, `options` JSON, `layout` stack \| inline |

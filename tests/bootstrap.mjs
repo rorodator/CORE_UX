@@ -1,5 +1,5 @@
 import { register } from 'node:module';
-import { parseHTML } from 'linkedom';
+import { parseHTML, DOMParser } from 'linkedom';
 
 register('./test-loader.mjs', import.meta.url);
 
@@ -14,9 +14,11 @@ globalThis.HTMLElement = HTMLElement;
 globalThis.HTMLInputElement = defaultView.HTMLInputElement;
 globalThis.Element = defaultView.Element;
 globalThis.Node = defaultView.Node;
+globalThis.DOMParser = DOMParser;
 globalThis.Event = defaultView.Event;
 globalThis.CustomEvent = defaultView.CustomEvent;
 globalThis.KeyboardEvent = defaultView.KeyboardEvent;
 globalThis.MouseEvent = defaultView.MouseEvent;
 globalThis.FocusEvent = defaultView.FocusEvent;
+globalThis.DOMParser = DOMParser;
 defaultView.requestAnimationFrame = (callback) => setTimeout(callback, 0);

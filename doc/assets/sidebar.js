@@ -34,6 +34,7 @@
             links: [
                 { id: 'core-field', href: comp + 'core-field.html', label: 'core-field' },
                 { id: 'core-textarea', href: comp + 'core-textarea.html', label: 'core-textarea' },
+                { id: 'core-rich-text', href: comp + 'core-rich-text.html', label: 'core-rich-text' },
                 { id: 'core-select', href: comp + 'core-select.html', label: 'core-select' },
                 { id: 'core-checkbox', href: comp + 'core-checkbox.html', label: 'core-checkbox' },
                 { id: 'core-radio-group', href: comp + 'core-radio-group.html', label: 'core-radio-group' },
@@ -73,7 +74,7 @@
     ];
 
     var html = '<div class="sidebar__brand"><h1><a href="' + root + 'index.html">CORE_UX</a></h1>'
-        + '<p>Doc + live demos · 25 pages · 30 tags</p></div>';
+        + '<p>Doc + live demos · 26 pages · 31 tags</p></div>';
 
     groups.forEach(function (group) {
         html += '<div class="nav-group"><div class="nav-group__title">' + group.title + '</div>';

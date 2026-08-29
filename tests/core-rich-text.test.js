@@ -345,12 +345,40 @@ test('preserves consumer host data-core-lang after render', async () => {
     uninstallLangService();
 });
 
+test('lang.process(root) alone skips root consumer entries (Core_LangService semantics)', async () => {
+    const consumerLang = JSON.stringify([
+        { container: 'journeys', name: 'update_body_field', attribute: 'label' },
+    ]);
+
+    const { installLangService, uninstallLangService, processLang } = await import('./rich-text-lang-test-helper.mjs');
+    installLangService({
+        journeys: { update_body_field: 'Corps FR' },
+    });
+
+    document.body.innerHTML = '';
+    const host = document.createElement('div');
+    host.setAttribute('data-core-lang', consumerLang);
+    document.body.appendChild(host);
+
+    processLang(host);
+
+    assert.equal(host.hasAttribute('label'), false);
+
+    uninstallLangService();
+});
+
 test('lang process updates internal hooks without rebuilding host data-core-lang', async () => {
     const consumerLang = JSON.stringify([
         { container: 'journeys', name: 'update_body_field', attribute: 'label' },
     ]);
 
-    const { installLangService, uninstallLangService, getLangService, setLangLabels } = await import('./rich-text-lang-test-helper.mjs');
+    const {
+        installLangService,
+        uninstallLangService,
+        getLangService,
+        setLangLabels,
+        applyRichTextLangProcessing,
+    } = await import('./rich-text-lang-test-helper.mjs');
     installLangService({
         journeys: { update_body_field: 'Label A' },
         core_ux: { rich_text_bold: 'Bold A' },
@@ -370,12 +398,7 @@ test('lang process updates internal hooks without rebuilding host data-core-lang
         journeys: { update_body_field: 'Label B' },
         core_ux: { rich_text_bold: 'Bold B' },
     });
-    getLangService().process(host);
-    getLangService().processOneElement(host, {
-        container: 'journeys',
-        name: 'update_body_field',
-        attribute: 'label',
-    });
+    applyRichTextLangProcessing(host, getLangService());
 
     assert.equal(host.getAttribute('data-core-lang'), consumerLang);
     assert.equal(host.getAttribute('label'), 'Label B');

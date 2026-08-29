@@ -41,19 +41,52 @@ function processLangElement(data, elt, defaultContainer) {
 }
 
 /**
- * Mirrors {@link Core_LangService#process} for rich-text DOM tests.
+ * Mirrors {@link Core_LangService#process}: descendants only, root is excluded.
  *
  * @param {Record<string, Record<string, string>>} data
- * @param {HTMLElement} host
+ * @param {HTMLElement} root
  * @param {string} [defaultContainer]
  */
-function processLangTree(data, host, defaultContainer = 'global') {
-    if (host.hasAttribute('data-core-lang')) {
-        processLangElement(data, host, defaultContainer);
-    }
-    host.querySelectorAll('[data-core-lang]').forEach((elt) => {
+function processLangTree(data, root, defaultContainer = 'global') {
+    root.querySelectorAll('[data-core-lang]').forEach((elt) => {
         processLangElement(data, elt, defaultContainer);
     });
+}
+
+/**
+ * Mirrors {@link CoreRichText#_processHostLangEntries}.
+ *
+ * @param {HTMLElement} host
+ * @param {{ processOneElement: (elt: HTMLElement, info: object) => void }} lang
+ */
+export function processHostLangEntries(host, lang) {
+    const raw = host.getAttribute('data-core-lang');
+    if (!raw) {
+        return;
+    }
+    let parsed;
+    try {
+        parsed = JSON.parse(raw);
+    } catch (_) {
+        return;
+    }
+    const entries = Array.isArray(parsed) ? parsed : [parsed];
+    entries.forEach((info) => {
+        if (info?.container && info?.name) {
+            lang.processOneElement(host, info);
+        }
+    });
+}
+
+/**
+ * Mirrors {@link CoreRichText#_applyLangProcessing} lang branch (process + host entries).
+ *
+ * @param {HTMLElement} host
+ * @param {{ process: (root?: HTMLElement|null) => void, processOneElement: (elt: HTMLElement, info: object) => void }} lang
+ */
+export function applyRichTextLangProcessing(host, lang) {
+    lang.process(host);
+    processHostLangEntries(host, lang);
 }
 
 /** @type {Record<string, Record<string, string>>|null} */
@@ -141,7 +174,7 @@ export function setLangLabels(labels) {
 }
 
 /**
- * @returns {{ process: (root?: HTMLElement|null) => void, getData: () => { subscribe: (fn: Function) => { unsubscribe: Function } } }|null}
+ * @returns {{ process: (root?: HTMLElement|null) => void, processOneElement: (elt: HTMLElement, info: object) => void, getData: () => { subscribe: (fn: Function) => { unsubscribe: Function } } }|null}
  */
 export function getLangService() {
     return langService;

@@ -24,7 +24,7 @@
     <main class="main">
         <header class="hero">
             <h1><span class="tag">&lt;core-rich-text&gt;</span></h1>
-            <p class="lead">WYSIWYG rich-text editor with toolbar formatting and HTML sanitization helpers.
+            <p class="lead">WYSIWYG rich-text editor with toolbar presets, plain-text <code>maxlength</code>, localized toolbar, and HTML sanitization helpers.
                 <a href="../form-controls.html">Shared form attrs</a>.</p>
         </header>
 
@@ -32,7 +32,9 @@
             <thead><tr><th>Attribute</th><th>Default</th><th>Description</th></tr></thead>
             <tbody>
                 <tr><td><code>min-height</code></td><td>8</td><td>Editor minimum height in rem.</td></tr>
-                <tr><td><code>sanitize</code></td><td>true</td><td>When not <code>false</code>, output is whitelist-sanitized on read and when setting <code>value</code>.</td></tr>
+                <tr><td><code>maxlength</code></td><td>—</td><td>Optional plain-text limit (UTF-16 code units). Applies to <code>getText()</code>, not HTML length. Sets <code>aria-invalid</code> when exceeded.</td></tr>
+                <tr><td><code>toolbar</code></td><td>full</td><td><code>full</code>, <code>narrative</code> (no alignment), or <code>compact</code> (minimal inline tools).</td></tr>
+                <tr><td><code>sanitize</code></td><td>true</td><td>When not <code>false</code>, output is whitelist-sanitized on read, paste, and when setting <code>value</code>.</td></tr>
                 <tr><td colspan="3"><em>Plus shared form attributes (<code>label</code>, <code>hint</code>, <code>error</code>, <code>name</code>, <code>value</code>, …).</em></td></tr>
             </tbody>
         </table>
@@ -42,8 +44,8 @@
             <table>
                 <thead><tr><th>Event</th><th>detail</th><th>When</th></tr></thead>
                 <tbody>
-                    <tr><td><code>core-rich-text-input</code></td><td><code>{ html, text }</code></td><td>While typing or formatting (bubbles).</td></tr>
-                    <tr><td><code>core-rich-text-change</code></td><td><code>{ html, text }</code></td><td>On editor blur (bubbles).</td></tr>
+                    <tr><td><code>core-rich-text-input</code></td><td><code>{ html, text, maxLengthExceeded }</code></td><td>While typing, formatting, or pasting (bubbles).</td></tr>
+                    <tr><td><code>core-rich-text-change</code></td><td><code>{ html, text, maxLengthExceeded }</code></td><td>On editor blur (bubbles).</td></tr>
                 </tbody>
             </table>
         </section>
@@ -54,8 +56,9 @@
                 <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
                 <tbody>
                     <tr><td><code>getHtml()</code></td><td>string</td><td>Sanitized HTML (unless <code>sanitize="false"</code>).</td></tr>
-                    <tr><td><code>getText()</code></td><td>string</td><td>Plain text extracted from the editor.</td></tr>
+                    <tr><td><code>getText()</code></td><td>string</td><td>Plain text — reference for <code>maxlength</code>.</td></tr>
                     <tr><td><code>setHtml(html)</code></td><td>void</td><td>Sets editor content; sanitizes by default.</td></tr>
+                    <tr><td><code>isMaxLengthExceeded()</code></td><td>boolean</td><td>True when plain text exceeds <code>maxlength</code>.</td></tr>
                 </tbody>
             </table>
         </section>
@@ -66,8 +69,9 @@
             <ul>
                 <li><code>escapeHtml(text)</code> — escape plain text for HTML contexts.</li>
                 <li><code>sanitizeRichTextHtml(html)</code> — whitelist sanitizer (client).</li>
+                <li><code>sanitizeRichTextPaste(html, plainText)</code> — paste-safe sanitizer.</li>
                 <li><code>normalizeRichTextHtml(html)</code> — sanitize + remove empty blocks.</li>
-                <li><code>getPlainTextFromHtml(html)</code> — plain text extraction.</li>
+                <li><code>getPlainTextFromHtml(html)</code> / <code>getRichTextPlainLength(html)</code> — plain text extraction and length.</li>
             </ul>
             <div class="callout callout--warning">
                 Always sanitize again on the server before persisting or rendering stored HTML.
@@ -76,17 +80,50 @@
         </section>
 
         <section>
-            <h2>Toolbar</h2>
-            <p>Bold, italic, underline, bullet/numbered lists, link, text color, alignment (left/center/right), clear formatting.</p>
+            <h2>Sanitization contract</h2>
+            <p>Allowed tags: <code>p</code>, <code>br</code>, <code>strong</code>, <code>em</code>, <code>u</code>, lists, links, <code>span</code>/<code>div</code> with color or text-align only.
+                Rejects <code>script</code>, <code>iframe</code>, <code>img</code>, <code>on*</code> handlers, <code>javascript:</code>, <code>data:</code>, and arbitrary CSS.</p>
+        </section>
+
+        <section>
+            <h2>i18n</h2>
+            <p>Toolbar and link-dialog strings use <code>data-core-lang</code> (container <code>core_ux</code>).
+                Reference catalogues: <code>lang/labels-{en,fr,es,de}.json</code>. See <code>components/core-rich-text/README.md</code>.</p>
+        </section>
+
+        <section>
+            <h2>Toolbar presets</h2>
+            <table>
+                <thead><tr><th>Preset</th><th>Tools</th></tr></thead>
+                <tbody>
+                    <tr><td><code>full</code></td><td>Bold, italic, underline, lists, link, color, alignment, clear formatting.</td></tr>
+                    <tr><td><code>narrative</code></td><td>Same without alignment — posts and stories.</td></tr>
+                    <tr><td><code>compact</code></td><td>Bold, italic, underline, link, clear formatting.</td></tr>
+                </tbody>
+            </table>
         </section>
 
         <section class="demo-section">
-            <h3>Default</h3>
+            <h3>Default (full toolbar)</h3>
             <div class="demo">
                 <div class="demo__preview">
                     <core-rich-text label="Notes" name="notes" placeholder="Write your thoughts…"></core-rich-text>
                 </div>
                 <pre class="demo__code"><code>&lt;core-rich-text label="Notes" placeholder="Write your thoughts…"&gt;&lt;/core-rich-text&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Narrative preset + maxlength</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-rich-text
+                        label="Story"
+                        toolbar="narrative"
+                        maxlength="280"
+                        hint="Plain-text limit counts visible characters only."></core-rich-text>
+                </div>
+                <pre class="demo__code"><code>&lt;core-rich-text label="Story" toolbar="narrative" maxlength="280"&gt;&lt;/core-rich-text&gt;</code></pre>
             </div>
         </section>
 
@@ -106,7 +143,7 @@
 
         <section class="demo-section">
             <h3>Live output</h3>
-            <p>Type in the editor — sanitized HTML appears below.</p>
+            <p>Type in the editor — sanitized HTML and plain text appear below.</p>
             <div class="demo">
                 <div class="demo__preview demo__preview--stacked">
                     <core-rich-text id="rt-demo" label="Body" name="body"></core-rich-text>
@@ -132,8 +169,12 @@
     const editor = document.getElementById('rt-demo');
     const output = document.getElementById('rt-output');
     if (editor && output) {
-        const render = () => {
-            output.textContent = editor.getHtml() || '(empty)';
+        const render = (event) => {
+            const detail = event?.detail || {};
+            const html = editor.getHtml() || '(empty)';
+            const text = editor.getText();
+            const over = editor.isMaxLengthExceeded?.() ? ' [maxlength exceeded]' : '';
+            output.textContent = `HTML: ${html}\nText (${text.length}): ${text || '(empty)'}${over}`;
         };
         editor.addEventListener('core-rich-text-input', render);
         editor.addEventListener('core-rich-text-change', render);

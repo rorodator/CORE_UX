@@ -1,0 +1,21 @@
+{
+  "core_ux": {
+    "rich_text_toolbar": "Formato de texto",
+    "rich_text_bold": "Negrita",
+    "rich_text_italic": "Cursiva",
+    "rich_text_underline": "Subrayado",
+    "rich_text_bullet_list": "Lista con viñetas",
+    "rich_text_ordered_list": "Lista numerada",
+    "rich_text_link": "Insertar enlace",
+    "rich_text_text_color": "Color del texto",
+    "rich_text_align_left": "Alinear a la izquierda",
+    "rich_text_align_center": "Centrar",
+    "rich_text_align_right": "Alinear a la derecha",
+    "rich_text_remove_format": "Quitar formato",
+    "rich_text_link_dialog_title": "Insertar enlace",
+    "rich_text_link_url_label": "URL del enlace",
+    "rich_text_link_apply": "Aplicar",
+    "rich_text_link_cancel": "Cancelar",
+    "rich_text_link_invalid_url": "Introduce una URL válida (https://, mailto: o ruta relativa)."
+  }
+}

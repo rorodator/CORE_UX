@@ -1,0 +1,21 @@
+{
+  "core_ux": {
+    "rich_text_toolbar": "Text formatting",
+    "rich_text_bold": "Bold",
+    "rich_text_italic": "Italic",
+    "rich_text_underline": "Underline",
+    "rich_text_bullet_list": "Bullet list",
+    "rich_text_ordered_list": "Numbered list",
+    "rich_text_link": "Insert link",
+    "rich_text_text_color": "Text color",
+    "rich_text_align_left": "Align left",
+    "rich_text_align_center": "Align center",
+    "rich_text_align_right": "Align right",
+    "rich_text_remove_format": "Clear formatting",
+    "rich_text_link_dialog_title": "Insert link",
+    "rich_text_link_url_label": "Link URL",
+    "rich_text_link_apply": "Apply",
+    "rich_text_link_cancel": "Cancel",
+    "rich_text_link_invalid_url": "Enter a valid URL (https://, mailto:, or relative path)."
+  }
+}

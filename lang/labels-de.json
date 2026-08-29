@@ -1,0 +1,21 @@
+{
+  "core_ux": {
+    "rich_text_toolbar": "Textformatierung",
+    "rich_text_bold": "Fett",
+    "rich_text_italic": "Kursiv",
+    "rich_text_underline": "Unterstrichen",
+    "rich_text_bullet_list": "Aufzählungsliste",
+    "rich_text_ordered_list": "Nummerierte Liste",
+    "rich_text_link": "Link einfügen",
+    "rich_text_text_color": "Textfarbe",
+    "rich_text_align_left": "Links ausrichten",
+    "rich_text_align_center": "Zentrieren",
+    "rich_text_align_right": "Rechts ausrichten",
+    "rich_text_remove_format": "Formatierung entfernen",
+    "rich_text_link_dialog_title": "Link einfügen",
+    "rich_text_link_url_label": "Link-URL",
+    "rich_text_link_apply": "Anwenden",
+    "rich_text_link_cancel": "Abbrechen",
+    "rich_text_link_invalid_url": "Gib eine gültige URL ein (https://, mailto: oder relativer Pfad)."
+  }
+}

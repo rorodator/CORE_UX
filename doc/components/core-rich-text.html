@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-rich-text — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/utils/dom.js": "../assets/core-dom-shim.js",
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js",
+        "CORE_UX/": "../../",
+        "lucide": "../../node_modules/lucide/dist/esm/lucide.mjs"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-rich-text"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-rich-text&gt;</span></h1>
+            <p class="lead">WYSIWYG rich-text editor with toolbar formatting and HTML sanitization helpers.
+                <a href="../form-controls.html">Shared form attrs</a>.</p>
+        </header>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>min-height</code></td><td>8</td><td>Editor minimum height in rem.</td></tr>
+                <tr><td><code>sanitize</code></td><td>true</td><td>When not <code>false</code>, output is whitelist-sanitized on read and when setting <code>value</code>.</td></tr>
+                <tr><td colspan="3"><em>Plus shared form attributes (<code>label</code>, <code>hint</code>, <code>error</code>, <code>name</code>, <code>value</code>, …).</em></td></tr>
+            </tbody>
+        </table>
+
+        <section>
+            <h2>Events</h2>
+            <table>
+                <thead><tr><th>Event</th><th>detail</th><th>When</th></tr></thead>
+                <tbody>
+                    <tr><td><code>core-rich-text-input</code></td><td><code>{ html, text }</code></td><td>While typing or formatting (bubbles).</td></tr>
+                    <tr><td><code>core-rich-text-change</code></td><td><code>{ html, text }</code></td><td>On editor blur (bubbles).</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Public API</h2>
+            <table>
+                <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td><code>getHtml()</code></td><td>string</td><td>Sanitized HTML (unless <code>sanitize="false"</code>).</td></tr>
+                    <tr><td><code>getText()</code></td><td>string</td><td>Plain text extracted from the editor.</td></tr>
+                    <tr><td><code>setHtml(html)</code></td><td>void</td><td>Sets editor content; sanitizes by default.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>HTML helpers</h2>
+            <p>Import from <code>CORE_UX/lib/html/rich-text-html.js</code> (re-exported by the component module):</p>
+            <ul>
+                <li><code>escapeHtml(text)</code> — escape plain text for HTML contexts.</li>
+                <li><code>sanitizeRichTextHtml(html)</code> — whitelist sanitizer (client).</li>
+                <li><code>normalizeRichTextHtml(html)</code> — sanitize + remove empty blocks.</li>
+                <li><code>getPlainTextFromHtml(html)</code> — plain text extraction.</li>
+            </ul>
+            <div class="callout callout--warning">
+                Always sanitize again on the server before persisting or rendering stored HTML.
+                PHP apps can use <code>Core\Util\RichTextHtml::sanitize()</code> in CORE_PHP.
+            </div>
+        </section>
+
+        <section>
+            <h2>Toolbar</h2>
+            <p>Bold, italic, underline, bullet/numbered lists, link, text color, alignment (left/center/right), clear formatting.</p>
+        </section>
+
+        <section class="demo-section">
+            <h3>Default</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-rich-text label="Notes" name="notes" placeholder="Write your thoughts…"></core-rich-text>
+                </div>
+                <pre class="demo__code"><code>&lt;core-rich-text label="Notes" placeholder="Write your thoughts…"&gt;&lt;/core-rich-text&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>With initial value</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-rich-text
+                        label="Summary"
+                        name="summary"
+                        value="&lt;p&gt;Hello &lt;strong&gt;world&lt;/strong&gt;&lt;/p&gt;"
+                        hint="Basic formatting supported."></core-rich-text>
+                </div>
+                <pre class="demo__code"><code>&lt;core-rich-text label="Summary" value="&lt;p&gt;Hello &lt;strong&gt;world&lt;/strong&gt;&lt;/p&gt;"&gt;&lt;/core-rich-text&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Live output</h3>
+            <p>Type in the editor — sanitized HTML appears below.</p>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-rich-text id="rt-demo" label="Body" name="body"></core-rich-text>
+                    <pre id="rt-output" class="demo__code" style="margin:0;white-space:pre-wrap;"></pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Error &amp; disabled</h3>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-rich-text label="Bio" error="Bio is required." value="&lt;p&gt;Draft&lt;/p&gt;"></core-rich-text>
+                    <core-rich-text label="Locked" disabled value="&lt;p&gt;Read-only content&lt;/p&gt;"></core-rich-text>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../assets/load-kit.js"></script>
+<script type="module">
+    const editor = document.getElementById('rt-demo');
+    const output = document.getElementById('rt-output');
+    if (editor && output) {
+        const render = () => {
+            output.textContent = editor.getHtml() || '(empty)';
+        };
+        editor.addEventListener('core-rich-text-input', render);
+        editor.addEventListener('core-rich-text-change', render);
+        render();
+    }
+</script>
+</body>
+</html>

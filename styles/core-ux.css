@@ -130,6 +130,64 @@
     @apply core-control min-h-[6rem] resize-y;
   }
 
+  .core-rich-text {
+    @apply flex w-full flex-col overflow-hidden rounded-core border border-core-border bg-core-surface shadow-core-sm;
+  }
+
+  .core-rich-text__toolbar {
+    @apply flex flex-wrap items-center gap-0.5 border-b border-core-border bg-core-surface-muted px-1.5 py-1;
+  }
+
+  .core-rich-text__toolbar-sep {
+    @apply mx-0.5 h-5 w-px shrink-0 bg-core-border;
+  }
+
+  .core-rich-text__toolbar-btn {
+    @apply inline-flex h-8 min-w-8 items-center justify-center rounded border border-transparent
+      text-core-text transition-colors
+      hover:bg-core-surface hover:border-core-border
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-core-primary-ring
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .core-rich-text__toolbar-btn--color {
+    @apply relative cursor-pointer;
+  }
+
+  .core-rich-text__toolbar-icon {
+    @apply inline-flex items-center justify-center text-core-text;
+  }
+
+  .core-rich-text__color-input {
+    @apply absolute inset-0 cursor-pointer opacity-0;
+  }
+
+  .core-rich-text__editor {
+    @apply core-control min-h-[8rem] resize-y rounded-none border-0 shadow-none
+      focus:border-core-primary focus:ring-0;
+  }
+
+  .core-rich-text__editor:empty::before {
+    content: attr(data-placeholder);
+    @apply pointer-events-none text-core-text-muted;
+  }
+
+  .core-rich-text__editor ul {
+    @apply my-2 list-disc pl-6;
+  }
+
+  .core-rich-text__editor ol {
+    @apply my-2 list-decimal pl-6;
+  }
+
+  .core-rich-text__editor a {
+    @apply text-core-primary underline underline-offset-2;
+  }
+
+  .core-rich-text--disabled .core-rich-text__editor {
+    @apply cursor-not-allowed bg-core-surface-muted opacity-70;
+  }
+
   .core-select-wrap {
     @apply relative w-full;
   }

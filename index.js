@@ -8,6 +8,7 @@ import './components/core-icon/core-icon.js';
 import './components/core-button/core-button.js';
 import './components/core-field/core-field.js';
 import './components/core-textarea/core-textarea.js';
+import './components/core-rich-text/core-rich-text.js';
 import './components/core-select/core-select.js';
 import './components/core-checkbox/core-checkbox.js';
 import './components/core-radio-group/core-radio-group.js';

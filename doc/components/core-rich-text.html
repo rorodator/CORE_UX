@@ -87,7 +87,8 @@
 
         <section>
             <h2>i18n</h2>
-            <p>Toolbar and link-dialog strings use <code>data-core-lang</code> (container <code>core_ux</code>).
+            <p>Consuming apps keep their own <code>data-core-lang</code> on the host (e.g. field label, placeholder).
+                Internal toolbar and link-dialog hooks carry separate <code>data-core-lang</code> entries (container <code>core_ux</code>).
                 Reference catalogues: <code>lang/labels-{en,fr,es,de}.json</code>. See <code>components/core-rich-text/README.md</code>.</p>
         </section>
 

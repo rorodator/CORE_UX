@@ -103,5 +103,5 @@ page while another overlay remains open.
 - Form controls mirror `data-core-lang` to inner controls when needed.
 - `core-menu-item`: classic `data-core-lang` on the host; patches `"child": "[data-core-menu-item-label]"` before render.
 - Autocomplete supports `*-container` / `*-key` pairs resolved via `$svc('lang')` when available.
-- `core-rich-text`: host `data-core-lang` targets toolbar and link-dialog hooks (container `core_ux`). Reference labels in `lang/labels-{en,fr,es,de}.json`; see `components/core-rich-text/README.md`.
+- `core-rich-text`: consumer `data-core-lang` stays on the host (never overwritten); internal toolbar/link hooks carry their own `data-core-lang` entries (`core_ux`). On connect and lang refresh the component runs `$svc('lang').process(this)` for descendants plus `processOneElement` for host entries (because `process(root)` skips the root node). Reference labels in `lang/labels-{en,fr,es,de}.json`.
 - Client i18n mechanics: see `data-core-lang` usage above; optional `CORE_JS/ai-instructions/internationalization.md` for full `$svc('lang')` API.

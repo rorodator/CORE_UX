@@ -301,3 +301,168 @@ test('paste plain text wraps lines as paragraphs', () => {
     assert.match(safe, /<p>Line one<\/p>/);
     assert.match(safe, /<p>Line two<\/p>/);
 });
+
+test('preserves consumer host data-core-lang after render', async () => {
+    const consumerLang = JSON.stringify([
+        { container: 'journeys', name: 'update_body_field', attribute: 'label' },
+        { container: 'journeys', name: 'update_body_placeholder', attribute: 'placeholder' },
+    ]);
+
+    const { installLangService, uninstallLangService, processLang } = await import('./rich-text-lang-test-helper.mjs');
+    installLangService({
+        journeys: {
+            update_body_field: 'Corps FR',
+            update_body_placeholder: 'Saisie FR',
+        },
+        core_ux: {
+            rich_text_bold: 'Gras',
+            rich_text_text_color: 'Couleur du texte',
+        },
+    });
+
+    await import('../components/core-rich-text/core-rich-text.js');
+    await customElements.whenDefined('core-rich-text');
+
+    document.body.innerHTML = '';
+    const host = document.createElement('core-rich-text');
+    host.setAttribute('data-core-lang', consumerLang);
+    document.body.appendChild(host);
+
+    assert.equal(host.getAttribute('data-core-lang'), consumerLang);
+    assert.equal(host.getAttribute('label'), 'Corps FR');
+    assert.equal(host.getAttribute('placeholder'), 'Saisie FR');
+
+    const boldBtn = host.querySelector('[data-rich-text-tool="bold"]');
+    const colorInput = host.querySelector('[data-rich-text-color]');
+    assert.equal(boldBtn?.getAttribute('aria-label'), 'Gras');
+    assert.equal(colorInput?.getAttribute('aria-label'), 'Couleur du texte');
+    assert.notEqual(colorInput?.getAttribute('aria-label'), 'Text color');
+
+    processLang(host);
+    assert.equal(host.getAttribute('data-core-lang'), consumerLang);
+    assert.equal(boldBtn?.getAttribute('aria-label'), 'Gras');
+
+    uninstallLangService();
+});
+
+test('lang process updates internal hooks without rebuilding host data-core-lang', async () => {
+    const consumerLang = JSON.stringify([
+        { container: 'journeys', name: 'update_body_field', attribute: 'label' },
+    ]);
+
+    const { installLangService, uninstallLangService, getLangService, setLangLabels } = await import('./rich-text-lang-test-helper.mjs');
+    installLangService({
+        journeys: { update_body_field: 'Label A' },
+        core_ux: { rich_text_bold: 'Bold A' },
+    });
+
+    await import('../components/core-rich-text/core-rich-text.js');
+    await customElements.whenDefined('core-rich-text');
+
+    const host = document.createElement('core-rich-text');
+    host.setAttribute('data-core-lang', consumerLang);
+    document.body.innerHTML = '';
+    document.body.appendChild(host);
+    const boldBtn = host.querySelector('[data-rich-text-tool="bold"]');
+    assert.equal(boldBtn?.getAttribute('aria-label'), 'Bold A');
+
+    setLangLabels({
+        journeys: { update_body_field: 'Label B' },
+        core_ux: { rich_text_bold: 'Bold B' },
+    });
+    getLangService().process(host);
+    getLangService().processOneElement(host, {
+        container: 'journeys',
+        name: 'update_body_field',
+        attribute: 'label',
+    });
+
+    assert.equal(host.getAttribute('data-core-lang'), consumerLang);
+    assert.equal(host.getAttribute('label'), 'Label B');
+    assert.equal(boldBtn, host.querySelector('[data-rich-text-tool="bold"]'));
+    assert.equal(boldBtn?.getAttribute('aria-label'), 'Bold B');
+
+    uninstallLangService();
+});
+
+test('link panel exposes aria-labelledby on the dialog', async () => {
+    await import('../components/core-rich-text/core-rich-text.js');
+    await customElements.whenDefined('core-rich-text');
+
+    const host = mountRichText('<core-rich-text></core-rich-text>');
+    const panel = host.querySelector('.core-rich-text__link-panel');
+    const title = host.querySelector('[data-rich-text-link-title]');
+    assert.ok(panel);
+    assert.ok(title?.id);
+    assert.equal(panel.getAttribute('aria-labelledby'), title.id);
+});
+
+test('link panel Cancel restores saved selection and closes', async () => {
+    const { installSelectionShim } = await import('./rich-text-selection-test-helper.mjs');
+    const selection = installSelectionShim();
+
+    await import('../components/core-rich-text/core-rich-text.js');
+    await customElements.whenDefined('core-rich-text');
+
+    const host = mountRichText('<core-rich-text></core-rich-text>');
+    selection.setRange(1, 4);
+
+    host.querySelector('[data-rich-text-tool="link"]')?.dispatchEvent(new Event('click', { bubbles: true }));
+
+    const panel = host.querySelector('.core-rich-text__link-panel');
+    assert.equal(panel?.hidden, false);
+
+    host.querySelector('[data-rich-text-link-cancel]')?.dispatchEvent(new Event('click', { bubbles: true }));
+
+    assert.equal(panel?.hidden, true);
+    const restored = selection.getRestoredRange();
+    assert.ok(restored);
+    assert.equal(restored.start, 1);
+    assert.equal(restored.end, 4);
+});
+
+test('link panel Escape restores saved selection and closes', async () => {
+    const { installSelectionShim } = await import('./rich-text-selection-test-helper.mjs');
+    const selection = installSelectionShim();
+
+    await import('../components/core-rich-text/core-rich-text.js');
+    await customElements.whenDefined('core-rich-text');
+
+    const host = mountRichText('<core-rich-text></core-rich-text>');
+    selection.setRange(2, 6);
+
+    host.querySelector('[data-rich-text-tool="link"]')?.dispatchEvent(new Event('click', { bubbles: true }));
+
+    const urlInput = host.querySelector('[data-rich-text-link-url]');
+    urlInput?.dispatchEvent(Object.assign(new Event('keydown', { bubbles: true }), { key: 'Escape' }));
+
+    assert.equal(host.querySelector('.core-rich-text__link-panel')?.hidden, true);
+    const restored = selection.getRestoredRange();
+    assert.ok(restored);
+    assert.equal(restored.start, 2);
+    assert.equal(restored.end, 6);
+});
+
+test('link panel Apply restores selection, creates link, and closes', async () => {
+    const { installSelectionShim } = await import('./rich-text-selection-test-helper.mjs');
+    const selection = installSelectionShim();
+
+    await import('../components/core-rich-text/core-rich-text.js');
+    await customElements.whenDefined('core-rich-text');
+
+    const host = mountRichText('<core-rich-text></core-rich-text>');
+    selection.setRange(0, 5);
+
+    host.querySelector('[data-rich-text-tool="link"]')?.dispatchEvent(new Event('click', { bubbles: true }));
+
+    const urlInput = host.querySelector('[data-rich-text-link-url]');
+    urlInput.value = 'https://example.com';
+    host.querySelector('[data-rich-text-link-apply]')?.dispatchEvent(new Event('click', { bubbles: true }));
+
+    assert.equal(host.querySelector('.core-rich-text__link-panel')?.hidden, true);
+    assert.deepEqual(selection.getExecLog(), [{ command: 'createLink', value: 'https://example.com' }]);
+    const restored = selection.getRestoredRange();
+    assert.ok(restored);
+    assert.equal(restored.start, 0);
+    assert.equal(restored.end, 5);
+});

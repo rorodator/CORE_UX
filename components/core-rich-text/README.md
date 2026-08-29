@@ -66,7 +66,7 @@ Helpers: `sanitizeRichTextHtml`, `normalizeRichTextHtml`, `sanitizeRichTextPaste
 
 ## i18n
 
-Toolbar and link-dialog strings use `$svc('lang')` via host `data-core-lang` hooks (container `core_ux`).
+Toolbar and link-dialog strings use `data-core-lang` on **internal hooks** (container `core_ux`). The host `data-core-lang` attribute is reserved for consuming apps and is never overwritten by the component.
 
 Reference catalogues for consuming apps: `CORE_UX/lang/labels-{en,fr,es,de}.json` — merge the `core_ux` section into your app label API.
 

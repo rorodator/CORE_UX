@@ -11,7 +11,8 @@ import {
 import { createCoreIconSvg } from '../../lib/icons/core-icon-catalog.js';
 import {
     applyRichTextFallbackLabels,
-    buildRichTextLangEntries,
+    buildRichTextLangAttr,
+    buildRichTextToolLangAttr,
     RICH_TEXT_DEFAULT_LABELS,
     RICH_TEXT_LABEL_KEYS,
     RICH_TEXT_TOOL_LABEL_KEYS,
@@ -43,7 +44,7 @@ export class CoreRichText extends Core_UXFormControl {
     }
 
     get structuralAttributes() {
-        return ['min-height', 'placeholder', 'toolbar'];
+        return ['min-height', 'toolbar'];
     }
 
     get minHeight() {
@@ -150,6 +151,17 @@ export class CoreRichText extends Core_UXFormControl {
             this._syncMaxLengthState();
             return;
         }
+        if (name === 'placeholder') {
+            const editor = this._getEditor();
+            if (editor) {
+                if (this.hasAttribute('placeholder')) {
+                    editor.dataset.placeholder = this.getAttribute('placeholder') || '';
+                } else {
+                    delete editor.dataset.placeholder;
+                }
+            }
+            return;
+        }
         if (name === 'disabled') {
             this._syncDisabled();
             return;
@@ -244,7 +256,7 @@ export class CoreRichText extends Core_UXFormControl {
                 hidden.name = this.getAttribute('name') || '';
             }
         }
-        mirrorAttributes(this, editor, ['data-core-lang', 'aria-label', 'autocomplete']);
+        mirrorAttributes(this, editor, ['aria-label', 'autocomplete']);
         this._syncControlAccessibility(editor);
         this._syncMaxLengthState();
     }
@@ -309,7 +321,10 @@ export class CoreRichText extends Core_UXFormControl {
         urlInput.focus();
     }
 
-    _closeLinkPanel() {
+    /**
+     * @param {boolean} [clearSavedRange]
+     */
+    _closeLinkPanel(clearSavedRange = true) {
         const panel = this.querySelector('.core-rich-text__link-panel');
         const urlInput = this.querySelector('[data-rich-text-link-url]');
         if (panel) {
@@ -323,7 +338,16 @@ export class CoreRichText extends Core_UXFormControl {
         if (errorEl) {
             errorEl.hidden = true;
         }
+        if (clearSavedRange) {
+            this._savedLinkRange = null;
+        }
+    }
+
+    _cancelLinkPanel() {
+        this._closeLinkPanel(false);
+        this._restoreSelection();
         this._savedLinkRange = null;
+        this._getEditor()?.focus();
     }
 
     _applyLink() {
@@ -386,9 +410,43 @@ export class CoreRichText extends Core_UXFormControl {
         }));
     }
 
-    _patchLangAttr() {
-        const entries = buildRichTextLangEntries();
-        this.setAttribute('data-core-lang', JSON.stringify(entries));
+    _applyLangProcessing() {
+        try {
+            if (typeof $svc !== 'function' || !$svc('default')?.lang?.isActivated) {
+                applyRichTextFallbackLabels(this);
+                return;
+            }
+            const lang = $svc('lang');
+            lang.process(this);
+            this._processHostLangEntries(lang);
+        } catch (_) {
+            applyRichTextFallbackLabels(this);
+        }
+    }
+
+    /**
+     * Applies host-level consumer {@link data-core-lang} entries.
+     * {@link Core_LangService#process} only queries descendants, not the root host.
+     *
+     * @param {{ processOneElement: (elt: HTMLElement, info: object) => void }} lang
+     */
+    _processHostLangEntries(lang) {
+        const raw = this.getAttribute('data-core-lang');
+        if (!raw) {
+            return;
+        }
+        let parsed;
+        try {
+            parsed = JSON.parse(raw);
+        } catch (_) {
+            return;
+        }
+        const entries = Array.isArray(parsed) ? parsed : [parsed];
+        entries.forEach((info) => {
+            if (info?.container && info?.name) {
+                lang.processOneElement(this, info);
+            }
+        });
     }
 
     _setupLangSubscription() {
@@ -397,11 +455,7 @@ export class CoreRichText extends Core_UXFormControl {
                 $svc('lang').getData().subscribe((labels) => {
                     this._labelsRepo = labels;
                     if (labels) {
-                        try {
-                            $svc('lang').process(this);
-                        } catch (_) {
-                            applyRichTextFallbackLabels(this);
-                        }
+                        this._applyLangProcessing();
                     } else {
                         applyRichTextFallbackLabels(this);
                     }
@@ -424,7 +478,6 @@ export class CoreRichText extends Core_UXFormControl {
                 className: 'core-rich-text__toolbar-btn core-rich-text__toolbar-btn--color',
                 attrs: {
                     title: fallback,
-                    'aria-label': fallback,
                     'data-rich-text-tool': item.id,
                 },
             });
@@ -434,6 +487,7 @@ export class CoreRichText extends Core_UXFormControl {
                     type: 'color',
                     value: '#111827',
                     'data-rich-text-color': '',
+                    'data-core-lang': buildRichTextLangAttr(labelKey, { attribute: 'aria-label' }),
                     'aria-label': fallback,
                 },
             });
@@ -455,6 +509,7 @@ export class CoreRichText extends Core_UXFormControl {
                 type: 'button',
                 title: fallback,
                 'aria-label': fallback,
+                'data-core-lang': buildRichTextToolLangAttr(item.id),
                 'data-rich-text-tool': item.id,
                 'data-rich-text-command': item.command || '',
             },
@@ -480,6 +535,7 @@ export class CoreRichText extends Core_UXFormControl {
                 role: 'toolbar',
                 'aria-label': RICH_TEXT_DEFAULT_LABELS[RICH_TEXT_LABEL_KEYS.toolbar],
                 'data-rich-text-toolbar': '',
+                'data-core-lang': buildRichTextLangAttr(RICH_TEXT_LABEL_KEYS.toolbar, { attribute: 'aria-label' }),
             },
         });
 
@@ -501,11 +557,13 @@ export class CoreRichText extends Core_UXFormControl {
      * @returns {HTMLElement}
      */
     _createLinkPanel() {
+        const linkTitleId = `${this.fieldId}-link-title`;
         const panel = createElement('div', {
             className: 'core-rich-text__link-panel',
             attrs: {
                 role: 'dialog',
                 'aria-modal': 'false',
+                'aria-labelledby': linkTitleId,
                 hidden: '',
             },
         });
@@ -513,7 +571,11 @@ export class CoreRichText extends Core_UXFormControl {
         panel.appendChild(createElement('p', {
             className: 'core-rich-text__link-title',
             text: RICH_TEXT_DEFAULT_LABELS[RICH_TEXT_LABEL_KEYS.linkDialogTitle],
-            attrs: { 'data-rich-text-link-title': '', id: `${this.fieldId}-link-title` },
+            attrs: {
+                'data-rich-text-link-title': '',
+                id: linkTitleId,
+                'data-core-lang': buildRichTextLangAttr(RICH_TEXT_LABEL_KEYS.linkDialogTitle),
+            },
         }));
 
         const row = createElement('div', { className: 'core-rich-text__link-row' });
@@ -526,6 +588,7 @@ export class CoreRichText extends Core_UXFormControl {
                 'aria-label': RICH_TEXT_DEFAULT_LABELS[RICH_TEXT_LABEL_KEYS.linkUrlLabel],
                 'aria-describedby': `${this.fieldId}-link-error`,
                 'data-rich-text-link-url': '',
+                'data-core-lang': buildRichTextLangAttr(RICH_TEXT_LABEL_KEYS.linkUrlLabel, { attribute: 'aria-label' }),
             },
         }));
         row.appendChild(createElement('button', {
@@ -534,6 +597,7 @@ export class CoreRichText extends Core_UXFormControl {
             attrs: {
                 type: 'button',
                 'data-rich-text-link-apply': '',
+                'data-core-lang': buildRichTextLangAttr(RICH_TEXT_LABEL_KEYS.linkApply),
             },
         }));
         row.appendChild(createElement('button', {
@@ -542,6 +606,7 @@ export class CoreRichText extends Core_UXFormControl {
             attrs: {
                 type: 'button',
                 'data-rich-text-link-cancel': '',
+                'data-core-lang': buildRichTextLangAttr(RICH_TEXT_LABEL_KEYS.linkCancel),
             },
         }));
         panel.appendChild(row);
@@ -554,15 +619,11 @@ export class CoreRichText extends Core_UXFormControl {
                 id: `${this.fieldId}-link-error`,
                 role: 'alert',
                 hidden: '',
+                'data-core-lang': buildRichTextLangAttr(RICH_TEXT_LABEL_KEYS.linkInvalidUrl),
             },
         }));
 
         return panel;
-    }
-
-    render() {
-        this._patchLangAttr();
-        super.render();
     }
 
     ui_render() {
@@ -604,15 +665,7 @@ export class CoreRichText extends Core_UXFormControl {
         }
         this._syncDisabled();
 
-        try {
-            if (typeof $svc === 'function' && $svc('default')?.lang?.isActivated) {
-                $svc('lang').process(this);
-            } else {
-                applyRichTextFallbackLabels(this);
-            }
-        } catch (_) {
-            applyRichTextFallbackLabels(this);
-        }
+        this._applyLangProcessing();
 
         this.bindUI('input', () => this._onEditorInput());
         this.bindUI('paste', (event) => this._handlePaste(event));
@@ -643,9 +696,7 @@ export class CoreRichText extends Core_UXFormControl {
 
         this.bindDelegated('click', '[data-rich-text-link-cancel]', (event) => {
             event.preventDefault();
-            this._closeLinkPanel();
-            this._restoreSelection();
-            this._getEditor()?.focus();
+            this._cancelLinkPanel();
         });
 
         this.bindDelegated('keydown', '[data-rich-text-link-url]', (event) => {
@@ -654,9 +705,7 @@ export class CoreRichText extends Core_UXFormControl {
                 this._applyLink();
             } else if (event.key === 'Escape') {
                 event.preventDefault();
-                this._closeLinkPanel();
-                this._restoreSelection();
-                this._getEditor()?.focus();
+                this._cancelLinkPanel();
             }
         });
 

@@ -15,7 +15,7 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 | `<core-icon>` | `name` edit \| delete \| story \| add \| close; optional `size` (px) — semantic glyph via Lucide, inherits `currentColor` |
 | `<core-button>` | `variant` primary \| secondary \| ghost \| danger; `size` sm \| lg; `icon`, `icon-only`, `icon-danger`; `block`; `label` |
 | `<core-link>` | `href`, `label`, `external` |
-| `<core-menu>` | `label`, `align` start \| end, `open`; children `<core-menu-item>`, `<core-menu-separator>`; keyboard nav; event `core-menu-select` |
+| `<core-menu>` | `label`, `align` start \| end, `open`; children `<core-menu-item>`, `<core-menu-separator>`; one open menu per document; keyboard nav; event `core-menu-select` |
 | `<core-menu-item>` | `value`, `label`, `disabled`, `data-core-lang` on host (projected to inner label) |
 | `<core-menu-separator>` | non-interactive rule between items |
 

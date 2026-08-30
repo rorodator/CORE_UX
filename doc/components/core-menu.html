@@ -22,7 +22,7 @@
     <main class="main">
         <header class="hero">
             <h1><span class="tag">&lt;core-menu&gt;</span> <span class="badge badge--slot">composable</span> <span class="badge badge--event">event</span></h1>
-            <p class="lead">Dropdown menu with a trigger label and live <code>&lt;core-menu-item&gt;</code> / <code>&lt;core-menu-separator&gt;</code> children. Closes on outside click, Escape, or Tab. Arrow keys navigate items when open.</p>
+            <p class="lead">Dropdown menu with a trigger label and live <code>&lt;core-menu-item&gt;</code> / <code>&lt;core-menu-separator&gt;</code> children. Opening another <code>core-menu</code> in the same document automatically closes the previously open menu. Closes on outside click, Escape, or Tab. Arrow keys navigate items when open.</p>
         </header>
 
         <table>
@@ -41,7 +41,8 @@
         </table>
         <p>Events: <code>core-menu-select</code> — <code>detail.value</code>. Also <code>core-menu-open</code> / <code>core-menu-close</code>.</p>
         <p>Methods: <code>openMenu()</code>, <code>closeMenu()</code>, <code>toggleMenu()</code>, <code>setLabel(label)</code>, <code>refresh()</code> (after dynamic children).</p>
-        <p>Keyboard: trigger — ↓ / Enter / Space opens; ↑ opens and focuses last item; panel — ↑↓ move, Home / End, Escape closes.</p>
+        <p>Behavior: one open <code>core-menu</code> per document. Opening a menu (trigger, keyboard, <code>openMenu()</code>, or the <code>open</code> attribute) closes any other open menu in that document without returning focus to the previous trigger. Distinct documents stay independent.</p>
+        <p>Keyboard: trigger — ↓ / Enter / Space opens; ↑ opens and focuses last item; panel — ↑↓ move, Home / End, Escape closes and restores trigger focus.</p>
 
         <section class="demo-section">
             <h3>User menu (align end)</h3>
@@ -62,6 +63,26 @@
 &lt;/core-menu&gt;</code></pre>
             </div>
         </section>
+
+        <section class="demo-section">
+            <h3>Single-open coordination</h3>
+            <p>Open Menu A, then Menu B — A closes so only one menu stays open in this document.</p>
+            <div class="demo">
+                <div class="demo__preview" style="display:flex;gap:1rem;flex-wrap:wrap;">
+                    <core-menu id="menu-coord-a" label="Menu A" align="start">
+                        <core-menu-item value="a-edit" label="Edit A"></core-menu-item>
+                        <core-menu-item value="a-archive" label="Archive A"></core-menu-item>
+                    </core-menu>
+                    <core-menu id="menu-coord-b" label="Menu B" align="start">
+                        <core-menu-item value="b-edit" label="Edit B"></core-menu-item>
+                        <core-menu-item value="b-archive" label="Archive B"></core-menu-item>
+                    </core-menu>
+                    <div class="event-log" id="log-menu-coord" style="margin-top:1rem;flex-basis:100%;">Open a menu — the other closes.</div>
+                </div>
+                <pre class="demo__code"><code>&lt;core-menu label="Menu A"&gt;…&lt;/core-menu&gt;
+&lt;core-menu label="Menu B"&gt;…&lt;/core-menu&gt;</code></pre>
+            </div>
+        </section>
     </main>
 </div>
 <script src="../assets/bootstrap.js"></script>
@@ -74,6 +95,16 @@
 await customElements.whenDefined('core-menu');
 document.getElementById('menu-user').addEventListener('core-menu-select', (event) => {
     document.getElementById('log-menu').textContent = 'Selected: ' + event.detail.value;
+});
+const coordLog = document.getElementById('log-menu-coord');
+['menu-coord-a', 'menu-coord-b'].forEach((id) => {
+    const menu = document.getElementById(id);
+    menu.addEventListener('core-menu-open', () => {
+        coordLog.textContent = menu.label + ' opened — the other menu is closed.';
+    });
+    menu.addEventListener('core-menu-select', (event) => {
+        coordLog.textContent = menu.label + ' selected: ' + event.detail.value;
+    });
 });
 </script>
 </body>

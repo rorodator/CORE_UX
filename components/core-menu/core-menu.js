@@ -8,6 +8,13 @@ import './core-menu-separator.js';
 const MENU_CHILD_TAGS = ['core-menu-item', 'core-menu-separator'];
 
 /**
+ * One open {@link CoreMenu} per Document. Distinct documents stay independent.
+ *
+ * @type {WeakMap<Document, CoreMenu>}
+ */
+const OPEN_MENU_BY_DOCUMENT = new WeakMap();
+
+/**
  * Dropdown menu shell — trigger + panel; keeps declarative children alive inside the panel.
  */
 export class CoreMenu extends Core_UXElement {
@@ -20,12 +27,18 @@ export class CoreMenu extends Core_UXElement {
         super();
         /** @type {((event: MouseEvent) => void)|null} */
         this._onDocumentClick = null;
+        /** @type {Document|null} */
+        this._clickDocument = null;
         this._uid = Math.random().toString(36).slice(2, 9);
     }
 
     onConnect() {
         this.render();
         this._syncOpen();
+    }
+
+    onDisconnect() {
+        this._releaseOpenExclusive();
     }
 
     attributeChangedCallback(name) {
@@ -214,15 +227,54 @@ export class CoreMenu extends Core_UXElement {
             return;
         }
         if (this.open) {
+            this._claimOpenExclusive();
             panel.removeAttribute('hidden');
             trigger.setAttribute('aria-expanded', 'true');
             this._bindDocumentClick();
             this._resetMenuTabindex();
             return;
         }
+        this._releaseOpenExclusive();
         panel.setAttribute('hidden', '');
         trigger.setAttribute('aria-expanded', 'false');
         this._unbindDocumentClick();
+    }
+
+    /**
+     * Registers this menu as the single open menu for {@link ownerDocument}.
+     * Closes any other open peer without restoring that peer's trigger focus.
+     * If the peer currently owned focus, moves focus to this trigger so it does
+     * not remain inside a now-hidden panel (attribute-open path).
+     */
+    _claimOpenExclusive() {
+        const ownerDocument = this.ownerDocument;
+        if (!ownerDocument) {
+            return;
+        }
+        const previous = OPEN_MENU_BY_DOCUMENT.get(ownerDocument);
+        if (previous && previous !== this) {
+            const active = ownerDocument.activeElement;
+            const focusWasInPrevious = Boolean(active instanceof Node && previous.contains(active));
+            previous._closeMenu({ restoreFocus: false, emitEvent: true });
+            if (focusWasInPrevious) {
+                this.querySelector('[data-core-menu-trigger]')?.focus();
+            }
+        }
+        OPEN_MENU_BY_DOCUMENT.set(ownerDocument, this);
+    }
+
+    /**
+     * Drops this menu from the document registry when it is the recorded open menu.
+     * Must not run from {@link cleanFunctional} during render — only on real close/disconnect.
+     */
+    _releaseOpenExclusive() {
+        const ownerDocument = this.ownerDocument;
+        if (!ownerDocument) {
+            return;
+        }
+        if (OPEN_MENU_BY_DOCUMENT.get(ownerDocument) === this) {
+            OPEN_MENU_BY_DOCUMENT.delete(ownerDocument);
+        }
     }
 
     _resetMenuTabindex() {
@@ -243,13 +295,24 @@ export class CoreMenu extends Core_UXElement {
     }
 
     closeMenu() {
+        this._closeMenu({ restoreFocus: true, emitEvent: true });
+    }
+
+    /**
+     * @param {{ restoreFocus?: boolean, emitEvent?: boolean }} [options]
+     */
+    _closeMenu({ restoreFocus = true, emitEvent = true } = {}) {
         if (!this.open) {
             return;
         }
         this.removeAttribute('open');
         this._syncOpen();
-        this.querySelector('[data-core-menu-trigger]')?.focus();
-        this.dispatchEvent(new CustomEvent('core-menu-close', { bubbles: true }));
+        if (restoreFocus) {
+            this.querySelector('[data-core-menu-trigger]')?.focus();
+        }
+        if (emitEvent) {
+            this.dispatchEvent(new CustomEvent('core-menu-close', { bubbles: true }));
+        }
     }
 
     toggleMenu() {
@@ -264,6 +327,10 @@ export class CoreMenu extends Core_UXElement {
         if (this._onDocumentClick) {
             return;
         }
+        const ownerDocument = this.ownerDocument;
+        if (!ownerDocument) {
+            return;
+        }
         this._onDocumentClick = (event) => {
             if (!this.open) {
                 return;
@@ -274,15 +341,17 @@ export class CoreMenu extends Core_UXElement {
             }
             this.closeMenu();
         };
-        document.addEventListener('click', this._onDocumentClick);
+        this._clickDocument = ownerDocument;
+        ownerDocument.addEventListener('click', this._onDocumentClick);
     }
 
     _unbindDocumentClick() {
         if (!this._onDocumentClick) {
             return;
         }
-        document.removeEventListener('click', this._onDocumentClick);
+        this._clickDocument?.removeEventListener('click', this._onDocumentClick);
         this._onDocumentClick = null;
+        this._clickDocument = null;
     }
 
     _handleMenuKeydown(event) {

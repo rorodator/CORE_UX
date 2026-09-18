@@ -22,14 +22,14 @@
     <main class="main">
         <header class="hero">
             <h1><span class="tag">&lt;core-menu&gt;</span> <span class="badge badge--slot">composable</span> <span class="badge badge--event">event</span></h1>
-            <p class="lead">Dropdown menu with a trigger label and live <code>&lt;core-menu-item&gt;</code> / <code>&lt;core-menu-separator&gt;</code> children. Opening another <code>core-menu</code> in the same document automatically closes the previously open menu. Closes on outside click, Escape, or Tab. Arrow keys navigate items when open.</p>
+            <p class="lead">Dropdown menu with a trigger label and live <code>&lt;core-menu-item&gt;</code> / <code>&lt;core-menu-separator&gt;</code> children. The panel is viewport-aware: it opens below the trigger by default and flips above when there is not enough space below. Opening another <code>core-menu</code> in the same document automatically closes the previously open menu. Closes on outside click, Escape, or Tab. Arrow keys navigate items when open.</p>
         </header>
 
         <table>
             <thead><tr><th>Tag / attribute</th><th>Values</th><th>Description</th></tr></thead>
             <tbody>
                 <tr><td><code>core-menu</code> · <code>label</code></td><td>string</td><td>Trigger text (required).</td></tr>
-                <tr><td><code>core-menu</code> · <code>align</code></td><td>start · end</td><td>Panel alignment (default: end).</td></tr>
+                <tr><td><code>core-menu</code> · <code>align</code></td><td>start · end</td><td>Horizontal panel alignment relative to the trigger (default: end). Vertical placement flips automatically at viewport edges.</td></tr>
                 <tr><td><code>core-menu</code> · <code>open</code></td><td>boolean</td><td>Show / hide panel.</td></tr>
                 <tr><td><code>core-menu</code> · <code>disabled</code></td><td>boolean</td><td>Disable trigger.</td></tr>
                 <tr><td><code>core-menu-item</code> · <code>value</code></td><td>string</td><td>Item key (required).</td></tr>

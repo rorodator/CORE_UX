@@ -1,5 +1,6 @@
 import { Core_UXElement } from '../../lib/base/core-ux-element.js';
 import { createElement, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
+import { FloatingOverlay } from '../../lib/floating/floating-overlay.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
 import './core-menu-item.js';
 import './core-menu-separator.js';
@@ -29,6 +30,12 @@ export class CoreMenu extends Core_UXElement {
         this._onDocumentClick = null;
         /** @type {Document|null} */
         this._clickDocument = null;
+        /** @type {((event: KeyboardEvent) => void)|null} */
+        this._onPanelKeydown = null;
+        /** @type {((event: CustomEvent) => void)|null} */
+        this._onPanelSelect = null;
+        /** @type {FloatingOverlay|null} */
+        this._floating = null;
         this._uid = Math.random().toString(36).slice(2, 9);
     }
 
@@ -38,6 +45,8 @@ export class CoreMenu extends Core_UXElement {
     }
 
     onDisconnect() {
+        this._floating?.destroy();
+        this._floating = null;
         this._releaseOpenExclusive();
     }
 
@@ -73,6 +82,11 @@ export class CoreMenu extends Core_UXElement {
 
     get alignClass() {
         return this.getAttribute('align') === 'start' ? 'core-menu--align-start' : 'core-menu--align-end';
+    }
+
+    /** @returns {'start'|'end'} */
+    get horizontalAlign() {
+        return this.getAttribute('align') === 'start' ? 'start' : 'end';
     }
 
     get triggerId() {
@@ -111,10 +125,28 @@ export class CoreMenu extends Core_UXElement {
     }
 
     /**
+     * @returns {HTMLElement|null}
+     */
+    _getPanel() {
+        return this._floating?.getPanel() || this.querySelector('.core-menu__panel');
+    }
+
+    /**
+     * @param {Node|null} target
+     * @returns {boolean}
+     */
+    _containsMenuTarget(target) {
+        if (!target || !(target instanceof Node)) {
+            return false;
+        }
+        return this.contains(target) || Boolean(this._floating?.containsTarget(target));
+    }
+
+    /**
      * @returns {HTMLElement[]}
      */
     _getFocusableItems() {
-        const panel = this.querySelector('.core-menu__panel');
+        const panel = this._getPanel();
         if (!panel) {
             return [];
         }
@@ -221,7 +253,7 @@ export class CoreMenu extends Core_UXElement {
     }
 
     _syncOpen() {
-        const panel = this.querySelector('.core-menu__panel');
+        const panel = this._getPanel();
         const trigger = this.querySelector('[data-core-menu-trigger]');
         if (!panel || !trigger) {
             return;
@@ -232,9 +264,13 @@ export class CoreMenu extends Core_UXElement {
             trigger.setAttribute('aria-expanded', 'true');
             this._bindDocumentClick();
             this._resetMenuTabindex();
+            this._floating?.open();
+            this._bindPanelInteraction();
             return;
         }
         this._releaseOpenExclusive();
+        this._floating?.close();
+        this._unbindPanelInteraction();
         panel.setAttribute('hidden', '');
         trigger.setAttribute('aria-expanded', 'false');
         this._unbindDocumentClick();
@@ -254,7 +290,7 @@ export class CoreMenu extends Core_UXElement {
         const previous = OPEN_MENU_BY_DOCUMENT.get(ownerDocument);
         if (previous && previous !== this) {
             const active = ownerDocument.activeElement;
-            const focusWasInPrevious = Boolean(active instanceof Node && previous.contains(active));
+            const focusWasInPrevious = Boolean(active instanceof Node && previous._containsMenuTarget(active));
             previous._closeMenu({ restoreFocus: false, emitEvent: true });
             if (focusWasInPrevious) {
                 this.querySelector('[data-core-menu-trigger]')?.focus();
@@ -336,7 +372,7 @@ export class CoreMenu extends Core_UXElement {
                 return;
             }
             const target = event.target;
-            if (target instanceof Element && target.closest('core-menu') === this) {
+            if (this._containsMenuTarget(target instanceof Node ? target : null)) {
                 return;
             }
             this.closeMenu();
@@ -352,6 +388,48 @@ export class CoreMenu extends Core_UXElement {
         this._clickDocument?.removeEventListener('click', this._onDocumentClick);
         this._onDocumentClick = null;
         this._clickDocument = null;
+    }
+
+    _bindPanelInteraction() {
+        const panel = this._getPanel();
+        if (!panel) {
+            return;
+        }
+
+        if (!this._onPanelKeydown) {
+            this._onPanelKeydown = (event) => {
+                this._handleMenuKeydown(event);
+            };
+            panel.addEventListener('keydown', this._onPanelKeydown);
+        }
+
+        if (!this._onPanelSelect) {
+            this._onPanelSelect = (event) => {
+                if (this.disabled) {
+                    return;
+                }
+                event.stopPropagation();
+                const value = event.detail?.value || '';
+                this.closeMenu();
+                this.dispatchEvent(new CustomEvent('core-menu-select', {
+                    bubbles: true,
+                    detail: { value },
+                }));
+            };
+            panel.addEventListener('core-menu-item-select', this._onPanelSelect);
+        }
+    }
+
+    _unbindPanelInteraction() {
+        const panel = this._floating?.getPanel() || this.querySelector('.core-menu__panel');
+        if (panel && this._onPanelKeydown) {
+            panel.removeEventListener('keydown', this._onPanelKeydown);
+        }
+        if (panel && this._onPanelSelect) {
+            panel.removeEventListener('core-menu-item-select', this._onPanelSelect);
+        }
+        this._onPanelKeydown = null;
+        this._onPanelSelect = null;
     }
 
     _handleMenuKeydown(event) {
@@ -397,7 +475,23 @@ export class CoreMenu extends Core_UXElement {
         }
     }
 
+    _initFloating() {
+        this._floating?.destroy();
+        this._floating = new FloatingOverlay({
+            host: this,
+            getPanel: () => this.querySelector('.core-menu__panel'),
+            getAnchor: () => this.querySelector('[data-core-menu-trigger]'),
+            getMountPoint: () => this.querySelector(':scope > .core-menu'),
+            align: this.horizontalAlign,
+        });
+    }
+
     ui_toFunctional() {
+        this._initFloating();
+        if (this.open) {
+            this._floating?.open();
+        }
+
         this.bindDelegated('click', '[data-core-menu-trigger]', (event) => {
             if (this.disabled) {
                 return;
@@ -407,56 +501,43 @@ export class CoreMenu extends Core_UXElement {
             this.toggleMenu();
         });
 
-        this.bindDelegated('core-menu-item-select', 'core-menu-item', (event) => {
-            if (this.disabled) {
-                return;
-            }
-            event.stopPropagation();
-            const value = event.detail?.value || '';
-            this.closeMenu();
-            this.dispatchEvent(new CustomEvent('core-menu-select', {
-                bubbles: true,
-                detail: { value },
-            }));
-        });
-
         this.bindUI('keydown', (event) => {
             const target = event.target;
             const onTrigger = target instanceof Element && Boolean(target.closest('[data-core-menu-trigger]'));
 
-            if (onTrigger) {
-                if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    if (!this.open) {
-                        this.openMenu();
-                    } else {
-                        this._focusItemAt(0);
-                    }
-                    return;
-                }
-                if (event.key === 'ArrowUp') {
-                    event.preventDefault();
-                    if (!this.open) {
-                        this.openMenu();
-                        this._focusItemAt(this._getFocusableItems().length - 1);
-                    }
-                    return;
-                }
-                if (event.key === 'Escape' && this.open) {
-                    event.preventDefault();
-                    this.closeMenu();
-                }
+            if (!onTrigger) {
                 return;
             }
 
-            if (target instanceof Element && target.closest('.core-menu__panel')) {
-                this._handleMenuKeydown(event);
+            if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                if (!this.open) {
+                    this.openMenu();
+                } else {
+                    this._focusItemAt(0);
+                }
+                return;
+            }
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (!this.open) {
+                    this.openMenu();
+                    this._focusItemAt(this._getFocusableItems().length - 1);
+                }
+                return;
+            }
+            if (event.key === 'Escape' && this.open) {
+                event.preventDefault();
+                this.closeMenu();
             }
         });
     }
 
     cleanFunctional() {
         super.cleanFunctional();
+        this._unbindPanelInteraction();
+        this._floating?.destroy();
+        this._floating = null;
         this._unbindDocumentClick();
     }
 }

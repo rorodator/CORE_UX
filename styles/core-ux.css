@@ -355,11 +355,15 @@
       border-core-border bg-core-surface py-1 shadow-core-lg;
   }
 
-  .core-menu--align-end .core-menu__panel {
+  .core-menu__panel.core-floating-overlay {
+    @apply mt-0;
+  }
+
+  .core-menu--align-end .core-menu__panel:not(.core-floating-overlay) {
     @apply right-0;
   }
 
-  .core-menu--align-start .core-menu__panel {
+  .core-menu--align-start .core-menu__panel:not(.core-floating-overlay) {
     @apply left-0;
   }
 

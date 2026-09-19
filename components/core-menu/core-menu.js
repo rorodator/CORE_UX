@@ -1,6 +1,10 @@
 import { Core_UXElement } from '../../lib/base/core-ux-element.js';
 import { createElement, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
-import { FloatingOverlay } from '../../lib/floating/floating-overlay.js';
+import {
+    FloatingOverlay,
+    isElementOfDocument,
+    isNodeOfDocument,
+} from '../../lib/floating/floating-overlay.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
 import './core-menu-item.js';
 import './core-menu-separator.js';
@@ -136,7 +140,7 @@ export class CoreMenu extends Core_UXElement {
      * @returns {boolean}
      */
     _containsMenuTarget(target) {
-        if (!target || !(target instanceof Node)) {
+        if (!isNodeOfDocument(target, this.ownerDocument)) {
             return false;
         }
         return this.contains(target) || Boolean(this._floating?.containsTarget(target));
@@ -290,7 +294,9 @@ export class CoreMenu extends Core_UXElement {
         const previous = OPEN_MENU_BY_DOCUMENT.get(ownerDocument);
         if (previous && previous !== this) {
             const active = ownerDocument.activeElement;
-            const focusWasInPrevious = Boolean(active instanceof Node && previous._containsMenuTarget(active));
+            const focusWasInPrevious = Boolean(
+                isNodeOfDocument(active, ownerDocument) && previous._containsMenuTarget(active),
+            );
             previous._closeMenu({ restoreFocus: false, emitEvent: true });
             if (focusWasInPrevious) {
                 this.querySelector('[data-core-menu-trigger]')?.focus();
@@ -372,7 +378,7 @@ export class CoreMenu extends Core_UXElement {
                 return;
             }
             const target = event.target;
-            if (this._containsMenuTarget(target instanceof Node ? target : null)) {
+            if (this._containsMenuTarget(isNodeOfDocument(target, this.ownerDocument) ? target : null)) {
                 return;
             }
             this.closeMenu();
@@ -503,7 +509,8 @@ export class CoreMenu extends Core_UXElement {
 
         this.bindUI('keydown', (event) => {
             const target = event.target;
-            const onTrigger = target instanceof Element && Boolean(target.closest('[data-core-menu-trigger]'));
+            const onTrigger = isElementOfDocument(target, this.ownerDocument)
+                && Boolean(target.closest('[data-core-menu-trigger]'));
 
             if (!onTrigger) {
                 return;

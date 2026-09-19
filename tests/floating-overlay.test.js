@@ -4,6 +4,7 @@ import { parseHTML } from 'linkedom';
 import {
     FloatingOverlay,
     clampCoords,
+    isNodeOfDocument,
 } from '../lib/floating/floating-overlay.js';
 
 /**
@@ -189,6 +190,44 @@ test('FloatingOverlay attaches scroll and resize listeners to the host Window', 
         ['resize', 'scroll'],
     );
     assert.equal(seen.find((entry) => entry.type === 'scroll')?.options, true);
+});
+
+test('isNodeOfDocument uses the Document realm Node constructor', () => {
+    const secondary = createHostEnvironment();
+    const hostChild = secondary.document.createElement('span');
+
+    assert.equal(isNodeOfDocument(hostChild, secondary.document), true);
+    assert.equal(isNodeOfDocument(null, secondary.document), false);
+    assert.equal(isNodeOfDocument({}, secondary.document), false);
+
+    class OtherRealmNode {}
+    const foreignDocument = { defaultView: { Node: OtherRealmNode } };
+    assert.equal(isNodeOfDocument(hostChild, foreignDocument), false);
+    assert.equal(isNodeOfDocument(new OtherRealmNode(), foreignDocument), true);
+});
+
+test('FloatingOverlay.containsTarget recognizes host and portaled panel nodes', async () => {
+    const secondary = createHostEnvironment();
+    const primary = createHostEnvironment();
+
+    const overlay = new FloatingOverlay({
+        host: secondary.host,
+        getPanel: () => secondary.panel,
+        getAnchor: () => secondary.anchor,
+        getMountPoint: () => secondary.mountPoint,
+    });
+
+    overlay.open();
+
+    const hostChild = secondary.document.createElement('span');
+    secondary.host.appendChild(hostChild);
+    const panelChild = secondary.document.createElement('span');
+    secondary.panel.appendChild(panelChild);
+    const foreignNode = primary.document.createElement('span');
+
+    assert.equal(overlay.containsTarget(hostChild), true);
+    assert.equal(overlay.containsTarget(panelChild), true);
+    assert.equal(overlay.containsTarget(foreignNode), false);
 });
 
 test('FloatingOverlay destroy removes listeners from the host Window', async () => {

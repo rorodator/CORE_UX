@@ -80,6 +80,11 @@ test('core-rich-text incremental label sync uses a direct field child as insert 
     const shell = host.querySelector('.core-rich-text');
     assert.ok(shell);
 
+    host.setHtml('<p>Draft paragraph</p>');
+    const editor = host.querySelector('.core-rich-text__editor');
+    assert.ok(editor);
+    const draftHtml = host.getHtml();
+
     host.setAttribute('label', 'Description');
     const field = host.querySelector('.core-field');
     let label = field?.querySelector(':scope > label.core-label');
@@ -94,6 +99,8 @@ test('core-rich-text incremental label sync uses a direct field child as insert 
     label = field?.querySelector(':scope > label.core-label');
     assert.ok(label);
     assert.equal(label.textContent, 'After language refresh');
+    assert.equal(host.querySelector('.core-rich-text__editor'), editor);
+    assert.equal(host.getHtml(), draftHtml);
     assertLabelBefore(field, label, shell);
 });
 

@@ -8,6 +8,7 @@ import '../components/core-field/core-field.js';
 import '../components/core-textarea/core-textarea.js';
 import '../components/core-checkbox/core-checkbox.js';
 import '../components/core-select/core-select.js';
+import '../components/core-rich-text/core-rich-text.js';
 
 const stylesPath = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -20,6 +21,16 @@ const stylesPath = path.resolve(
 function mount(html) {
     document.body.innerHTML = html;
     return document.body.firstElementChild;
+}
+
+/**
+ * @param {ParentNode} field
+ * @param {Element} label
+ * @param {Element} before
+ */
+function assertLabelBefore(field, label, before) {
+    const children = [...field.children];
+    assert.ok(children.indexOf(label) < children.indexOf(before));
 }
 
 test('core-ux.css defines prefers-reduced-motion overrides for significant motion', () => {
@@ -60,6 +71,54 @@ test('core-field preserves focused input when error and hint change', async () =
     assert.equal(input.hasAttribute('aria-invalid'), false);
     assert.equal(input.getAttribute('aria-describedby'), `${input.id}-hint`);
     assert.equal(host.querySelector('.core-hint')?.textContent, 'Your full name');
+});
+
+test('core-rich-text incremental label sync uses a direct field child as insert anchor', async () => {
+    const host = mount('<core-rich-text></core-rich-text>');
+    await customElements.whenDefined('core-rich-text');
+
+    const shell = host.querySelector('.core-rich-text');
+    assert.ok(shell);
+
+    host.setHtml('<p>Draft paragraph</p>');
+    const editor = host.querySelector('.core-rich-text__editor');
+    assert.ok(editor);
+    const draftHtml = host.getHtml();
+
+    host.setAttribute('label', 'Description');
+    const field = host.querySelector('.core-field');
+    let label = field?.querySelector(':scope > label.core-label');
+    assert.ok(label);
+    assert.equal(label.textContent, 'Description');
+    assertLabelBefore(field, label, shell);
+
+    host.removeAttribute('label');
+    assert.equal(field?.querySelector(':scope > label.core-label'), null);
+
+    host.setAttribute('label', 'After language refresh');
+    label = field?.querySelector(':scope > label.core-label');
+    assert.ok(label);
+    assert.equal(label.textContent, 'After language refresh');
+    assert.equal(host.querySelector('.core-rich-text__editor'), editor);
+    assert.equal(host.getHtml(), draftHtml);
+    assertLabelBefore(field, label, shell);
+});
+
+test('core-select re-syncs label before wrap when label was removed incrementally', async () => {
+    const options = '[{"value":"a","label":"A"}]';
+    const host = mount(`<core-select label="Pick" options='${options}'></core-select>`);
+    await customElements.whenDefined('core-select');
+
+    const wrap = host.querySelector('.core-select-wrap');
+    assert.ok(wrap);
+
+    host.removeAttribute('label');
+    host.setAttribute('label', 'Pick again');
+    const field = host.querySelector('.core-field');
+    const label = field?.querySelector(':scope > label.core-label');
+    assert.ok(label);
+    assert.equal(label.textContent, 'Pick again');
+    assertLabelBefore(field, label, wrap);
 });
 
 test('core-field syncs label without replacing the control', async () => {

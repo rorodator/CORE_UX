@@ -92,6 +92,9 @@ Slot components (`Core_UXSlotElement`, card/modal/side-panel) capture template l
 - leave Escape to an inner widget that already handled it
   (`event.preventDefault()` — open menu, listbox, link panel…); inner popups
   must call `preventDefault()` only while they actually consume Escape;
+- when several overlays are open, deliver Escape only to the innermost
+  overlay that currently owns focus (or the most recently opened overlay if
+  focus is outside all of them); never close more than one overlay per Escape;
 - update simple attributes in place while open, without moving focus or
   rebuilding slotted content.
 

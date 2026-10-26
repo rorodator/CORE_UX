@@ -114,6 +114,25 @@ function mount({ content = FORM_CONTENT, attrs = '', tag = 'core-modal' } = {}) 
 }
 
 /**
+ * Appends another overlay without resetting the document (stacked / sibling cases).
+ *
+ * @param {{ tag?: string, title?: string, content?: string, attrs?: string }} [options]
+ * @returns {HTMLElement}
+ */
+function appendOverlay({
+    tag = 'core-modal',
+    title = 'Second dialog',
+    content = '<input id="second-name">',
+    attrs = ''
+} = {}) {
+    const holder = document.createElement('div');
+    holder.innerHTML = `<${tag} title="${title}" ${attrs}>${content}</${tag}>`;
+    const overlay = holder.firstElementChild;
+    document.body.appendChild(overlay);
+    return overlay;
+}
+
+/**
  * @param {HTMLElement} target
  */
 function click(target) {
@@ -540,6 +559,134 @@ test('core-modal ignores close controls belonging to a nested modal', () => {
     assert.equal(inner.hasAttribute('open'), false);
     assert.equal(modal.hasAttribute('open'), true);
     assert.deepEqual(outerRequests, []);
+});
+
+test('Escape on sibling core-modals closes only the focused overlay', () => {
+    const { modal: first } = mount({
+        content: '<input id="first-name"><button id="first-stay" type="button">Stay</button>'
+    });
+    const second = appendOverlay({
+        title: 'Second',
+        content: '<input id="second-name">'
+    });
+    const firstCloses = [];
+    const secondCloses = [];
+    first.addEventListener('core-modal-close', (event) => firstCloses.push(event.detail.reason));
+    second.addEventListener('core-modal-close', (event) => secondCloses.push(event.detail.reason));
+
+    first.setAttribute('open', '');
+    const firstField = first.querySelector('#first-name');
+    assertFocused(firstField);
+    second.setAttribute('open', '');
+    assertFocused(second.querySelector('#second-name'));
+
+    pressEscape();
+
+    assert.equal(second.hasAttribute('open'), false);
+    assert.equal(first.hasAttribute('open'), true);
+    assert.deepEqual(secondCloses, ['escape']);
+    assert.deepEqual(firstCloses, []);
+    assertFocused(firstField);
+});
+
+test('Escape on nested core-modals closes only the inner overlay and restores outer focus', () => {
+    const { modal: outer } = mount({
+        content: '<input id="outer-field"><core-modal id="inner" title="Inner"><input id="inner-field"></core-modal>'
+    });
+    const outerCloses = [];
+    const innerCloses = [];
+    outer.addEventListener('core-modal-close', (event) => {
+        if (event.target === outer) {
+            outerCloses.push(event.detail.reason);
+        }
+    });
+    outer.setAttribute('open', '');
+    const outerField = outer.querySelector('#outer-field');
+    assertFocused(outerField);
+
+    const inner = outer.querySelector('#inner');
+    inner.addEventListener('core-modal-close', (event) => innerCloses.push(event.detail.reason));
+    inner.setAttribute('open', '');
+    assertFocused(inner.querySelector('#inner-field'));
+
+    pressEscape();
+
+    assert.equal(inner.hasAttribute('open'), false);
+    assert.equal(outer.hasAttribute('open'), true);
+    assert.deepEqual(innerCloses, ['escape']);
+    assert.deepEqual(outerCloses, []);
+    assertFocused(outerField);
+});
+
+test('Escape on a nested modal respects request-close cancellation', () => {
+    const { modal: outer } = mount({
+        content: '<input id="outer-field"><core-modal id="inner" title="Inner"><input id="inner-field"></core-modal>'
+    });
+    outer.setAttribute('open', '');
+    const inner = outer.querySelector('#inner');
+    inner.addEventListener('core-modal-request-close', (event) => event.preventDefault());
+    inner.setAttribute('open', '');
+    const innerField = inner.querySelector('#inner-field');
+    assertFocused(innerField);
+
+    pressEscape();
+
+    assert.equal(inner.hasAttribute('open'), true);
+    assert.equal(outer.hasAttribute('open'), true);
+    assertFocused(innerField);
+});
+
+test('Escape with a modal and a side-panel closes only the focused overlay', () => {
+    const { modal } = mount({ content: '<input id="modal-name">' });
+    const panel = appendOverlay({
+        tag: 'core-side-panel',
+        title: 'Panel',
+        content: '<button id="panel-action" type="button">Go</button>'
+    });
+    const modalCloses = [];
+    const panelCloses = [];
+    modal.addEventListener('core-modal-close', (event) => modalCloses.push(event.detail.reason));
+    panel.addEventListener('core-side-panel-close', (event) => panelCloses.push(event.detail.reason));
+
+    modal.setAttribute('open', '');
+    assertFocused(modal.querySelector('#modal-name'));
+    panel.setAttribute('open', '');
+    assertFocused(panel.querySelector('[data-core-side-panel-close]'));
+
+    pressEscape();
+
+    assert.equal(panel.hasAttribute('open'), false);
+    assert.equal(modal.hasAttribute('open'), true);
+    assert.deepEqual(panelCloses, ['escape']);
+    assert.deepEqual(modalCloses, []);
+    assertFocused(modal.querySelector('#modal-name'));
+});
+
+test('Escape after a widget consume still isolates the next overlay close', () => {
+    const { modal: first } = mount({
+        content: '<input id="first-name">'
+    });
+    const second = appendOverlay({
+        title: 'Second',
+        content: '<div id="inner-widget"><button id="inner-item" type="button">Item</button></div>'
+    });
+    second.querySelector('#inner-widget').addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+        }
+    });
+    first.setAttribute('open', '');
+    second.setAttribute('open', '');
+    const item = second.querySelector('#inner-item');
+    item.focus();
+
+    item.dispatchEvent(createEvent('keydown', { key: 'Escape' }));
+    assert.equal(second.hasAttribute('open'), true);
+    assert.equal(first.hasAttribute('open'), true);
+
+    pressEscape();
+    assert.equal(second.hasAttribute('open'), false);
+    assert.equal(first.hasAttribute('open'), true);
 });
 
 // —— core-side-panel compatibility ——

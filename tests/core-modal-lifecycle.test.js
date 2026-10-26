@@ -689,6 +689,110 @@ test('Escape after a widget consume still isolates the next overlay close', () =
     assert.equal(first.hasAttribute('open'), true);
 });
 
+const THREE_FIELDS = '<input id="stack-a"><input id="stack-b"><input id="stack-c">';
+
+/**
+ * @param {HTMLElement} overlay
+ * @param {string} dialogSelector
+ * @returns {HTMLElement[]}
+ */
+function sequentialFields(overlay, dialogSelector = '.core-modal') {
+    const dialog = overlay.querySelector(dialogSelector);
+    return [
+        ...dialog.querySelectorAll('button, a[href], input, select, textarea, [tabindex], [contenteditable]')
+    ].filter((element) => !element.hasAttribute('disabled')
+        && element.getAttribute('aria-disabled') !== 'true'
+        && (element.getAttribute('type') || '').toLowerCase() !== 'hidden');
+}
+
+test('Tab on sibling core-modals stays in the focused overlay', () => {
+    const { modal: first } = mount({ content: '<input id="first-name">' });
+    const second = appendOverlay({ title: 'Second', content: THREE_FIELDS });
+    first.setAttribute('open', '');
+    second.setAttribute('open', '');
+    const firstField = first.querySelector('#first-name');
+    const middle = second.querySelector('#stack-b');
+    const fields = sequentialFields(second);
+    middle.focus();
+
+    const midTab = pressTab();
+    assert.equal(midTab.defaultPrevented, false, 'native Tab between interior fields');
+    assertFocused(middle, 'background overlay must not steal Tab');
+    assert.equal(first.hasAttribute('open'), true);
+
+    const midShift = pressTab(true);
+    assert.equal(midShift.defaultPrevented, false, 'native Shift+Tab between interior fields');
+    assertFocused(middle);
+
+    fields[fields.length - 1].focus();
+    const wrapTab = pressTab();
+    assert.equal(wrapTab.defaultPrevented, true);
+    assertFocused(fields[0], 'wrap stays in the active sibling');
+    assert.notEqual(document.activeElement, firstField);
+
+    fields[0].focus();
+    const wrapShift = pressTab(true);
+    assert.equal(wrapShift.defaultPrevented, true);
+    assertFocused(fields[fields.length - 1]);
+    assert.notEqual(document.activeElement, firstField);
+});
+
+test('Tab on nested core-modals stays in the inner overlay', () => {
+    const { modal: outer } = mount({
+        content: `<input id="outer-field"><core-modal id="inner" title="Inner">${THREE_FIELDS}</core-modal>`
+    });
+    outer.setAttribute('open', '');
+    const inner = outer.querySelector('#inner');
+    inner.setAttribute('open', '');
+    const outerField = outer.querySelector('#outer-field');
+    const middle = inner.querySelector('#stack-b');
+    const fields = sequentialFields(inner);
+    middle.focus();
+
+    assert.equal(pressTab().defaultPrevented, false);
+    assertFocused(middle);
+    assert.notEqual(document.activeElement, outerField);
+
+    fields[fields.length - 1].focus();
+    assert.equal(pressTab().defaultPrevented, true);
+    assertFocused(fields[0]);
+    assert.notEqual(document.activeElement, outerField);
+
+    fields[0].focus();
+    assert.equal(pressTab(true).defaultPrevented, true);
+    assertFocused(fields[fields.length - 1]);
+});
+
+test('Tab with a modal and a side-panel stays in the focused overlay', () => {
+    const { modal } = mount({ content: '<input id="modal-name">' });
+    const panel = appendOverlay({
+        tag: 'core-side-panel',
+        title: 'Panel',
+        content: '<button id="panel-a" type="button">A</button>'
+            + '<button id="panel-b" type="button">B</button>'
+            + '<button id="panel-c" type="button">C</button>'
+    });
+    modal.setAttribute('open', '');
+    panel.setAttribute('open', '');
+    const modalField = modal.querySelector('#modal-name');
+    const fields = sequentialFields(panel, '.core-side-panel');
+    const middle = panel.querySelector('#panel-b');
+    middle.focus();
+
+    assert.equal(pressTab().defaultPrevented, false);
+    assertFocused(middle);
+    assert.notEqual(document.activeElement, modalField);
+
+    fields[fields.length - 1].focus();
+    assert.equal(pressTab().defaultPrevented, true);
+    assertFocused(fields[0]);
+    assert.notEqual(document.activeElement, modalField);
+
+    fields[0].focus();
+    assert.equal(pressTab(true).defaultPrevented, true);
+    assertFocused(fields[fields.length - 1]);
+});
+
 // —— core-side-panel compatibility ——
 
 test('core-side-panel keeps first-focusable initial focus and immediate closes', () => {

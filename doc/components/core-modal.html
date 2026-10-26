@@ -94,8 +94,8 @@
             <p>
                 Escape is left to inner widgets that already handled it (<code>preventDefault()</code>), e.g. an
                 open <code>core-menu</code>, <code>core-multi-select</code>, or <code>core-autocomplete</code> list
-                closes first; the next Escape requests the modal close. When several overlays are open, one Escape
-                reaches only the innermost overlay that owns focus. The kit applies no busy state of its own:
+                closes first; the next Escape requests the modal close. When several overlays are open, Escape and
+                Tab / Shift+Tab reach only the innermost overlay that owns focus. The kit applies no busy state of its own:
                 show progress on the triggering action and decide in the event listener which reasons to deny.
             </p>
         </section>

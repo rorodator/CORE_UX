@@ -44,6 +44,9 @@ Optional deep dive (sibling repo): `CORE_JS/ai-instructions/components.md`.
 - Every interactive component must work by keyboard, retain visible focus, and avoid color-only meaning.
 - Every `aria-modal="true"` surface requires a non-empty accessible name and owns initial focus, Tab/Shift+Tab containment, Escape handling, cleanup, and safe focus restoration.
 - Overlay attribute syncs must distinguish closed-to-open from open-to-open updates; simple visual/name changes must not refocus or rebuild stateful slot content.
+- `core-modal` initial focus: `[data-core-initial-focus]` → first editable body field → dialog; never auto-focus action buttons (destructive confirmations).
+- `core-modal` closing: Escape / backdrop / × / `[data-core-modal-close]` / `requestClose()` dispatch cancelable `core-modal-request-close`; `core-modal-close` only after an actual requested close; `close()` / removing `open` is unconditional and silent. Keep the `open` attribute as the canonical API.
+- Inner popups that consume Escape call `preventDefault()` (only while open) so enclosing overlays stay open.
 - Generic layout or state patterns belong here only when reusable unchanged; product hierarchy and wording stay in the app.
 - Composition/state guidance: `ai-instructions/ux-quality.md`.
 

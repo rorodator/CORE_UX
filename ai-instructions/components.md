@@ -86,10 +86,42 @@ Slot components (`Core_UXSlotElement`, card/modal/side-panel) capture template l
 - have a non-empty `title` (`aria-labelledby`) or host `aria-label`, which is
   mirrored to the element carrying `role="dialog"`;
 - capture the previously active element only on the closed-to-open transition;
-- move focus inside, trap Tab and Shift+Tab, support Escape, and restore a
-  still-connected, focusable trigger when closed;
+- move focus inside, trap Tab and Shift+Tab (including `contenteditable`
+  editors), support Escape, and restore a still-connected, focusable trigger
+  when closed;
+- leave Escape to an inner widget that already handled it
+  (`event.preventDefault()` — open menu, listbox, link panel…); inner popups
+  must call `preventDefault()` only while they actually consume Escape;
 - update simple attributes in place while open, without moving focus or
   rebuilding slotted content.
+
+The controller accepts an optional `getInitialFocus(dialog)` resolver. Without
+it (current `core-side-panel`), the first focusable element — usually the
+header × — receives focus. `ensureFocusWithin()` moves focus back to the
+initial target when it escaped the dialog while active.
+
+### `core-modal` lifecycle contract
+
+- **Open:** `open` attribute (canonical) or the reflecting `open` property;
+  `show()` is an alias. Only the closed-to-open transition captures the
+  trigger and applies initial focus.
+- **Initial focus:** first available `[data-core-initial-focus]` (a wrapper
+  resolves to its first focusable descendant; `tabindex="-1"` accepted;
+  disabled/hidden targets skipped) → first enabled, editable body field →
+  the dialog itself. Buttons/links are never auto-selected, so confirmations
+  never pre-focus a destructive action.
+- **Requested close:** Escape, backdrop, header ×, `[data-core-modal-close]`,
+  and `requestClose(reason)` dispatch the cancelable
+  `core-modal-request-close` (`detail.reason`). `preventDefault()` keeps the
+  modal open, the trap active, and focus inside; no `core-modal-close` is
+  dispatched and focus is not restored.
+- **Actual close:** `core-modal-close` (`detail.reason`, not cancelable)
+  fires only after a requested close succeeded. `close()`, `open = false`, or
+  removing the attribute close unconditionally and silently — use them after
+  a confirmed operation.
+- The kit has no busy state: the consuming component decides in its
+  `core-modal-request-close` listener which reasons to deny and shows progress
+  on its own action controls.
 
 An unnamed overlay emits a console warning; the kit does not invent visible
 fallback text. Focus containment plus `aria-modal="true"` is the current

@@ -50,6 +50,21 @@ Focus containment with `aria-modal="true"` is the baseline; `inert` and body
 scroll locking are intentionally deferred until they can be coordinated safely
 across concurrent overlays.
 
+`core-modal` focus and closing guidance:
+
+- Forms: the first enabled, editable body field receives focus automatically.
+  Mark another target with `data-core-initial-focus` only when the task starts
+  elsewhere (e.g. the field being edited).
+- Confirmations without fields: the dialog itself is focused so its name and
+  message are announced. Never mark a destructive action as initial focus;
+  mark the safe action (Cancel) when a button should be focused.
+- Footer dismiss buttons use `data-core-modal-close` so they follow the same
+  close policy as Escape, backdrop, and ×.
+- During a critical mutation, deny user closes from a
+  `core-modal-request-close` listener, show progress on the submitting action,
+  then close with `close()` on success. On failure, keep the modal open with an
+  actionable error; do not silently discard input.
+
 ## Icon-only actions in dense lists
 
 Icon-only buttons fit **repeated, conventional local actions** in compact collections

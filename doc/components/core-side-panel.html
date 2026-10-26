@@ -10,7 +10,8 @@
     {
     "imports": {
         "CORE_JS/lib/utils/dom.js": "../assets/core-dom-shim.js",
-        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js"
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js",
+        "lucide": "../../node_modules/lucide/dist/esm/lucide.mjs"
     }
 }
     </script>
@@ -44,7 +45,10 @@
             Provide either a non-empty <code>title</code> or <code>aria-label</code>. An unnamed
             panel emits a console warning and no visible fallback text is invented.
             On open, the panel remembers the active element, moves focus inside, traps Tab and
-            Shift+Tab, closes on Escape, and restores focus when closed. Changes to
+            Shift+Tab (including <code>contenteditable</code> editors), closes on Escape unless an inner
+            widget already handled it (e.g. an open menu or listbox closes first), and restores focus
+            when closed. The first focusable element (usually ×) receives focus on open, and closes are
+            not cancelable (unlike <a href="core-modal.html"><code>core-modal</code></a>). Changes to
             <code>title</code>, <code>position</code>, and <code>size</code> update in place so
             slotted form state and current focus are preserved.
         </p>

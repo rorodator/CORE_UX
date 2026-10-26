@@ -26,6 +26,7 @@ description: Adds or modifies a CORE_UX core-* kit component. Use when creating 
    - See `.cursor/rules/core-ux-documentation.mdc`
 7. `npm run build` if styles changed.
 8. Verify keyboard behavior, accessible names, focus visibility, narrow layout, reduced motion, and every exposed state.
+9. Modal overlays: reuse `lib/overlays/overlay-focus-controller.js` (do not fork it). For `core-modal`, keep the documented focus policy (`data-core-initial-focus` → first editable body field → dialog) and closing policy (cancelable `core-modal-request-close`, `core-modal-close` only for actual requested closes, silent `close()`); cover changes in `tests/core-modal-lifecycle.test.js` / `tests/modal-overlays.test.js`. Popups that handle Escape must `preventDefault()` only while open.
 
 ## Anti-patterns
 

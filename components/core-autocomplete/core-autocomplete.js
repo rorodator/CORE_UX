@@ -578,6 +578,9 @@ export class CoreAutocomplete extends Core_UXElement {
                 this._selectItem({ title: this._lastQuery, value: this._lastQuery });
             }
         } else if (event.key === 'Escape') {
+            if (this._panelOpen) {
+                event.preventDefault();
+            }
             this._closePanel();
         }
     }

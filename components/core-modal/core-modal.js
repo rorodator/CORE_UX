@@ -1,11 +1,21 @@
 import { Core_UXSlotElement } from '../../lib/base/core-ux-slot-element.js';
 import { createElement, mountTrustedHtml, hasBoolAttr } from 'CORE_JS/lib/utils/dom.js';
 import { parseTrustedHtmlFragment, readTrustedLightDom } from '../../lib/dom/trusted-html.js';
-import { OverlayFocusController } from '../../lib/overlays/overlay-focus-controller.js';
+import {
+    OverlayFocusController,
+    findFirstEditableField,
+    resolveFocusTarget
+} from '../../lib/overlays/overlay-focus-controller.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
 
+const INITIAL_FOCUS_SELECTOR = '[data-core-initial-focus]';
+
 /**
- * Modal dialog. Open with `open` attribute. Body/footer via light DOM.
+ * Modal dialog. Open with the `open` attribute/property or `show()`. Body/footer via light DOM.
+ *
+ * User-requested closes (Escape, backdrop, `[data-core-modal-close]`, `requestClose()`)
+ * dispatch a cancelable `core-modal-request-close` first; `core-modal-close` fires only
+ * once the modal actually closed. Removing `open` / `close()` closes unconditionally.
  */
 export class CoreModal extends Core_UXSlotElement {
 
@@ -20,7 +30,8 @@ export class CoreModal extends Core_UXSlotElement {
         this._nameWarningShown = false;
         this._focusController = new OverlayFocusController({
             getDialog: () => this.querySelector('.core-modal'),
-            onEscape: () => this._close('escape')
+            onEscape: () => this.requestClose('escape'),
+            getInitialFocus: (dialog) => this._resolveInitialFocus(dialog)
         });
     }
 
@@ -73,6 +84,61 @@ export class CoreModal extends Core_UXSlotElement {
 
     get open() {
         return hasBoolAttr(this, 'open');
+    }
+
+    /**
+     * Reflects to the `open` attribute.
+     *
+     * @param {boolean} value
+     */
+    set open(value) {
+        this.toggleAttribute('open', Boolean(value));
+    }
+
+    /**
+     * Opens the modal (same as setting the `open` attribute).
+     */
+    show() {
+        this.open = true;
+    }
+
+    /**
+     * Closes the modal unconditionally (same as removing the `open` attribute).
+     * Use after a confirmed operation; does not dispatch close events.
+     */
+    close() {
+        this.open = false;
+    }
+
+    /**
+     * Asks to close the modal as a user dismissal would. Dispatches the cancelable
+     * `core-modal-request-close`; when not prevented, closes and dispatches `core-modal-close`.
+     *
+     * @param {string} [reason]
+     * @returns {boolean} `true` when the modal closed.
+     */
+    requestClose(reason = 'request') {
+        if (!this.open) {
+            return false;
+        }
+        const request = new CustomEvent('core-modal-request-close', {
+            bubbles: true,
+            cancelable: true,
+            detail: { reason }
+        });
+        if (!this.dispatchEvent(request)) {
+            this._focusController.ensureFocusWithin();
+            return false;
+        }
+        if (!this.open) {
+            return true;
+        }
+        this.removeAttribute('open');
+        this.dispatchEvent(new CustomEvent('core-modal-close', {
+            bubbles: true,
+            detail: { reason }
+        }));
+        return true;
     }
 
     get title() {
@@ -246,17 +312,52 @@ export class CoreModal extends Core_UXSlotElement {
         }
     }
 
-    _close(reason) {
-        this.removeAttribute('open');
-        this.dispatchEvent(new CustomEvent('core-modal-close', {
-            bubbles: true,
-            detail: { reason }
-        }));
+    /**
+     * Opening focus policy: first available `[data-core-initial-focus]` target, then
+     * the first editable body field, then the dialog itself. Action buttons are never
+     * chosen implicitly so a destructive confirmation is not pre-focused.
+     *
+     * @param {HTMLElement} dialog
+     * @returns {HTMLElement}
+     */
+    _resolveInitialFocus(dialog) {
+        for (const marked of dialog.querySelectorAll(INITIAL_FOCUS_SELECTOR)) {
+            const target = resolveFocusTarget(marked, dialog);
+            if (target) {
+                return target;
+            }
+        }
+        const body = dialog.querySelector('.core-modal__body');
+        return (body && findFirstEditableField(body, dialog)) || dialog;
     }
 
     ui_toFunctional() {
-        this.bindDelegated('click', '[data-core-modal-backdrop]', () => this._close('backdrop'));
-        this.bindDelegated('click', '[data-core-modal-close]', () => this._close('close'));
+        // Keeps focus inside the dialog when a backdrop click is denied.
+        this.bindDelegated('mousedown', '[data-core-modal-backdrop]', (event, match) => {
+            if (this._ownsControl(match)) {
+                event.preventDefault();
+            }
+        });
+        this.bindDelegated('click', '[data-core-modal-backdrop]', (_event, match) => {
+            if (this._ownsControl(match)) {
+                this.requestClose('backdrop');
+            }
+        });
+        this.bindDelegated('click', '[data-core-modal-close]', (_event, match) => {
+            if (this._ownsControl(match)) {
+                this.requestClose('close');
+            }
+        });
+    }
+
+    /**
+     * Ignores close controls that belong to a nested modal.
+     *
+     * @param {Element} control
+     * @returns {boolean}
+     */
+    _ownsControl(control) {
+        return control.closest('core-modal') === this;
     }
 
     cleanFunctional() {

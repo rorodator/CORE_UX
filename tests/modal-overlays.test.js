@@ -25,7 +25,9 @@ const overlays = [
         host: '.core-modal-host',
         close: '[data-core-modal-close]',
         backdrop: '[data-core-modal-backdrop]',
-        closeEvent: 'core-modal-close'
+        closeEvent: 'core-modal-close',
+        // core-modal prefers the first editable body field over header actions.
+        initialFocus: '#content-last'
     },
     {
         name: 'core-side-panel',
@@ -34,7 +36,9 @@ const overlays = [
         host: '.core-side-panel-host',
         close: '[data-core-side-panel-close]',
         backdrop: '[data-core-side-panel-backdrop]',
-        closeEvent: 'core-side-panel-close'
+        closeEvent: 'core-side-panel-close',
+        // core-side-panel keeps the historical first-focusable policy.
+        initialFocus: '[data-core-side-panel-close]'
     }
 ];
 
@@ -102,7 +106,7 @@ for (const config of overlays) {
         const dialog = overlay.querySelector(config.dialog);
         const closeButton = overlay.querySelector(config.close);
         const last = overlay.querySelector('#content-last');
-        assert.equal(document.activeElement, closeButton);
+        assert.equal(document.activeElement, overlay.querySelector(config.initialFocus));
         assert.ok(dialog.contains(document.activeElement));
 
         last.focus();
@@ -174,6 +178,54 @@ for (const config of overlays) {
         assert.equal(overlay.hasAttribute('open'), false);
         assert.equal(reason, 'backdrop');
         assert.equal(document.activeElement, trigger);
+    });
+
+    test(`${config.name} leaves Escape to an inner widget that already handled it`, () => {
+        const { overlay } = mount(config, {
+            content: '<div id="inner-widget"><button id="inner-item">Item</button></div>'
+        });
+        let closes = 0;
+        overlay.addEventListener(config.closeEvent, () => {
+            closes += 1;
+        });
+        open(overlay);
+        const item = overlay.querySelector('#inner-item');
+        overlay.querySelector('#inner-widget').addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+            }
+        });
+        item.focus();
+
+        item.dispatchEvent(createEvent('keydown', { key: 'Escape' }));
+        assert.equal(overlay.hasAttribute('open'), true);
+        assert.equal(closes, 0);
+        assert.equal(document.activeElement, item);
+
+        document.dispatchEvent(createEvent('keydown', { key: 'Escape' }));
+        assert.equal(overlay.hasAttribute('open'), false);
+        assert.equal(closes, 1);
+    });
+
+    test(`${config.name} keeps contenteditable editors in the Tab cycle`, () => {
+        const { overlay } = mount(config, {
+            content: '<div id="editor" contenteditable="true" role="textbox"></div>'
+                + '<input id="after-editor">'
+                + '<div id="locked-editor" contenteditable="false"></div>'
+        });
+        open(overlay);
+        const editor = overlay.querySelector('#editor');
+        const after = overlay.querySelector('#after-editor');
+        editor.focus();
+
+        const tab = createEvent('keydown', { key: 'Tab' });
+        document.dispatchEvent(tab);
+        assert.equal(tab.defaultPrevented, false, 'native Tab moves from the editor to the next field');
+        assert.equal(document.activeElement, editor);
+
+        after.focus();
+        document.dispatchEvent(createEvent('keydown', { key: 'Tab' }));
+        assert.equal(document.activeElement, overlay.querySelector(config.close));
     });
 
     test(`${config.name} keeps current focus during title and size syncs`, () => {

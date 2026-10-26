@@ -5,11 +5,13 @@ import '../components/core-autocomplete/core-autocomplete.js';
 /**
  * @param {Element} target
  * @param {string} key
+ * @returns {Event}
  */
 function press(target, key) {
     const event = new Event('keydown', { bubbles: true, cancelable: true });
     Object.defineProperty(event, 'key', { value: key });
     target.dispatchEvent(event);
+    return event;
 }
 
 /**
@@ -166,4 +168,15 @@ test('core-autocomplete keeps active descendant on a new option after results re
     assert.equal(countSelectedOptions(component), 1);
     assert.equal(options[0].getAttribute('aria-selected'), 'true');
     assert.equal(options[1].getAttribute('aria-selected'), 'false');
+});
+
+test('core-autocomplete consumes Escape only while its popup is open', () => {
+    const component = mountAutocomplete();
+    component.updateResults(['Alpha', 'Bravo']);
+    const input = component.querySelector('[role="combobox"]');
+
+    assert.equal(input.getAttribute('aria-expanded'), 'true');
+    assert.equal(press(input, 'Escape').defaultPrevented, true, 'open popup handles Escape');
+    assert.equal(input.getAttribute('aria-expanded'), 'false');
+    assert.equal(press(input, 'Escape').defaultPrevented, false, 'closed popup lets Escape reach enclosing overlays');
 });

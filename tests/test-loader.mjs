@@ -23,9 +23,9 @@ export async function resolve(specifier, context, nextResolve) {
         };
     }
     if (specifier.startsWith('CORE_JS/lib/value/')) {
-        const rel = specifier.slice('CORE_JS/'.length);
+        const fileName = specifier.slice('CORE_JS/lib/value/'.length);
         return {
-            url: pathToFileURL(path.resolve(root, '../core_js', rel)).href,
+            url: pathToFileURL(path.join(root, 'doc/assets/value', fileName)).href,
             shortCircuit: true,
         };
     }

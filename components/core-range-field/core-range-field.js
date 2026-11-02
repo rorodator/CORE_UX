@@ -29,6 +29,8 @@ export class CoreRangeField extends Core_UXFormControl {
     constructor() {
         super();
         this._suppress = false;
+        this._queuedExternal = false;
+        this._focusedBounds = 0;
         /** @type {{ min: boolean, max: boolean }} */
         this._dirty = { min: false, max: false };
         /** @type {{ status: string, value: { min: unknown, max: unknown }|null, errors: object[] }} */
@@ -60,7 +62,12 @@ export class CoreRangeField extends Core_UXFormControl {
             'decimal-separator', 'group-separator', 'max-fraction-digits',
             'fraction-digits', 'excess-precision'
         ].includes(name)) {
-            if (!this._boundsFocused()) {
+            if (name === 'value' && this._isBoundsFocused()) {
+                this._queuedExternal = true;
+                return;
+            }
+            if (!this._isBoundsFocused()) {
+                this._queuedExternal = false;
                 this._dirty = { min: false, max: false };
                 this._syncFromAttribute();
             }
@@ -87,9 +94,34 @@ export class CoreRangeField extends Core_UXFormControl {
         return node instanceof HTMLInputElement ? node : null;
     }
 
-    _boundsFocused() {
+    _isBoundsFocused() {
         const active = document.activeElement;
-        return active === this._bound('min') || active === this._bound('max');
+        return this._focusedBounds > 0 || active === this._bound('min') || active === this._bound('max');
+    }
+
+    _bindFocusTracking() {
+        this._focusAbort?.abort();
+        this._focusAbort = new AbortController();
+        const signal = this._focusAbort.signal;
+        ['min', 'max'].forEach((bound) => {
+            const input = this._bound(/** @type {'min'|'max'} */ (bound));
+            if (!input) {
+                return;
+            }
+            input.addEventListener('focus', () => {
+                this._focusedBounds += 1;
+            }, { signal });
+            input.addEventListener('focusout', () => {
+                this._focusedBounds = Math.max(0, this._focusedBounds - 1);
+            }, { signal });
+        });
+    }
+
+    cleanFunctional() {
+        this._focusAbort?.abort();
+        this._focusAbort = null;
+        this._focusedBounds = 0;
+        super.cleanFunctional();
     }
 
     ui_render() {
@@ -154,6 +186,7 @@ export class CoreRangeField extends Core_UXFormControl {
     ui_toFunctional() {
         this._syncGroupLabel();
         this._syncBoundAttributes();
+        this._bindFocusTracking();
         this.bindDelegated('input', '[data-bound]', (event, match) => this._onInput(match));
         this.bindDelegated('focusout', '[data-bound]', (event, match) => this._onFocusOut(match));
         this._syncFromAttribute();
@@ -184,8 +217,11 @@ export class CoreRangeField extends Core_UXFormControl {
         });
     }
 
-    _syncFromAttribute() {
-        if (this._boundsFocused()) {
+    /**
+     * @param {boolean} [force]
+     */
+    _syncFromAttribute(force = false) {
+        if (!force && this._isBoundsFocused()) {
             return;
         }
         const { type, options } = readFormattedOptions(this);
@@ -205,12 +241,13 @@ export class CoreRangeField extends Core_UXFormControl {
         }
         const minValue = source && typeof source === 'object' ? source.min : null;
         const maxValue = source && typeof source === 'object' ? source.max : null;
+        const canonicalOptions = { ...options, source: 'canonical' };
         this._showBound('min', minValue == null || minValue === ''
             ? ''
-            : formatValue(type, parseValue(type, minValue, options).value ?? minValue, options));
+            : formatValue(type, parseValue(type, minValue, canonicalOptions).value ?? minValue, options));
         this._showBound('max', maxValue == null || maxValue === ''
             ? ''
-            : formatValue(type, parseValue(type, maxValue, options).value ?? maxValue, options));
+            : formatValue(type, parseValue(type, maxValue, canonicalOptions).value ?? maxValue, options));
         this._state = this._evaluate(false);
         this._syncFeedback(this._state.status === 'invalid');
     }
@@ -232,8 +269,9 @@ export class CoreRangeField extends Core_UXFormControl {
      */
     _evaluate(preserveInvalidRaw) {
         const { type, options } = readFormattedOptions(this);
-        const minParsed = parseValue(type, this._bound('min')?.value ?? '', options);
-        const maxParsed = parseValue(type, this._bound('max')?.value ?? '', options);
+        const typed = { ...options, source: 'localized' };
+        const minParsed = parseValue(type, this._bound('min')?.value ?? '', typed);
+        const maxParsed = parseValue(type, this._bound('max')?.value ?? '', typed);
         if (minParsed.status === 'invalid' || maxParsed.status === 'invalid') {
             return {
                 status: 'invalid',
@@ -291,8 +329,13 @@ export class CoreRangeField extends Core_UXFormControl {
     _onFocusOut(match) {
         const bound = match.getAttribute('data-bound') === 'max' ? 'max' : 'min';
         if (!this._dirty[bound]) {
+            if (this._queuedExternal) {
+                this._queuedExternal = false;
+                this._syncFromAttribute(true);
+            }
             return;
         }
+        this._queuedExternal = false;
         this._dirty[bound] = false;
         const { type, options } = readFormattedOptions(this);
         this._state = this._evaluate(true);

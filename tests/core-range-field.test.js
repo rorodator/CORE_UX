@@ -86,6 +86,48 @@ test('French partial bound and focus survive an error attribute', async () => {
     assert.equal(max.getAttribute('aria-invalid'), 'true');
 });
 
+test('a programmatic range received during focus is applied when focus leaves', async () => {
+    const host = mount(`<core-range-field value-type="integer" value='{"min":"12","max":null}'></core-range-field>`);
+    await customElements.whenDefined('core-range-field');
+    const min = host.querySelector('[data-bound="min"]');
+    let events = 0;
+    host.addEventListener('core-range-field-input', () => {
+        events += 1;
+    });
+    host.addEventListener('core-range-field-change', () => {
+        events += 1;
+    });
+    min.focus();
+    if (typeof min.setSelectionRange === 'function') {
+        min.setSelectionRange(1, 1);
+    }
+    host.setAttribute('value', '{"min":"99","max":null}');
+    assert.equal(events, 0);
+    assert.equal(min.value, '12');
+    if (typeof min.selectionStart === 'number') {
+        assert.equal(min.selectionStart, 1);
+    }
+    min.dispatchEvent(new Event('focusout', { bubbles: true }));
+    assert.equal(events, 0);
+    assert.equal(min.value, '99');
+    assert.deepEqual(host.getValueState().value, { min: '99', max: null });
+});
+
+test('a pending range bound stays on screen after blur', async () => {
+    const host = mount('<core-range-field value-type="decimal" locale="fr"></core-range-field>');
+    await customElements.whenDefined('core-range-field');
+    const min = host.querySelector('[data-bound="min"]');
+    const max = host.querySelector('[data-bound="max"]');
+    min.value = '12,';
+    min.dispatchEvent(new Event('input', { bubbles: true }));
+    min.dispatchEvent(new Event('focusout', { bubbles: true }));
+    assert.equal(host.getValueState().status, 'pending');
+    assert.equal(min.value, '12,');
+    assert.equal(max.value, '');
+    assert.equal(host.hasAttribute('value'), false);
+    assert.equal(host.querySelector('[data-core-parse-error]'), null);
+});
+
 test('date range uses text inputs and English month labels', async () => {
     const host = mount(`<core-range-field value-type="date" value='{"min":"2026-11-02","max":null}'></core-range-field>`);
     await customElements.whenDefined('core-range-field');

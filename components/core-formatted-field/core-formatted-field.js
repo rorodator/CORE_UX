@@ -31,6 +31,8 @@ export class CoreFormattedField extends Core_UXFormControl {
         this._suppress = false;
         this._dirty = false;
         this._holdRaw = false;
+        this._queuedExternal = false;
+        this._focused = false;
         /** @type {{ status: string, value: unknown, errors: object[] }} */
         this._state = { status: 'empty', value: null, errors: [] };
     }
@@ -56,9 +58,11 @@ export class CoreFormattedField extends Core_UXFormControl {
      */
     _handleAttributeChange(name) {
         if (name === 'value') {
-            if (document.activeElement === this._getControl()) {
+            if (this._isControlFocused()) {
+                this._queuedExternal = true;
                 return;
             }
+            this._queuedExternal = false;
             this._dirty = false;
             this._holdRaw = false;
             this._syncFromAttribute();
@@ -68,7 +72,7 @@ export class CoreFormattedField extends Core_UXFormControl {
             'value-type', 'locale', 'format', 'temporal', 'decimal-separator',
             'group-separator', 'max-fraction-digits', 'fraction-digits', 'excess-precision'
         ].includes(name)) {
-            if (!this._holdRaw && document.activeElement !== this._getControl()) {
+            if (!this._holdRaw && !this._isControlFocused()) {
                 this._syncFromAttribute();
             }
             this._syncInputMode();
@@ -105,9 +109,41 @@ export class CoreFormattedField extends Core_UXFormControl {
         const input = this._getControl();
         this.wireControl(input);
         this._syncInputMode();
+        this._bindFocusTracking(input);
         this.bindDelegated('input', '[data-core-formatted-input]', () => this._onInput());
         this.bindDelegated('focusout', '[data-core-formatted-input]', (event) => this._onFocusOut(event));
         this._syncFromAttribute();
+    }
+
+    /**
+     * Track focus events. Some documents do not update activeElement from focus().
+     * @param {HTMLInputElement|null} input
+     */
+    _bindFocusTracking(input) {
+        this._focusAbort?.abort();
+        this._focusAbort = new AbortController();
+        if (!input) {
+            return;
+        }
+        const signal = this._focusAbort.signal;
+        input.addEventListener('focus', () => {
+            this._focused = true;
+        }, { signal });
+        input.addEventListener('focusout', () => {
+            this._focused = false;
+        }, { signal });
+    }
+
+    _isControlFocused() {
+        const input = this._getControl();
+        return Boolean(input) && (this._focused || document.activeElement === input);
+    }
+
+    cleanFunctional() {
+        this._focusAbort?.abort();
+        this._focusAbort = null;
+        this._focused = false;
+        super.cleanFunctional();
     }
 
     _syncInputMode() {
@@ -125,7 +161,7 @@ export class CoreFormattedField extends Core_UXFormControl {
         if (!input || this._holdRaw) {
             return;
         }
-        if (document.activeElement === input && this._dirty) {
+        if (this._isControlFocused() && this._dirty) {
             return;
         }
         const { type, options } = readFormattedOptions(this);
@@ -136,7 +172,7 @@ export class CoreFormattedField extends Core_UXFormControl {
             this._syncFeedback(false);
             return;
         }
-        const parsed = parseValue(type, rawAttr, options);
+        const parsed = parseValue(type, rawAttr, { ...options, source: 'canonical' });
         this._state = parsed;
         input.value = parsed.status === 'valid'
             ? formatValue(type, parsed.value, options)
@@ -149,7 +185,7 @@ export class CoreFormattedField extends Core_UXFormControl {
         this._holdRaw = true;
         const input = this._getControl();
         const { type, options } = readFormattedOptions(this);
-        this._state = parseValue(type, input ? input.value : '', options);
+        this._state = parseValue(type, input ? input.value : '', { ...options, source: 'localized' });
         this._emit('core-formatted-field-input');
     }
 
@@ -157,14 +193,23 @@ export class CoreFormattedField extends Core_UXFormControl {
      * @param {Event} event
      */
     _onFocusOut(event) {
-        if (!this._dirty || event.target !== this._getControl()) {
+        if (event.target !== this._getControl()) {
             return;
         }
+        if (!this._dirty) {
+            if (this._queuedExternal) {
+                this._queuedExternal = false;
+                this._holdRaw = false;
+                this._syncFromAttribute();
+            }
+            return;
+        }
+        this._queuedExternal = false;
         this._dirty = false;
         const input = this._getControl();
         const raw = input ? input.value : '';
         const { type, options } = readFormattedOptions(this);
-        let parsed = parseValue(type, raw, options);
+        let parsed = parseValue(type, raw, { ...options, source: 'localized' });
         if (this.required && parsed.status === 'empty') {
             parsed = {
                 status: 'invalid',

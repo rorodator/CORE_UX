@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
@@ -24,17 +25,22 @@ function commit(input) {
     input.dispatchEvent(new Event('focusout', { bubbles: true }));
 }
 
-test('doc value copies match the CORE_JS sources', () => {
-    const names = [
-        'core-value-registry.js',
-        'core-value-result.js',
-        'core-decimal.js',
-        'core-date-time.js',
-        'core-relative-date.js'
-    ];
-    for (const name of names) {
+test('value modules load from the locked in-repo copies', () => {
+    const manifest = JSON.parse(fs.readFileSync(path.join(here, '../doc/assets/value/manifest.json'), 'utf8'));
+    assert.equal(manifest.dependency, 'CORE_JS/lib/value');
+    assert.equal(typeof manifest.lockedCommit, 'string');
+    assert.equal(manifest.lockedCommit.length, 40);
+    for (const name of manifest.files) {
+        const body = fs.readFileSync(path.join(here, '../doc/assets/value', name));
+        assert.equal(createHash('sha256').update(body).digest('hex'), manifest.sha256[name], name);
+    }
+    const sibling = path.resolve(here, '../../core_js/lib/value');
+    if (!fs.existsSync(path.join(sibling, 'core-value-registry.js'))) {
+        return;
+    }
+    for (const name of manifest.files) {
         const doc = fs.readFileSync(path.join(here, '../doc/assets/value', name), 'utf8');
-        const src = fs.readFileSync(path.join(here, '../../core_js/lib/value', name), 'utf8');
+        const src = fs.readFileSync(path.join(sibling, name), 'utf8');
         assert.equal(doc, src, name);
     }
 });
@@ -152,4 +158,61 @@ test('programmatic value does not emit and error updates keep the caret', async 
         assert.equal(input.selectionEnd, 3);
     }
     assert.equal(input.getAttribute('aria-invalid'), 'true');
+});
+
+test('a programmatic value received during focus is applied on blur without moving the caret', async () => {
+    const host = mount('<core-formatted-field value-type="integer" value="12"></core-formatted-field>');
+    await customElements.whenDefined('core-formatted-field');
+    const input = host.querySelector('[data-core-formatted-input]');
+    let events = 0;
+    host.addEventListener('core-formatted-field-input', () => {
+        events += 1;
+    });
+    host.addEventListener('core-formatted-field-change', () => {
+        events += 1;
+    });
+    input.focus();
+    if (typeof input.setSelectionRange === 'function') {
+        input.setSelectionRange(1, 1);
+    }
+    host.setAttribute('value', '99');
+    assert.equal(events, 0);
+    assert.equal(input.value, '12');
+    if (typeof input.selectionStart === 'number') {
+        assert.equal(input.selectionStart, 1);
+        assert.equal(input.selectionEnd, 1);
+    }
+    input.dispatchEvent(new Event('focusout', { bubbles: true }));
+    assert.equal(events, 0);
+    assert.equal(host.getAttribute('value'), '99');
+    assert.equal(input.value, '99');
+    assert.equal(host.getValueState().value, '99');
+});
+
+test('pending text stays visible on blur and a dot group round-trips', async () => {
+    const host = mount('<core-formatted-field value-type="decimal" locale="fr"></core-formatted-field>');
+    await customElements.whenDefined('core-formatted-field');
+    const input = host.querySelector('[data-core-formatted-input]');
+    input.value = '12,';
+    commit(input);
+    assert.equal(host.getValueState().status, 'pending');
+    assert.equal(input.value, '12,');
+    assert.equal(host.hasAttribute('value'), false);
+    assert.equal(host.querySelector('[data-core-parse-error]'), null);
+
+    host.setAttribute('value-type', 'date');
+    input.value = '02 Nov';
+    commit(input);
+    assert.equal(host.getValueState().status, 'pending');
+    assert.equal(input.value, '02 Nov');
+
+    host.setAttribute('value-type', 'integer');
+    host.setAttribute('decimal-separator', ',');
+    host.setAttribute('group-separator', '.');
+    host.setAttribute('value', '1234');
+    assert.equal(input.value, '1.234');
+    input.value = '1.234';
+    commit(input);
+    assert.equal(host.getAttribute('value'), '1234');
+    assert.equal(input.value, '1.234');
 });

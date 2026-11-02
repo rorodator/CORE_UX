@@ -126,6 +126,18 @@
     @apply border-core-error focus:border-core-error focus:ring-core-error-ring;
   }
 
+  .core-range-field__bounds {
+    @apply flex w-full flex-col items-stretch gap-2 sm:flex-row sm:items-center;
+  }
+
+  .core-range-field__bound {
+    @apply min-w-0 sm:flex-1;
+  }
+
+  .core-range-field__sep {
+    @apply text-center text-sm text-core-text-muted;
+  }
+
   .core-textarea {
     @apply core-control min-h-[6rem] resize-y;
   }

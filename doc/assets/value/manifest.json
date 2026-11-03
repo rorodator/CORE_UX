@@ -6,14 +6,16 @@
     "core-value-result.js",
     "core-decimal.js",
     "core-date-time.js",
-    "core-relative-date.js"
+    "core-relative-date.js",
+    "core-text-match.js"
   ],
   "sha256": {
     "core-value-registry.js": "0920d8d1c02da804358f836df462b290edd22ec3f489882ba666a80e53fd6c3b",
     "core-value-result.js": "76998b4712511f58bd6ba914202dcaedfd6a2727a0e87002e6aa0f2f16bf29b6",
     "core-decimal.js": "f06b68f9d1a92cdfb605d2b121f179ec39ea8b92b239904b2bb33fbe06f6b93d",
     "core-date-time.js": "ead295c3ef0b37c9347615831119fffc17428b12fbce0bc614b3bce8acc4ef9f",
-    "core-relative-date.js": "32e327936c44779a886feec0e1d88a363df17d0097a52a67d9c55c7d62aab1c3"
+    "core-relative-date.js": "32e327936c44779a886feec0e1d88a363df17d0097a52a67d9c55c7d62aab1c3",
+    "core-text-match.js": "57e6c77d968bd66f83ee8dddbce217aab5eb5ec7f13dfa75c95ca0bf0182cfcd"
   },
   "note": "Doc pages and Node tests load these copies. They do not resolve a sibling CORE_JS checkout. Refresh the copies and these hashes together when the locked commit changes. A sibling checkout, when present, is compared only as a drift check."
 }

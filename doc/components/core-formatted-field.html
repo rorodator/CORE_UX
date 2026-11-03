@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-formatted-field — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/utils/dom.js": "../assets/core-dom-shim.js",
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js",
+        "CORE_JS/lib/value/core-value-registry.js": "../assets/value/core-value-registry.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-formatted-field"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-formatted-field&gt;</span></h1>
+            <p class="lead">Opt-in text field for exact integers, decimals, dates, times, and datetimes. <a href="../form-controls.html">Shared form attrs</a>. This is not a date picker and not a clock popup: the user types text. <code>core-field</code> <code>type="number"</code> and <code>type="date"</code> stay native and unchanged.</p>
+        </header>
+
+        <div class="callout callout--info">
+            The inner control is always <code>type="text"</code>. While typing, the raw text is kept (including an incomplete <code>12,</code> or <code>-</code>). On blur, a valid value is rewritten to the display format and the <code>value</code> attribute becomes the canonical string. An incomplete value stays exactly as typed, with no error message; an invalid value also stays as typed and shows a <code>.core-error-text</code> with <code>data-core-parse-error</code>. In both cases the <code>value</code> attribute is removed. A parent <code>error</code> attribute wins over that message. Setting <code>value</code> from script does not emit an event and does not move the caret while the field is focused. On blur, the later write wins: a scripted value that arrives after typing replaces the typed text, and typing after a scripted value keeps what was typed. Moving from one bound of a range to the other does not apply a queued scripted value.
+        </div>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>value-type</code></td><td>decimal · integer · date · time · datetime · relative-date</td><td>Default <code>decimal</code>. <code>relative-date</code> is the symbolic preset (<code>today</code>, <code>this-month</code>, <code>last-n-days</code>, <code>next-n-days</code>), not a resolved calendar range.</td></tr>
+                <tr><td><code>locale</code></td><td><code>en</code> · <code>fr</code></td><td>Default <code>en</code> (group <code>,</code>, decimal <code>.</code>). <code>fr</code> groups with a no-break space and uses <code>,</code> as the decimal separator. A canonical <code>1.5</code> is still accepted in <code>fr</code>.</td></tr>
+                <tr><td><code>decimal-separator</code> / <code>group-separator</code></td><td>one character</td><td>Override the locale separators. Omit them to keep the locale default. Typed text is parsed with those separators. When the group separator is <code>.</code>, <code>1.234</code> is one thousand two hundred thirty-four. The <code>value</code> attribute stays the canonical form, where <code>.</code> is the decimal point.</td></tr>
+                <tr><td><code>max-fraction-digits</code></td><td>integer ≥ 0</td><td>Validation only. Extra digits are rejected (<code>E_PRECISION</code>) and the full string is kept in <code>errors[].details.exact</code>. Nothing is rounded or truncated.</td></tr>
+                <tr><td><code>excess-precision</code></td><td><code>reject</code> · <code>keep</code></td><td>Default <code>reject</code>. <code>keep</code> accepts the full fraction.</td></tr>
+                <tr><td><code>fraction-digits</code></td><td>integer ≥ 0</td><td>Time only. The fractional seconds must match this length, or the value is invalid.</td></tr>
+                <tr><td><code>format</code></td><td>token string</td><td>Display pattern. Defaults: date <code>dd MMM yyyy</code> (English month names, <code>02 Nov 2026</code>), time <code>HH:mm:ss</code>, local datetime <code>dd MMM yyyy HH:mm:ss</code>, offset datetime the same plus <code>xxx</code>.</td></tr>
+                <tr><td><code>temporal</code></td><td><code>local</code> · <code>offset</code></td><td>Datetime only. Default <code>local</code> (<code>YYYY-MM-DDTHH:mm:ss</code>, no zone). <code>offset</code> requires <code>Z</code> or <code>±HH:mm</code>. Mixing the two is <code>E_TEMPORAL_MIX</code>.</td></tr>
+                <tr><td><code>value</code></td><td>canonical string</td><td>Integer and decimal are digit strings, never JS numbers. Date <code>YYYY-MM-DD</code>. Time <code>HH:mm:ss</code>. A relative date is JSON.</td></tr>
+                <tr><td colspan="3"><em>Plus shared form attributes. The input stays <code>type="text"</code>.</em></td></tr>
+            </tbody>
+        </table>
+
+        <h2>Events and API</h2>
+        <table>
+            <thead><tr><th>Name</th><th>When</th><th>Detail</th></tr></thead>
+            <tbody>
+                <tr><td><code>core-formatted-field-input</code></td><td>Each keystroke</td><td><code>{ value, rawValue, status, errors }</code>. <code>status</code> is <code>empty</code>, <code>pending</code>, <code>invalid</code>, or <code>valid</code>.</td></tr>
+                <tr><td><code>core-formatted-field-change</code></td><td>Blur after a dirty edit</td><td>Same shape. Not emitted when script sets <code>value</code>.</td></tr>
+                <tr><td><code>getValueState()</code></td><td>Public method</td><td>Returns the same shape as the event detail.</td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>French and US decimals</h3>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-formatted-field label="Amount (fr)" value-type="decimal" locale="fr" value="1234.5" max-fraction-digits="2"></core-formatted-field>
+                    <core-formatted-field label="Amount (en)" value-type="decimal" locale="en" value="1234.50"></core-formatted-field>
+                    <core-formatted-field label="Exact integer" value-type="integer" value="9007199254740993"></core-formatted-field>
+                </div>
+                <pre class="demo__code"><code>&lt;core-formatted-field label="Amount (fr)" value-type="decimal" locale="fr" value="1234.5" max-fraction-digits="2"&gt;&lt;/core-formatted-field&gt;
+&lt;core-formatted-field label="Amount (en)" value-type="decimal" locale="en" value="1234.50"&gt;&lt;/core-formatted-field&gt;
+&lt;core-formatted-field label="Exact integer" value-type="integer" value="9007199254740993"&gt;&lt;/core-formatted-field&gt;</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Date, time, datetime</h3>
+            <p>Month names are the fixed English abbreviations <code>Jan</code>–<code>Dec</code>. There is no calendar popup.</p>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-formatted-field label="Date" value-type="date" value="2026-11-02"></core-formatted-field>
+                    <core-formatted-field label="Time" value-type="time" value="14:35:08"></core-formatted-field>
+                    <core-formatted-field label="Local datetime" value-type="datetime" temporal="local" value="2026-11-02T14:35:08"></core-formatted-field>
+                    <core-formatted-field label="Offset datetime" value-type="datetime" temporal="offset" value="2026-11-02T12:35:08Z"></core-formatted-field>
+                    <core-formatted-field label="Relative" value-type="relative-date" value='{"preset":"last-n-days","amount":7}'></core-formatted-field>
+                </div>
+                <pre class="demo__code"><code>&lt;core-formatted-field label="Date" value-type="date" value="2026-11-02"&gt;&lt;/core-formatted-field&gt;
+&lt;core-formatted-field label="Time" value-type="time" value="14:35:08"&gt;&lt;/core-formatted-field&gt;
+&lt;core-formatted-field label="Local datetime" value-type="datetime" temporal="local" value="2026-11-02T14:35:08"&gt;&lt;/core-formatted-field&gt;
+&lt;core-formatted-field label="Offset datetime" value-type="datetime" temporal="offset" value="2026-11-02T12:35:08Z"&gt;&lt;/core-formatted-field&gt;
+&lt;core-formatted-field label="Relative" value-type="relative-date" value='{"preset":"last-n-days","amount":7}'&gt;&lt;/core-formatted-field&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../../components/core-formatted-field/core-formatted-field.js"></script>
+</body>
+</html>

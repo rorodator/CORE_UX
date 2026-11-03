@@ -31,3 +31,5 @@ import './components/core-grid/core-grid.js';
 import './components/core-autocomplete/core-autocomplete.js';
 import './components/core-autocomplete-chips/core-autocomplete-chips.js';
 import './components/core-multi-select/core-multi-select.js';
+import './components/core-formatted-field/core-formatted-field.js';
+import './components/core-range-field/core-range-field.js';

@@ -22,5 +22,12 @@ export async function resolve(specifier, context, nextResolve) {
             shortCircuit: true,
         };
     }
+    if (specifier.startsWith('CORE_JS/lib/value/')) {
+        const fileName = specifier.slice('CORE_JS/lib/value/'.length);
+        return {
+            url: pathToFileURL(path.join(root, 'doc/assets/value', fileName)).href,
+            shortCircuit: true,
+        };
+    }
     return nextResolve(specifier, context);
 }

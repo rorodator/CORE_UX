@@ -24,6 +24,8 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 | Tag | Notes |
 |-----|--------|
 | `<core-field>` | `type` text \| email \| password \| number \| date \| tel \| url \| search; `min`, `max`, `step`, `label`, `hint`, `error` |
+| `<core-formatted-field>` | Opt-in exact text entry (not a date picker). `value-type` integer \| decimal \| date \| time \| datetime \| relative-date; `locale`, `format`, `temporal` local \| offset, separators, `max-fraction-digits` (reject, never rounds), `fraction-digits`, `excess-precision` keep. Events `core-formatted-field-input`, `core-formatted-field-change`. `getValueState()` |
+| `<core-range-field>` | Two bounds, partial range valid. Same format attrs. `value` is JSON `{ "min", "max" }`. Events `core-range-field-input`, `core-range-field-change` |
 | `<core-textarea>` | `rows`, `maxlength`, `label`, `hint`, `error` |
 | `<core-rich-text>` | WYSIWYG editor; `min-height`, `maxlength` (plain text), `toolbar` (`full`/`narrative`/`compact`), `sanitize`; events `core-rich-text-input`, `core-rich-text-change`; methods `getHtml()`, `getText()`, `setHtml()`, `isMaxLengthExceeded()`; i18n container `core_ux`; helpers in `lib/html/rich-text-html.js` |
 | `<core-select>` | `options` JSON `[{ "value", "label", "selected"? }]` |

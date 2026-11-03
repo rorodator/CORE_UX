@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-range-field — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/utils/dom.js": "../assets/core-dom-shim.js",
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js",
+        "CORE_JS/lib/value/core-value-registry.js": "../assets/value/core-value-registry.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-range-field"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-range-field&gt;</span></h1>
+            <p class="lead">Two text bounds for a minimum and a maximum. One side may be empty. This is not a slider and not a calendar. <a href="../form-controls.html">Shared form attrs</a>. Format attributes match <a href="core-formatted-field.html">core-formatted-field</a>.</p>
+        </header>
+
+        <div class="callout callout--info">
+            Both inputs are <code>type="text"</code>, named <code>{name}-min</code> and <code>{name}-max</code>, with accessible names Minimum and Maximum. The group is labelled by the visible label. Bounds stack on a narrow viewport and sit on one row from the <code>sm</code> breakpoint. A partial range is valid. If both sides are set and the minimum is greater than the maximum, the raw text stays, <code>value</code> is removed, and the error code is <code>E_RANGE_ORDER</code>. A scripted <code>value</code> does not emit an event. On blur, the later write wins. Moving from minimum to maximum keeps the typed text and does not apply a queued scripted value.
+        </div>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>value-type</code></td><td>decimal · integer · date · time · datetime · relative-date</td><td>Same types as <code>core-formatted-field</code>. Default <code>decimal</code>.</td></tr>
+                <tr><td><code>locale</code>, <code>format</code>, <code>temporal</code>, separators, <code>max-fraction-digits</code>, <code>fraction-digits</code>, <code>excess-precision</code></td><td>see formatted field</td><td><code>max-fraction-digits</code> never rounds either bound.</td></tr>
+                <tr><td><code>value</code></td><td>JSON</td><td><code>{"min":"10","max":null}</code> is a valid partial range. Both empty clears the attribute. Canonical strings only.</td></tr>
+                <tr><td><code>name</code></td><td>string</td><td>Writes <code>{name}-min</code> and <code>{name}-max</code> on the inputs.</td></tr>
+                <tr><td colspan="3"><em>Plus shared form attributes.</em></td></tr>
+            </tbody>
+        </table>
+
+        <h2>Events and API</h2>
+        <table>
+            <thead><tr><th>Name</th><th>When</th><th>Detail</th></tr></thead>
+            <tbody>
+                <tr><td><code>core-range-field-input</code></td><td>Either bound changes</td><td><code>{ value, rawValue: { min, max }, status, errors }</code></td></tr>
+                <tr><td><code>core-range-field-change</code></td><td>Blur of a dirty bound</td><td>Same shape. Scripted <code>value</code> updates do not emit.</td></tr>
+                <tr><td><code>getValueState()</code></td><td>Public method</td><td>Returns the same shape.</td></tr>
+            </tbody>
+        </table>
+
+        <section class="demo-section">
+            <h3>Partial range, dates, and a reversed pair</h3>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-range-field label="Amount" name="amount" value-type="decimal" locale="fr" value='{"min":"10","max":null}'></core-range-field>
+                    <core-range-field label="When" name="when" value-type="date" value='{"min":"2026-11-01","max":"2026-11-30"}'></core-range-field>
+                    <core-range-field label="US integers" name="count" value-type="integer" locale="en" value='{"min":"0","max":"9007199254740993"}'></core-range-field>
+                </div>
+                <pre class="demo__code"><code>&lt;core-range-field label="Amount" name="amount" value-type="decimal" locale="fr" value='{"min":"10","max":null}'&gt;&lt;/core-range-field&gt;
+&lt;core-range-field label="When" name="when" value-type="date" value='{"min":"2026-11-01","max":"2026-11-30"}'&gt;&lt;/core-range-field&gt;
+&lt;core-range-field label="US integers" value-type="integer" locale="en" value='{"min":"0","max":"9007199254740993"}'&gt;&lt;/core-range-field&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module" src="../../components/core-range-field/core-range-field.js"></script>
+</body>
+</html>

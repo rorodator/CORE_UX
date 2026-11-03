@@ -1056,3 +1056,117 @@ test('disconnect removes portaled submenu panels', async () => {
         window.dispatchEvent(new Event('scroll'));
     });
 });
+
+test('removing the root open attribute closes submenus before the root panel', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more, deep } = mountNestedMenu();
+    let opens = 0;
+    let closes = 0;
+    let selects = 0;
+    let itemEvents = 0;
+    const onOpen = () => { opens += 1; };
+    const onClose = () => { closes += 1; };
+    const onSelect = () => { selects += 1; };
+    const onItem = () => { itemEvents += 1; };
+    root.addEventListener('core-menu-open', onOpen);
+    root.addEventListener('core-menu-close', onClose);
+    document.addEventListener('core-menu-select', onSelect);
+    document.addEventListener('core-menu-item-select', onItem);
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    assert.equal(document.activeElement, itemByValue('sms'));
+    assert.equal(submenuPanel(share)?.parentElement, document.body);
+    assert.equal(submenuPanel(more)?.parentElement, document.body);
+
+    root.removeAttribute('open');
+
+    assert.equal(root.hasAttribute('open'), false);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+    assert.equal(panelOf(root)?.parentElement === document.body, false);
+    assert.equal(submenuPanel(share)?.parentElement === document.body, false);
+    assert.equal(submenuPanel(more)?.parentElement === document.body, false);
+    assert.equal(document.body.querySelector('.core-floating-overlay'), null);
+    assert.equal(share.triggerElement.getAttribute('aria-expanded'), 'false');
+    assert.equal(more.triggerElement.getAttribute('aria-expanded'), 'false');
+    assert.equal(opens, 1);
+    assert.equal(closes, 0);
+    assert.equal(selects, 0);
+    assert.equal(itemEvents, 0);
+
+    root.openMenu();
+
+    assert.equal(isOpen(root), true);
+    assert.equal(panelOf(root)?.parentElement, document.body);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+    assert.equal(submenuPanel(share)?.parentElement === document.body, false);
+    assert.equal(submenuPanel(more)?.parentElement === document.body, false);
+    assert.equal(document.activeElement, itemByValue('new'));
+    assert.equal(opens, 2);
+    assert.equal(closes, 0);
+    assert.equal(selects, 0);
+    assert.equal(itemEvents, 0);
+
+    document.removeEventListener('core-menu-select', onSelect);
+    document.removeEventListener('core-menu-item-select', onItem);
+});
+
+test('disabling a focused nested submenu moves focus to the parent menu', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more, deep } = mountNestedMenu();
+    let closes = 0;
+    let selects = 0;
+    root.addEventListener('core-menu-close', () => { closes += 1; });
+    document.addEventListener('core-menu-select', () => { selects += 1; });
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    deep.openSubmenu();
+    assert.equal(document.activeElement, itemByValue('mms'));
+
+    more.setAttribute('disabled', '');
+
+    assert.equal(more.triggerElement.hasAttribute('disabled'), true);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+    assert.equal(isSubmenuOpen(share), true);
+    assert.equal(isOpen(root), true);
+    assert.equal(submenuPanel(more)?.parentElement === document.body, false);
+    assert.equal(submenuPanel(deep)?.parentElement === document.body, false);
+    assert.equal(document.activeElement, itemByValue('mail'));
+    assert.equal(more.contains(document.activeElement), false);
+    assert.equal(deep.contains(document.activeElement), false);
+    assert.equal(closes, 0);
+    assert.equal(selects, 0);
+
+    deep.openSubmenu();
+    assert.equal(deep.openSubmenu(), false);
+    share.openSubmenu();
+    more.removeAttribute('disabled');
+    more.openSubmenu();
+    deep.openSubmenu();
+    assert.equal(document.activeElement, itemByValue('mms'));
+
+    share.setAttribute('disabled', '');
+
+    assert.equal(share.triggerElement.hasAttribute('disabled'), true);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+    assert.equal(isOpen(root), true);
+    assert.equal(submenuPanel(share)?.parentElement === document.body, false);
+    assert.equal(submenuPanel(more)?.parentElement === document.body, false);
+    assert.equal(submenuPanel(deep)?.parentElement === document.body, false);
+    assert.equal(document.activeElement, itemByValue('new'));
+    assert.equal(share.contains(document.activeElement), false);
+    assert.equal(more.contains(document.activeElement), false);
+    assert.equal(deep.contains(document.activeElement), false);
+    assert.equal(closes, 0);
+    assert.equal(selects, 0);
+});

@@ -308,6 +308,7 @@ export class CoreMenu extends Core_UXElement {
             this._bindPanelInteraction();
             return;
         }
+        this._closeOpenSubmenus();
         this._releaseOpenExclusive();
         this._floating?.close();
         this._unbindPanelInteraction();

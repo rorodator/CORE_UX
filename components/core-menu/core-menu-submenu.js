@@ -329,6 +329,7 @@ export class CoreMenuSubmenu extends Core_UXElement {
 
     _syncDisabled() {
         const trigger = this.triggerElement;
+        const moveFocus = this.disabled && this._treeHasFocus();
         if (trigger) {
             if (this.disabled) {
                 trigger.setAttribute('disabled', '');
@@ -339,6 +340,25 @@ export class CoreMenuSubmenu extends Core_UXElement {
         if (this.disabled && (this.open || this._hasOpenDescendant())) {
             this.closeTree();
         }
+        if (moveFocus) {
+            this._focusOwnerItem();
+        }
+    }
+
+    /**
+     * Moves focus to an enabled item of the parent menu. The disabled trigger
+     * is no longer activable, and focus must not stay in the closed branch.
+     */
+    _focusOwnerItem() {
+        const owner = this._menuOwner;
+        if (!owner || typeof owner._getFocusableItems !== 'function') {
+            return;
+        }
+        const items = owner._getFocusableItems().filter((item) => !item.hasAttribute('disabled'));
+        if (!items.length) {
+            return;
+        }
+        focusMenuItem(items, 0);
     }
 
     /**

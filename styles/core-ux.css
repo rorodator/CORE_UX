@@ -483,6 +483,83 @@
     @apply px-3 py-2 text-sm text-core-text-muted;
   }
 
+  /* —— Filter bar —— */
+  core-filter-bar {
+    @apply block w-full font-core;
+  }
+
+  .core-filter-bar__rows {
+    @apply flex flex-wrap items-stretch gap-2;
+  }
+
+  .core-filter-bar--scroll .core-filter-bar__rows {
+    @apply flex-nowrap overflow-x-auto pb-2;
+  }
+
+  .core-filter-bar--vertical .core-filter-bar__rows {
+    @apply flex-col;
+  }
+
+  .core-filter-bar__row {
+    @apply flex min-w-0 max-w-full flex-wrap items-center gap-2 rounded-core border
+      border-core-border bg-core-surface p-2;
+  }
+
+  .core-filter-bar--vertical .core-filter-bar__row {
+    @apply w-full;
+  }
+
+  .core-filter-bar--scroll .core-filter-bar__row {
+    @apply w-auto shrink-0;
+  }
+
+  .core-filter-bar__handle {
+    @apply cursor-grab touch-none rounded-core border border-transparent px-1 py-1
+      text-sm text-core-text-muted hover:bg-core-surface-hover
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary;
+  }
+
+  .core-filter-bar__label {
+    @apply text-sm font-medium text-core-text;
+  }
+
+  .core-filter-bar__editor {
+    @apply min-w-48 flex-1;
+  }
+
+  .core-filter-bar__actions {
+    @apply flex flex-wrap items-center gap-1;
+  }
+
+  .core-filter-bar__actions .core-btn {
+    @apply w-auto px-2 py-1 text-xs;
+  }
+
+  .core-filter-bar__error,
+  .core-filter-bar__hint {
+    @apply basis-full text-xs text-core-error;
+  }
+
+  .core-filter-bar__hint {
+    @apply text-core-text-muted;
+  }
+
+  .core-filter-bar__tree-level {
+    @apply pl-3;
+  }
+
+  .core-filter-bar__tree-row {
+    @apply flex items-center gap-2 py-0.5 text-sm text-core-text;
+  }
+
+  .core-filter-bar__tree-label {
+    @apply text-xs font-semibold text-core-text-muted;
+  }
+
+  .core-filter-bar > core-filter-picker {
+    @apply mt-3 block max-w-xl;
+  }
+
   /* —— Multi select —— */
   .core-multi-select {
     @apply w-full font-core;

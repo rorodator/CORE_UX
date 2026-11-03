@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-filter-bar — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/utils/dom.js": "../assets/core-dom-shim.js",
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js",
+        "CORE_JS/lib/value/core-value-registry.js": "../assets/value/core-value-registry.js",
+        "CORE_JS/lib/value/core-text-match.js": "../assets/value/core-text-match.js",
+        "CORE_JS/lib/filter/core-filter-engine.js": "../assets/engine/lib/filter/core-filter-engine.js",
+        "CORE_JS/lib/filter/core-filter-error.js": "../assets/engine/lib/filter/core-filter-error.js",
+        "rxjs": "../assets/rxjs-shim.js",
+        "lucide": "../../node_modules/lucide/dist/esm/lucide.mjs"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-filter-bar"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-filter-bar&gt;</span></h1>
+            <p class="lead">Inline filters composed from the catalog picker and existing editors. The element creates a filter engine in <code>configure()</code> and exposes the same methods, <code>state$</code>, and <code>events$</code>. It does not load data.</p>
+        </header>
+
+        <div class="callout callout--info">
+            A usual type needs no callback: the label, operators, and editor are inferred. User actions are stamped <code>user</code>. <code>destroy()</code> ends the streams and aborts option requests. Removing the element from the page does not. After a catalog choice, focus moves into the new editor. Layout is <code>wrap</code> unless <code>ui.layout</code> or the <code>layout</code> attribute is <code>scroll</code> or <code>vertical</code>.
+        </div>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>layout</code></td><td>wrap · scroll · vertical</td><td>Overrides <code>ui.layout</code> for display. Default <code>wrap</code>.</td></tr>
+                <tr><td><code>disabled</code></td><td>boolean</td><td>Disables every editor.</td></tr>
+            </tbody>
+        </table>
+
+        <h2>API</h2>
+        <p><code>configure(config)</code> builds the engine. The element then delegates <code>getDefinitions</code>, <code>getState</code>, <code>getCriteria</code>, <code>getResolvedConfig</code>, <code>validate</code>, <code>exportState</code>, <code>importState</code>, <code>addDefinition</code>, <code>updateDefinition</code>, <code>removeDefinition</code>, <code>addFilter</code>, <code>removeFilter</code>, <code>clearFilter</code>, <code>setValue</code>, <code>setOperator</code>, <code>moveFilter</code>, <code>setPinned</code>, <code>setFilters</code>, <code>reset</code>, <code>transaction</code>, and <code>destroy</code>. <code>state$</code> replays the current state. <code>events$</code> stays quiet until a change. <code>validate()</code> reveals errors when validation mode is <code>manual</code>.</p>
+        <p>There is no filter-added DOM event. Subscribe to <code>events$</code>. A registered editor is <code>extensions.registry.editors[editorRef]</code>, a function of the definition that returns <code>{ mount, update, focus, destroy }</code>. <code>mount</code> and <code>update</code> must not emit a value change.</p>
+
+        <h2>Keyboard and touch</h2>
+        <p>Each row has Earlier and Later buttons, and the reorder handle accepts arrow keys inside the pinned or unpinned group. The handle can also be dragged. A pinned filter that the configuration locked cannot be unpinned from the row. Clear empties the value. Remove deletes the instance when it is removable. Is empty and Is not empty hide Clear.</p>
+
+        <section class="demo-section">
+            <h3>Minimal catalog</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-filter-bar id="bar-min"></core-filter-bar>
+                    <p id="bar-min-state" class="hint"></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Provider, pin, and scroll</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-filter-bar id="bar-adv" layout="scroll"></core-filter-bar>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module">
+import '../../components/core-filter-bar/core-filter-bar.js';
+
+const minimal = document.getElementById('bar-min');
+minimal.configure({
+    definitions: [
+        { id: 'name', type: 'string' },
+        { id: 'amount', type: 'decimal' },
+        { id: 'status', type: 'select', options: ['Open', 'Closed'] }
+    ]
+});
+const stateNode = document.getElementById('bar-min-state');
+minimal.state$.subscribe((state) => {
+    stateNode.textContent = state.filters.length
+        ? state.filters.map((filter) => filter.definitionId + ' ' + filter.operator).join(', ')
+        : 'No filters yet';
+});
+
+const advanced = document.getElementById('bar-adv');
+advanced.configure({
+    ui: { layout: 'scroll' },
+    definitions: [
+        { id: 'desk', type: 'string', label: 'Desk' },
+        {
+            id: 'city',
+            type: 'select',
+            label: 'City',
+            options(ctx) {
+                return new Promise((resolve) => {
+                    const timer = setTimeout(() => resolve([
+                        { value: 'paris', label: 'Paris' },
+                        { value: 'lyon', label: 'Lyon' }
+                    ]), 200);
+                    ctx.signal.addEventListener('abort', () => clearTimeout(timer));
+                });
+            }
+        }
+    ],
+    initialFilters: [
+        { definitionId: 'desk', pinned: true, value: 'Rates' }
+    ]
+});
+</script>
+</body>
+</html>

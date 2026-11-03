@@ -36,6 +36,7 @@
                 { id: 'core-formatted-field', href: comp + 'core-formatted-field.html', label: 'core-formatted-field' },
                 { id: 'core-range-field', href: comp + 'core-range-field.html', label: 'core-range-field' },
                 { id: 'core-filter-picker', href: comp + 'core-filter-picker.html', label: 'core-filter-picker' },
+                { id: 'core-filter-bar', href: comp + 'core-filter-bar.html', label: 'core-filter-bar' },
                 { id: 'core-textarea', href: comp + 'core-textarea.html', label: 'core-textarea' },
                 { id: 'core-rich-text', href: comp + 'core-rich-text.html', label: 'core-rich-text' },
                 { id: 'core-select', href: comp + 'core-select.html', label: 'core-select' },
@@ -77,7 +78,7 @@
     ];
 
     var html = '<div class="sidebar__brand"><h1><a href="' + root + 'index.html">CORE_UX</a></h1>'
-        + '<p>Doc + live demos · 29 pages · 35 tags</p></div>';
+        + '<p>Doc + live demos · 30 pages · 36 tags</p></div>';
 
     groups.forEach(function (group) {
         html += '<div class="nav-group"><div class="nav-group__title">' + group.title + '</div>';

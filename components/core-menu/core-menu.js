@@ -308,6 +308,8 @@ export class CoreMenu extends Core_UXElement {
             this._bindPanelInteraction();
             return;
         }
+        const active = this.ownerDocument?.activeElement;
+        const focusInSubmenu = Boolean(active && this._submenuContains(active));
         this._closeOpenSubmenus();
         this._releaseOpenExclusive();
         this._floating?.close();
@@ -315,6 +317,27 @@ export class CoreMenu extends Core_UXElement {
         panel.setAttribute('hidden', '');
         trigger.setAttribute('aria-expanded', 'false');
         this._unbindDocumentClick();
+        if (focusInSubmenu && this.ownerDocument?.activeElement === active) {
+            this._focusVisibleAfterHide(trigger);
+        }
+    }
+
+    /**
+     * Relocates focus that was inside a submenu once the root panel is hidden.
+     * The root trigger is the visible activable control. A disabled trigger is
+     * blurred so focus does not stay in the hidden branch.
+     *
+     * @param {HTMLElement} trigger
+     */
+    _focusVisibleAfterHide(trigger) {
+        if (!this.disabled && !trigger.hasAttribute('disabled')) {
+            trigger.focus();
+            return;
+        }
+        const active = this.ownerDocument?.activeElement;
+        if (active && typeof active.blur === 'function') {
+            active.blur();
+        }
     }
 
     /**

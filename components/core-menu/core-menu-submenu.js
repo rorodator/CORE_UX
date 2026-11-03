@@ -346,19 +346,38 @@ export class CoreMenuSubmenu extends Core_UXElement {
     }
 
     /**
-     * Moves focus to an enabled item of the parent menu. The disabled trigger
-     * is no longer activable, and focus must not stay in the closed branch.
+     * Moves focus to an enabled item of the nearest ancestor menu.
+     * When the disabled submenu was that parent's only activable item, walks
+     * upward. The root trigger is the last activable fallback. Focus must not
+     * stay in the closed branch.
      */
     _focusOwnerItem() {
-        const owner = this._menuOwner;
-        if (!owner || typeof owner._getFocusableItems !== 'function') {
+        /** @type {HTMLElement|null} */
+        let owner = this._menuOwner;
+        while (owner) {
+            const items = typeof owner._getFocusableItems === 'function'
+                ? owner._getFocusableItems().filter((item) => !item.hasAttribute('disabled'))
+                : [];
+            if (items.length) {
+                focusMenuItem(items, 0);
+                return;
+            }
+            const parent = owner._menuOwner || null;
+            if (parent) {
+                owner = parent;
+                continue;
+            }
+            const trigger = owner.querySelector('[data-core-menu-trigger]');
+            if (trigger && !owner.disabled && !trigger.hasAttribute('disabled')) {
+                trigger.focus();
+                return;
+            }
+            const active = this.ownerDocument?.activeElement;
+            if (active && typeof active.blur === 'function') {
+                active.blur();
+            }
             return;
         }
-        const items = owner._getFocusableItems().filter((item) => !item.hasAttribute('disabled'));
-        if (!items.length) {
-            return;
-        }
-        focusMenuItem(items, 0);
     }
 
     /**

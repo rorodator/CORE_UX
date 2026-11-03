@@ -1170,3 +1170,93 @@ test('disabling a focused nested submenu moves focus to the parent menu', async 
     assert.equal(closes, 0);
     assert.equal(selects, 0);
 });
+
+test('disabling the only submenu moves focus to the root trigger', async () => {
+    await customElements.whenDefined('core-menu');
+    focusedElement = null;
+    document.body.innerHTML = `
+        <core-menu id="menu-root" label="File">
+            <core-menu-submenu id="sub-only" label="Only">
+                <core-menu-item value="mail" label="Mail"></core-menu-item>
+            </core-menu-submenu>
+        </core-menu>
+        <button type="button" id="outside">Outside</button>
+    `;
+    const root = document.getElementById('menu-root');
+    const only = document.getElementById('sub-only');
+    let closes = 0;
+    let selects = 0;
+    const onClose = () => { closes += 1; };
+    const onSelect = () => { selects += 1; };
+    root.addEventListener('core-menu-close', onClose);
+    document.addEventListener('core-menu-select', onSelect);
+
+    root.openMenu();
+    only.openSubmenu();
+    assert.equal(document.activeElement, itemByValue('mail'));
+
+    only.setAttribute('disabled', '');
+
+    assert.equal(only.triggerElement.hasAttribute('disabled'), true);
+    assert.equal(only.hasAttribute('open'), false);
+    assert.equal(isOpen(root), true);
+    assert.equal(submenuPanel(only)?.parentElement === document.body, false);
+    assert.equal(document.activeElement, triggerOf(root));
+    assert.equal(only.contains(document.activeElement), false);
+    assert.equal(closes, 0);
+    assert.equal(selects, 0);
+    document.removeEventListener('core-menu-select', onSelect);
+});
+
+test('removing the root open attribute relocates third-level focus and leaves outside focus', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more, deep, outside } = mountNestedMenu();
+    let closes = 0;
+    let selects = 0;
+    const onClose = () => { closes += 1; };
+    const onSelect = () => { selects += 1; };
+    root.addEventListener('core-menu-close', onClose);
+    document.addEventListener('core-menu-select', onSelect);
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    deep.openSubmenu();
+    assert.equal(document.activeElement, itemByValue('mms'));
+
+    root.removeAttribute('open');
+
+    assert.equal(root.hasAttribute('open'), false);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+    assert.equal(panelOf(root)?.parentElement === document.body, false);
+    assert.equal(submenuPanel(share)?.parentElement === document.body, false);
+    assert.equal(submenuPanel(more)?.parentElement === document.body, false);
+    assert.equal(submenuPanel(deep)?.parentElement === document.body, false);
+    assert.equal(document.activeElement, triggerOf(root));
+    assert.equal(share.contains(document.activeElement), false);
+    assert.equal(more.contains(document.activeElement), false);
+    assert.equal(deep.contains(document.activeElement), false);
+    assert.equal(closes, 0);
+    assert.equal(selects, 0);
+
+    outside.focus();
+    root.setAttribute('open', '');
+    share.setAttribute('open', '');
+    more.setAttribute('open', '');
+    deep.setAttribute('open', '');
+    assert.equal(document.activeElement, outside);
+    assert.equal(isSubmenuOpen(deep), true);
+
+    root.removeAttribute('open');
+
+    assert.equal(document.activeElement, outside);
+    assert.equal(root.hasAttribute('open'), false);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+    assert.equal(closes, 0);
+    assert.equal(selects, 0);
+    document.removeEventListener('core-menu-select', onSelect);
+});

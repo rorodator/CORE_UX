@@ -13,9 +13,16 @@ if (typeof window.clearTimeout !== 'function') {
 
 /** @type {Element[]} */
 const focused = [];
+/** @type {Element|null} */
+let activeElement = null;
+Object.defineProperty(document, 'activeElement', {
+    configurable: true,
+    get: () => activeElement || document.body,
+});
 const nativeFocus = HTMLElement.prototype.focus;
 HTMLElement.prototype.focus = function focus(...args) {
     focused.push(this);
+    activeElement = this;
     nativeFocus.apply(this, args);
 };
 
@@ -28,6 +35,7 @@ function clearBody() {
         document.body.removeChild(document.body.firstChild);
     }
     focused.length = 0;
+    activeElement = null;
 }
 
 /**
@@ -951,6 +959,60 @@ test('inferred operators still show the operator menu', () => {
     const menu = row(bar, 'name').querySelector('core-menu');
     assert.equal(menu.hidden, false);
     assert.equal(bar.getDefinitions()[0].operators.length > 1, true);
+    bar.destroy();
+});
+
+test('a single-operator transition closes an open menu and refocuses the editor', async () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [
+            { id: 'amount', type: 'decimal', operators: ['eq', 'gt'] },
+            { id: 'name', type: 'string' },
+        ],
+    });
+    const amountId = bar.addFilter('amount');
+    bar.addFilter('name');
+    const amountRow = row(bar, 'amount');
+    const amountInput = /** @type {HTMLInputElement} */ (control(bar, 'amount'));
+    const nameInput = /** @type {HTMLInputElement} */ (control(bar, 'name'));
+    bar.setValue(amountId, '42');
+    const menu = amountRow.querySelector('core-menu');
+    menu.openMenu();
+    const panel = document.getElementById(menu.panelId);
+    const menuItem = panel.querySelector('core-menu-item');
+    menuItem.focus();
+    assert.equal(menu.open, true);
+    assert.equal(document.activeElement, menuItem);
+
+    /** @type {string[]} */
+    const operatorEvents = [];
+    bar.events$.subscribe((event) => {
+        if (event.type === 'operatorChanged') {
+            operatorEvents.push(event.type);
+        }
+    });
+
+    bar.updateDefinition('amount', { operators: ['eq'] });
+    await flush();
+    assert.equal(menu.open, false);
+    assert.equal(menu.hidden, true);
+    assert.equal(row(bar, 'amount'), amountRow);
+    assert.equal(control(bar, 'amount'), amountInput);
+    assert.equal(amountInput.value, '42');
+    assert.equal(document.activeElement, amountInput);
+    assert.equal(operatorEvents.length, 0);
+
+    bar.updateDefinition('amount', { operators: ['eq', 'gt'] });
+    await flush();
+    menu.openMenu();
+    nameInput.focus();
+    assert.equal(document.activeElement, nameInput);
+    bar.updateDefinition('amount', { operators: ['eq'] });
+    await flush();
+    assert.equal(menu.open, false);
+    assert.equal(document.activeElement, nameInput);
+    assert.equal(amountInput.value, '42');
     bar.destroy();
 });
 

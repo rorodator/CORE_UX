@@ -396,7 +396,6 @@ export class CoreFilterBar extends Core_UXElement {
         });
         error.hidden = true;
         root.append(handle, label, menu, editorHost, actions, error);
-        syncOperatorPicker(menu, definition.operators, instance.operator);
 
         const adapter = createFilterEditor(definition, instance.operator, registry);
         const row = {
@@ -501,6 +500,7 @@ export class CoreFilterBar extends Core_UXElement {
         } catch (error) {
             editorHost.textContent = error?.message || 'This editor could not be created.';
         }
+        syncOperatorPicker(menu, definition.operators, instance.operator, () => row.adapter?.focus?.());
         return row;
     }
 
@@ -520,7 +520,7 @@ export class CoreFilterBar extends Core_UXElement {
             labelNode.textContent = label;
         }
         row.handle?.setAttribute('aria-label', `Reorder ${label}`);
-        syncOperatorPicker(row.menu, definition.operators, instance.operator);
+        syncOperatorPicker(row.menu, definition.operators, instance.operator, () => row.adapter?.focus?.());
         row.root.setAttribute('aria-label', `${label} filter`);
         setDisabled(row.earlier, !this._canMove(instance, -1));
         setDisabled(row.later, !this._canMove(instance, 1));
@@ -783,12 +783,31 @@ function operatorPickerVisible(operators) {
 }
 
 /**
+ * @param {HTMLElement} menu
+ * @returns {boolean}
+ */
+function operatorMenuOwnsFocus(menu) {
+    const doc = menu.ownerDocument;
+    const active = doc?.activeElement;
+    if (!active) {
+        return false;
+    }
+    const trigger = menu.querySelector('[data-core-menu-trigger]');
+    if (trigger && (active === trigger || trigger.contains(active))) {
+        return true;
+    }
+    const panel = doc.getElementById(menu.panelId);
+    return Boolean(panel && (active === panel || panel.contains(active)));
+}
+
+/**
  * Hides the operator menu when the definition allows only one choice.
  * @param {HTMLElement|null|undefined} menu
  * @param {string[]|undefined} operators
  * @param {string} current
+ * @param {(() => void)|undefined} focusEditor
  */
-function syncOperatorPicker(menu, operators, current) {
+function syncOperatorPicker(menu, operators, current, focusEditor) {
     if (!menu) {
         return;
     }
@@ -796,10 +815,14 @@ function syncOperatorPicker(menu, operators, current) {
     menu.hidden = !visible;
     if (!visible) {
         if (menu.open) {
+            const restoreEditor = operatorMenuOwnsFocus(menu);
             if (typeof menu._closeMenu === 'function') {
                 menu._closeMenu({ restoreFocus: false, emitEvent: true });
             } else {
                 menu.closeMenu?.();
+            }
+            if (restoreEditor) {
+                focusEditor?.();
             }
         }
         return;

@@ -4,6 +4,7 @@ import { parseHTML } from 'linkedom';
 import {
     FloatingOverlay,
     clampCoords,
+    coordsForPlacement,
     isNodeOfDocument,
 } from '../lib/floating/floating-overlay.js';
 
@@ -256,4 +257,60 @@ test('FloatingOverlay destroy removes listeners from the host Window', async () 
     );
     assert.equal(overlay.isOpen, false);
     assert.equal(secondary.panel.parentElement, secondary.mountPoint);
+});
+
+test('coordsForPlacement keeps vertical centering unless crossAlign is start', () => {
+    const anchor = {
+        top: 100,
+        left: 200,
+        right: 280,
+        bottom: 140,
+        width: 80,
+        height: 40,
+    };
+    const centered = coordsForPlacement('right', anchor, 160, 120, 4, 'start', false);
+    assert.equal(centered.top, 100 + (40 - 120) / 2);
+    assert.equal(centered.left, 284);
+
+    const start = coordsForPlacement('right', anchor, 160, 120, 4, 'start', false, 'start');
+    assert.equal(start.top, 100);
+    assert.equal(start.left, 284);
+
+    const leftStart = coordsForPlacement('left', anchor, 160, 120, 4, 'start', false, 'start');
+    assert.equal(leftStart.top, 100);
+    assert.equal(leftStart.left, 200 - 160 - 4);
+
+    const bottom = coordsForPlacement('bottom', anchor, 160, 120, 4, 'end', false, 'start');
+    const bottomDefault = coordsForPlacement('bottom', anchor, 160, 120, 4, 'end', false);
+    assert.deepEqual(bottom, bottomDefault);
+});
+
+test('FloatingOverlay crossAlign start aligns a right placement to the anchor top', async () => {
+    const env = createHostEnvironment();
+    stubRect(env.anchor, { top: 100, left: 40, right: 120, bottom: 132 });
+
+    const centered = new FloatingOverlay({
+        host: env.host,
+        getPanel: () => env.panel,
+        getAnchor: () => env.anchor,
+        getMountPoint: () => env.mountPoint,
+        getPlacement: () => 'right',
+    });
+    centered.open();
+    assert.equal(env.panel.dataset.placement, 'right');
+    assert.equal(parseInt(env.panel.style.top, 10), 100 + (32 - 120) / 2);
+    centered.destroy();
+
+    const start = new FloatingOverlay({
+        host: env.host,
+        getPanel: () => env.panel,
+        getAnchor: () => env.anchor,
+        getMountPoint: () => env.mountPoint,
+        getPlacement: () => 'right',
+        crossAlign: 'start',
+    });
+    start.open();
+    assert.equal(env.panel.dataset.placement, 'right');
+    assert.equal(parseInt(env.panel.style.top, 10), 100);
+    start.destroy();
 });

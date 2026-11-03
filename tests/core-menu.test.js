@@ -559,3 +559,487 @@ test('disconnect cleans up overlay listeners and repatriates the panel', async (
         window.dispatchEvent(new Event('scroll'));
     });
 });
+
+/**
+ * @param {Element} target
+ * @param {string} key
+ * @returns {Event}
+ */
+function pressTracked(target, key) {
+    const event = createEvent('keydown', { key });
+    target.dispatchEvent(event);
+    return event;
+}
+
+/**
+ * @param {Element} submenu
+ * @returns {HTMLElement|null}
+ */
+function submenuPanel(submenu) {
+    return document.getElementById(submenu.panelId);
+}
+
+/**
+ * @param {Element} submenu
+ * @returns {boolean}
+ */
+function isSubmenuOpen(submenu) {
+    const panel = submenuPanel(submenu);
+    return submenu.hasAttribute('open')
+        && panel?.hasAttribute('hidden') === false
+        && panel.parentElement === document.body;
+}
+
+/**
+ * @param {string} value
+ * @returns {HTMLElement|null}
+ */
+function itemByValue(value) {
+    return document.querySelector(`[data-value="${value}"]`);
+}
+
+/**
+ * @returns {{
+ *   root: Element,
+ *   share: Element,
+ *   more: Element,
+ *   deep: Element,
+ *   exportMenu: Element,
+ *   outside: HTMLElement,
+ * }}
+ */
+function mountNestedMenu() {
+    focusedElement = null;
+    document.body.innerHTML = `
+        <core-menu id="menu-root" label="File">
+            <core-menu-item value="new" label="New"></core-menu-item>
+            <core-menu-submenu id="sub-share" label="Share">
+                <core-menu-item value="mail" label="Mail"></core-menu-item>
+                <core-menu-item value="link" label="Link" disabled></core-menu-item>
+                <core-menu-submenu id="sub-more" label="More">
+                    <core-menu-item value="sms" label="SMS"></core-menu-item>
+                    <core-menu-submenu id="sub-deep" label="Deep">
+                        <core-menu-item value="mms" label="MMS"></core-menu-item>
+                    </core-menu-submenu>
+                </core-menu-submenu>
+            </core-menu-submenu>
+            <core-menu-submenu id="sub-export" label="Export">
+                <core-menu-item value="pdf" label="PDF"></core-menu-item>
+            </core-menu-submenu>
+        </core-menu>
+        <core-menu id="menu-other" label="Other">
+            <core-menu-item value="other" label="Other item"></core-menu-item>
+        </core-menu>
+        <button type="button" id="outside">Outside</button>
+    `;
+    return {
+        root: document.getElementById('menu-root'),
+        share: document.getElementById('sub-share'),
+        more: document.getElementById('sub-more'),
+        deep: document.getElementById('sub-deep'),
+        exportMenu: document.getElementById('sub-export'),
+        outside: document.getElementById('outside'),
+    };
+}
+
+test('ArrowLeft and ArrowRight on a flat menu item do not preventDefault', async () => {
+    await customElements.whenDefined('core-menu');
+    const { a } = mountThreeMenus();
+
+    a.openMenu();
+    const item = firstItemOf(a);
+    const left = pressTracked(item, 'ArrowLeft');
+    const right = pressTracked(item, 'ArrowRight');
+
+    assert.equal(left.defaultPrevented, false);
+    assert.equal(right.defaultPrevented, false);
+    assert.equal(isOpen(a), true);
+    assert.equal(document.activeElement, item);
+});
+
+test('submenu open attribute and openSubmenu stay closed while the root is closed', async () => {
+    await customElements.whenDefined('core-menu');
+    focusedElement = null;
+    document.body.innerHTML = `
+        <core-menu id="menu-root" label="File">
+            <core-menu-submenu id="sub-share" label="Share" open>
+                <core-menu-item value="mail" label="Mail"></core-menu-item>
+                <core-menu-submenu id="sub-deep" label="Deep" open>
+                    <core-menu-item value="sms" label="SMS"></core-menu-item>
+                </core-menu-submenu>
+            </core-menu-submenu>
+        </core-menu>
+    `;
+    const share = document.getElementById('sub-share');
+    const deep = document.getElementById('sub-deep');
+
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+    assert.equal(share.openSubmenu(), false);
+    assert.equal(deep.openSubmenu(), false);
+    assert.equal(document.body.querySelector('.core-floating-overlay'), null);
+
+    share.setAttribute('open', '');
+    deep.setAttribute('open', '');
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+});
+
+test('a submenu does not open when the root menu is disabled', async () => {
+    await customElements.whenDefined('core-menu');
+    focusedElement = null;
+    document.body.innerHTML = `
+        <core-menu id="menu-root" label="File" disabled>
+            <core-menu-submenu id="sub-share" label="Share" open>
+                <core-menu-item value="mail" label="Mail"></core-menu-item>
+            </core-menu-submenu>
+        </core-menu>
+    `;
+    const share = document.getElementById('sub-share');
+
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(share.openSubmenu(), false);
+    share.setAttribute('open', '');
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(submenuPanel(share)?.parentElement === document.body, false);
+});
+
+test('a grandchild submenu does not open while its parent submenu is closed', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, deep } = mountNestedMenu();
+
+    root.openMenu();
+    assert.equal(deep.openSubmenu(), false);
+    deep.setAttribute('open', '');
+
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+    assert.equal(submenuPanel(deep)?.parentElement === document.body, false);
+    assert.equal(isOpen(root), true);
+});
+
+test('setting open on a submenu does not move focus when ancestors are open', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, outside } = mountNestedMenu();
+
+    root.openMenu();
+    outside.focus();
+    share.setAttribute('open', '');
+
+    assert.equal(isSubmenuOpen(share), true);
+    assert.equal(document.activeElement, outside);
+});
+
+test('ArrowRight Enter and Space open a submenu without an extra root open event', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share } = mountNestedMenu();
+    let rootOpens = 0;
+    root.addEventListener('core-menu-open', () => {
+        rootOpens += 1;
+    });
+
+    root.openMenu();
+    assert.equal(rootOpens, 1);
+    press(firstItemOf(root), 'ArrowDown');
+    assert.equal(document.activeElement, share.triggerElement);
+
+    const right = pressTracked(share.triggerElement, 'ArrowRight');
+    assert.equal(right.defaultPrevented, true);
+    assert.equal(isSubmenuOpen(share), true);
+    assert.equal(share.triggerElement.getAttribute('aria-expanded'), 'true');
+    assert.equal(share.triggerElement.getAttribute('aria-haspopup'), 'menu');
+    assert.equal(share.triggerElement.getAttribute('role'), 'menuitem');
+    assert.equal(document.activeElement, itemByValue('mail'));
+    assert.equal(isOpen(root), true);
+    assert.equal(openMenuCount(), 1);
+    assert.equal(rootOpens, 1);
+
+    share.closeSubmenu();
+    press(share.triggerElement, 'Enter');
+    assert.equal(isSubmenuOpen(share), true);
+    assert.equal(document.activeElement, itemByValue('mail'));
+
+    share.closeSubmenu();
+    const space = pressTracked(share.triggerElement, ' ');
+    assert.equal(space.defaultPrevented, true);
+    assert.equal(isSubmenuOpen(share), true);
+    assert.equal(rootOpens, 1);
+});
+
+test('submenu arrow keys stay inside that panel and skip disabled items', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more } = mountNestedMenu();
+
+    root.openMenu();
+    share.openSubmenu();
+    assert.equal(document.activeElement, itemByValue('mail'));
+
+    press(itemByValue('mail'), 'ArrowDown');
+    assert.equal(document.activeElement, more.triggerElement);
+    press(more.triggerElement, 'ArrowDown');
+    assert.equal(document.activeElement, itemByValue('mail'));
+    press(itemByValue('mail'), 'End');
+    assert.equal(document.activeElement, more.triggerElement);
+    press(more.triggerElement, 'Home');
+    assert.equal(document.activeElement, itemByValue('mail'));
+    assert.notEqual(document.activeElement, itemByValue('link'));
+    assert.notEqual(document.activeElement, itemByValue('new'));
+    assert.notEqual(document.activeElement, itemByValue('sms'));
+});
+
+test('Left and Escape close one submenu level and Tab closes the chain', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more, deep } = mountNestedMenu();
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    deep.openSubmenu();
+    assert.equal(document.activeElement, itemByValue('mms'));
+
+    const left = pressTracked(itemByValue('mms'), 'ArrowLeft');
+    assert.equal(left.defaultPrevented, true);
+    assert.equal(deep.hasAttribute('open'), false);
+    assert.equal(isSubmenuOpen(more), true);
+    assert.equal(isSubmenuOpen(share), true);
+    assert.equal(isOpen(root), true);
+    assert.equal(document.activeElement, deep.triggerElement);
+
+    const escape = pressTracked(deep.triggerElement, 'Escape');
+    assert.equal(escape.defaultPrevented, true);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(isSubmenuOpen(share), true);
+    assert.equal(document.activeElement, more.triggerElement);
+
+    const tab = pressTracked(more.triggerElement, 'Tab');
+    assert.equal(tab.defaultPrevented, false);
+    assert.equal(isOpen(root), false);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(document.activeElement, triggerOf(root));
+});
+
+test('clicking inside a portaled submenu does not close it and outside click closes the chain', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, outside } = mountNestedMenu();
+
+    root.openMenu();
+    share.openSubmenu();
+    click(submenuPanel(share));
+    assert.equal(isOpen(root), true);
+    assert.equal(isSubmenuOpen(share), true);
+
+    click(outside);
+    assert.equal(isOpen(root), false);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(submenuPanel(share)?.parentElement === document.body, false);
+    assert.equal(document.activeElement, triggerOf(root));
+});
+
+test('a three-level selection emits one document core-menu-select and no item event', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more, deep } = mountNestedMenu();
+    let itemEvents = 0;
+    let selectEvents = 0;
+    let value = '';
+    const onItem = () => {
+        itemEvents += 1;
+    };
+    const onSelect = (event) => {
+        selectEvents += 1;
+        value = event.detail?.value || '';
+    };
+    document.addEventListener('core-menu-item-select', onItem);
+    document.addEventListener('core-menu-select', onSelect);
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    deep.openSubmenu();
+    click(itemByValue('mms'));
+
+    document.removeEventListener('core-menu-item-select', onItem);
+    document.removeEventListener('core-menu-select', onSelect);
+
+    assert.equal(itemEvents, 0);
+    assert.equal(selectEvents, 1);
+    assert.equal(value, 'mms');
+    assert.equal(isOpen(root), false);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+});
+
+test('opening another root closes the previous submenu chain once', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more, deep } = mountNestedMenu();
+    const other = document.getElementById('menu-other');
+    let rootCloses = 0;
+    root.addEventListener('core-menu-close', () => {
+        rootCloses += 1;
+    });
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    deep.openSubmenu();
+    other.openMenu();
+
+    assert.equal(isOpen(root), false);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+    assert.equal(isOpen(other), true);
+    assert.equal(openMenuCount(), 1);
+    assert.equal(rootCloses, 1);
+    assert.notEqual(document.activeElement, triggerOf(root));
+    assert.equal(submenuPanel(deep)?.parentElement === document.body, false);
+    assert.equal(submenuPanel(share)?.parentElement === document.body, false);
+});
+
+test('opening a sibling submenu closes the previous sibling chain only', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more, exportMenu } = mountNestedMenu();
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    exportMenu.openSubmenu();
+
+    assert.equal(isOpen(root), true);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(isSubmenuOpen(exportMenu), true);
+    assert.equal(document.activeElement, itemByValue('pdf'));
+});
+
+test('disabling an open submenu closes its chain and syncs the trigger without rebuilding', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more, deep, exportMenu } = mountNestedMenu();
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    deep.openSubmenu();
+    const mail = itemByValue('mail');
+    const panel = submenuPanel(share);
+
+    share.setAttribute('disabled', '');
+
+    assert.equal(share.triggerElement.hasAttribute('disabled'), true);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(deep.hasAttribute('open'), false);
+    assert.equal(panel.parentElement === document.body, false);
+    assert.equal(itemByValue('mail'), mail);
+    assert.equal(isOpen(root), true);
+
+    itemByValue('new').focus();
+    press(itemByValue('new'), 'ArrowDown');
+    assert.equal(document.activeElement, exportMenu.triggerElement);
+    press(exportMenu.triggerElement, 'ArrowDown');
+    assert.equal(document.activeElement, itemByValue('new'));
+});
+
+test('changing a submenu label does not rebuild its panel', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more } = mountNestedMenu();
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    const mail = itemByValue('mail');
+    const panel = submenuPanel(share);
+
+    share.setAttribute('label', 'Partager');
+
+    assert.equal(share.triggerElement.querySelector('[data-core-menu-submenu-label]').textContent, 'Partager');
+    assert.equal(itemByValue('mail'), mail);
+    assert.equal(mail.parentElement?.parentElement, panel);
+    assert.equal(panel.parentElement, document.body);
+    assert.equal(isSubmenuOpen(share), true);
+    assert.equal(isSubmenuOpen(more), true);
+});
+
+test('disabling the root closes open submenus and leaves the root open attribute', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more } = mountNestedMenu();
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    root.setAttribute('disabled', '');
+
+    assert.equal(root.hasAttribute('open'), true);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(submenuPanel(share)?.parentElement === document.body, false);
+    assert.equal(submenuPanel(more)?.parentElement === document.body, false);
+});
+
+test('submenu near the right edge flips left and otherwise aligns its top to the item', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share } = mountNestedMenu();
+    viewportWidth = 800;
+    viewportHeight = 600;
+
+    root.openMenu();
+    stubRect(share.triggerElement, { top: 80, left: 40, right: 180, bottom: 112 });
+    stubSize(submenuPanel(share), { width: 160, height: 120 });
+    share.openSubmenu();
+
+    const openedRight = submenuPanel(share);
+    assert.equal(openedRight.dataset.placement, 'right');
+    assert.equal(parseInt(openedRight.style.top, 10), 80);
+
+    share.closeSubmenu();
+    stubRect(share.triggerElement, { top: 80, left: 700, right: 760, bottom: 112 });
+    stubSize(submenuPanel(share), { width: 160, height: 120 });
+    share.openSubmenu();
+
+    const flipped = submenuPanel(share);
+    assert.equal(flipped.dataset.placement, 'left');
+    assert.equal(parseInt(flipped.style.top, 10), 80);
+});
+
+test('changing root align closes submenus and keeps the root exclusive', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more } = mountNestedMenu();
+    const other = document.getElementById('menu-other');
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    root.setAttribute('align', 'start');
+
+    assert.equal(isOpen(root), true);
+    assert.equal(share.hasAttribute('open'), false);
+    assert.equal(more.hasAttribute('open'), false);
+    assert.equal(submenuPanel(share)?.parentElement === document.body, false);
+
+    other.openMenu();
+    assert.equal(isOpen(root), false);
+    assert.equal(isOpen(other), true);
+});
+
+test('disconnect removes portaled submenu panels', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more, deep } = mountNestedMenu();
+
+    root.openMenu();
+    share.openSubmenu();
+    more.openSubmenu();
+    deep.openSubmenu();
+    const panels = [submenuPanel(share), submenuPanel(more), submenuPanel(deep)];
+    panels.forEach((panel) => {
+        assert.equal(panel.parentElement, document.body);
+    });
+
+    root.remove();
+    panels.forEach((panel) => {
+        assert.equal(document.body.contains(panel), false);
+    });
+    assert.doesNotThrow(() => {
+        window.dispatchEvent(new Event('resize'));
+        window.dispatchEvent(new Event('scroll'));
+    });
+});

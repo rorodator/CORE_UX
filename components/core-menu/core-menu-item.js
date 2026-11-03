@@ -25,6 +25,11 @@ export class CoreMenuItem extends Core_UXElement {
 
     onConnect() {
         this._captureSlot();
+        // A portal move disconnects and reconnects the item. Keep the button node.
+        if (this.firstElementChild?.hasAttribute?.('data-core-menu-item')) {
+            this.ui_toFunctional();
+            return;
+        }
         this.render();
     }
 

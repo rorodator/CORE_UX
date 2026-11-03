@@ -338,7 +338,11 @@
 
   /* —— Menu —— */
   core-menu > core-menu-item,
-  core-menu > core-menu-separator {
+  core-menu > core-menu-separator,
+  core-menu > core-menu-submenu,
+  core-menu-submenu > core-menu-item,
+  core-menu-submenu > core-menu-separator,
+  core-menu-submenu > core-menu-submenu {
     @apply hidden;
   }
 
@@ -386,6 +390,14 @@
       disabled:pointer-events-none disabled:opacity-50;
   }
 
+  .core-menu__item--submenu {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .core-menu__submenu-indicator {
+    @apply shrink-0 text-xs text-core-text-muted;
+  }
+
   .core-menu__item-label {
     @apply inline-flex items-center gap-2;
   }
@@ -395,7 +407,8 @@
   }
 
   core-menu-item,
-  core-menu-separator {
+  core-menu-separator,
+  core-menu-submenu {
     @apply block;
   }
 

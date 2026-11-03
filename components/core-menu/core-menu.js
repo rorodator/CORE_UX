@@ -6,11 +6,18 @@ import {
     isNodeOfDocument,
 } from '../../lib/floating/floating-overlay.js';
 import { registerCoreComponent } from '../../lib/register-core-component.js';
+import {
+    collectMenuNodes,
+    directSubmenus,
+    focusMenuItem,
+    getDirectMenuItems,
+    handleMenuKeydown,
+    menuFocusIndex,
+    resetMenuTabindex,
+} from './menu-navigation.js';
 import './core-menu-item.js';
 import './core-menu-separator.js';
-
-/** @type {readonly string[]} */
-const MENU_CHILD_TAGS = ['core-menu-item', 'core-menu-separator'];
+import './core-menu-submenu.js';
 
 /**
  * One open {@link CoreMenu} per Document. Distinct documents stay independent.
@@ -49,6 +56,7 @@ export class CoreMenu extends Core_UXElement {
     }
 
     onDisconnect() {
+        this._closeOpenSubmenus();
         this._floating?.destroy();
         this._floating = null;
         this._releaseOpenExclusive();
@@ -69,6 +77,10 @@ export class CoreMenu extends Core_UXElement {
         }
         if (name === 'open') {
             this._syncOpen();
+            return;
+        }
+        if (name === 'disabled' && this.disabled) {
+            this._closeOpenSubmenus();
         }
     }
 
@@ -107,25 +119,55 @@ export class CoreMenu extends Core_UXElement {
      * @returns {HTMLElement[]}
      */
     _collectMenuNodes() {
-        /** @type {HTMLElement[]} */
-        const nodes = [];
+        return collectMenuNodes(this, 'core-menu');
+    }
 
-        Array.from(this.children).forEach((child) => {
-            if (MENU_CHILD_TAGS.includes(child.localName)) {
-                nodes.push(/** @type {HTMLElement} */ (child));
+    /** @returns {HTMLElement[]} */
+    _directSubmenus() {
+        return directSubmenus(this._getPanel());
+    }
+
+    _closeOpenSubmenus() {
+        this._directSubmenus().forEach((submenu) => {
+            if (typeof submenu.closeTree === 'function') {
+                submenu.closeTree();
             }
         });
+    }
 
-        const panel = this.querySelector(':scope > .core-menu > .core-menu__panel');
-        if (panel) {
-            Array.from(panel.children).forEach((child) => {
-                if (MENU_CHILD_TAGS.includes(child.localName) && !nodes.includes(child)) {
-                    nodes.push(/** @type {HTMLElement} */ (child));
-                }
-            });
+    /**
+     * Closes other submenus in this panel. Called by an opening child.
+     *
+     * @param {HTMLElement} except
+     */
+    closeSiblingSubmenus(except) {
+        this._directSubmenus().forEach((submenu) => {
+            if (submenu !== except && typeof submenu.closeTree === 'function') {
+                submenu.closeTree();
+            }
+        });
+    }
+
+    /**
+     * @param {Node|null} target
+     * @returns {boolean}
+     */
+    _submenuContains(target) {
+        return this._directSubmenus().some((submenu) => (
+            typeof submenu.containsTarget === 'function' && submenu.containsTarget(target)
+        ));
+    }
+
+    /**
+     * @param {HTMLElement} item
+     * @returns {boolean}
+     */
+    _openSubmenuFromItem(item) {
+        const submenu = this._directSubmenus().find((candidate) => candidate.triggerElement === item);
+        if (!submenu || typeof submenu.openSubmenu !== 'function') {
+            return false;
         }
-
-        return nodes;
+        return submenu.openSubmenu() === true;
     }
 
     /**
@@ -143,7 +185,9 @@ export class CoreMenu extends Core_UXElement {
         if (!isNodeOfDocument(target, this.ownerDocument)) {
             return false;
         }
-        return this.contains(target) || Boolean(this._floating?.containsTarget(target));
+        return this.contains(target)
+            || Boolean(this._floating?.containsTarget(target))
+            || this._submenuContains(target);
     }
 
     /**
@@ -154,32 +198,21 @@ export class CoreMenu extends Core_UXElement {
         if (!panel) {
             return [];
         }
-        return Array.from(panel.querySelectorAll('[role="menuitem"]:not([disabled])'));
+        return getDirectMenuItems(panel);
     }
 
     /**
      * @param {number} index
      */
     _focusItemAt(index) {
-        const items = this._getFocusableItems();
-        if (!items.length) {
-            return;
-        }
-        const normalized = ((index % items.length) + items.length) % items.length;
-        items.forEach((item, idx) => {
-            item.setAttribute('tabindex', idx === normalized ? '0' : '-1');
-        });
-        items[normalized].focus();
+        focusMenuItem(this._getFocusableItems(), index);
     }
 
     /**
      * @returns {number}
      */
     _currentFocusIndex() {
-        const items = this._getFocusableItems();
-        const active = this.ownerDocument.activeElement;
-        const index = items.findIndex((item) => item === active);
-        return index >= 0 ? index : 0;
+        return menuFocusIndex(this._getFocusableItems(), this.ownerDocument?.activeElement);
     }
 
     ui_render() {
@@ -225,6 +258,9 @@ export class CoreMenu extends Core_UXElement {
         });
 
         menuNodes.forEach((node) => {
+            if (node.localName === 'core-menu-submenu' && typeof node.attachMenuOwner === 'function') {
+                node.attachMenuOwner(this);
+            }
             panel.appendChild(node);
         });
 
@@ -272,12 +308,36 @@ export class CoreMenu extends Core_UXElement {
             this._bindPanelInteraction();
             return;
         }
+        const active = this.ownerDocument?.activeElement;
+        const focusInSubmenu = Boolean(active && this._submenuContains(active));
+        this._closeOpenSubmenus();
         this._releaseOpenExclusive();
         this._floating?.close();
         this._unbindPanelInteraction();
         panel.setAttribute('hidden', '');
         trigger.setAttribute('aria-expanded', 'false');
         this._unbindDocumentClick();
+        if (focusInSubmenu && this.ownerDocument?.activeElement === active) {
+            this._focusVisibleAfterHide(trigger);
+        }
+    }
+
+    /**
+     * Relocates focus that was inside a submenu once the root panel is hidden.
+     * The root trigger is the visible activable control. A disabled trigger is
+     * blurred so focus does not stay in the hidden branch.
+     *
+     * @param {HTMLElement} trigger
+     */
+    _focusVisibleAfterHide(trigger) {
+        if (!this.disabled && !trigger.hasAttribute('disabled')) {
+            trigger.focus();
+            return;
+        }
+        const active = this.ownerDocument?.activeElement;
+        if (active && typeof active.blur === 'function') {
+            active.blur();
+        }
     }
 
     /**
@@ -320,10 +380,7 @@ export class CoreMenu extends Core_UXElement {
     }
 
     _resetMenuTabindex() {
-        const items = this._getFocusableItems();
-        items.forEach((item, index) => {
-            item.setAttribute('tabindex', index === 0 ? '0' : '-1');
-        });
+        resetMenuTabindex(this._getFocusableItems());
     }
 
     openMenu() {
@@ -347,6 +404,7 @@ export class CoreMenu extends Core_UXElement {
         if (!this.open) {
             return;
         }
+        this._closeOpenSubmenus();
         this.removeAttribute('open');
         this._syncOpen();
         if (restoreFocus) {
@@ -442,43 +500,16 @@ export class CoreMenu extends Core_UXElement {
         if (!this.open) {
             return;
         }
-
-        const items = this._getFocusableItems();
-        if (!items.length) {
-            return;
-        }
-
-        let nextIndex = this._currentFocusIndex();
-
-        switch (event.key) {
-            case 'ArrowDown':
-                event.preventDefault();
-                nextIndex = nextIndex >= items.length - 1 ? 0 : nextIndex + 1;
-                this._focusItemAt(nextIndex);
-                break;
-            case 'ArrowUp':
-                event.preventDefault();
-                nextIndex = nextIndex <= 0 ? items.length - 1 : nextIndex - 1;
-                this._focusItemAt(nextIndex);
-                break;
-            case 'Home':
-                event.preventDefault();
-                this._focusItemAt(0);
-                break;
-            case 'End':
-                event.preventDefault();
-                this._focusItemAt(items.length - 1);
-                break;
-            case 'Escape':
-                event.preventDefault();
-                this.closeMenu();
-                break;
-            case 'Tab':
-                this.closeMenu();
-                break;
-            default:
-                break;
-        }
+        handleMenuKeydown(event, {
+            getItems: () => this._getFocusableItems(),
+            focusAt: (index) => this._focusItemAt(index),
+            currentIndex: () => this._currentFocusIndex(),
+            onEscape: () => this.closeMenu(),
+            onTab: () => this.closeMenu(),
+            onOpenSubmenu: (item) => this._openSubmenuFromItem(item),
+            onCloseSubmenu: () => false,
+            isSubmenuTrigger: (item) => item.hasAttribute('data-core-menu-submenu-trigger'),
+        });
     }
 
     _initFloating() {
@@ -542,6 +573,7 @@ export class CoreMenu extends Core_UXElement {
 
     cleanFunctional() {
         super.cleanFunctional();
+        this._closeOpenSubmenus();
         this._unbindPanelInteraction();
         this._floating?.destroy();
         this._floating = null;

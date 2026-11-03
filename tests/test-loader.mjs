@@ -29,5 +29,18 @@ export async function resolve(specifier, context, nextResolve) {
             shortCircuit: true,
         };
     }
+    if (specifier.startsWith('CORE_JS/lib/filter/')) {
+        const fileName = specifier.slice('CORE_JS/lib/filter/'.length);
+        return {
+            url: pathToFileURL(path.join(root, 'doc/assets/engine/lib/filter', fileName)).href,
+            shortCircuit: true,
+        };
+    }
+    if (specifier === 'CORE_JS/lib/utils/core-readonly-observable.js') {
+        return {
+            url: pathToFileURL(path.join(root, 'doc/assets/engine/lib/utils/core-readonly-observable.js')).href,
+            shortCircuit: true,
+        };
+    }
     return nextResolve(specifier, context);
 }

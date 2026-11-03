@@ -12,7 +12,7 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 
 | Tag | Notes |
 |-----|--------|
-| `<core-icon>` | `name` edit \| delete \| story \| add \| close; optional `size` (px) — semantic glyph via Lucide, inherits `currentColor` |
+| `<core-icon>` | `name` edit \| delete \| story \| add \| close \| pin \| pin-off; optional `size` (px) — semantic glyph via Lucide, inherits `currentColor` |
 | `<core-button>` | `variant` primary \| secondary \| ghost \| danger; `size` sm \| lg; `icon`, `icon-only`, `icon-danger`; `block`; `label` |
 | `<core-link>` | `href`, `label`, `external` |
 | `<core-menu>` | `label`, `align` start \| end, `open`; children `<core-menu-item>`, `<core-menu-separator>`, `<core-menu-submenu>`; one open root per document; keyboard nav; event `core-menu-select` |
@@ -28,6 +28,7 @@ Components extend `Core_HTMLElement` via `Core_UXElement` and render with `ui_re
 | `<core-formatted-field>` | Opt-in exact text entry (not a date picker). `value-type` integer \| decimal \| date \| time \| datetime \| relative-date; `locale`, `format`, `temporal` local \| offset, separators, `max-fraction-digits` (reject, never rounds), `fraction-digits`, `excess-precision` keep. Events `core-formatted-field-input`, `core-formatted-field-change`. `getValueState()` |
 | `<core-range-field>` | Two bounds, partial range valid. Same format attrs. `value` is JSON `{ "min", "max" }`. Events `core-range-field-input`, `core-range-field-change` |
 | `<core-filter-picker>` | Search-first catalog. `setEntries()` accepts definition records (`id`, `label`, `keywords`, `group` or `groupPath`, `disabled`, `visible`). Event `core-filter-picker-select`. Does not know instances |
+| `<core-filter-bar>` | Facade over the filter engine and the picker. `configure(config)`, same mutations as the engine, `state$` / `events$`. Layout `wrap` \| `scroll` \| `vertical`. Editors are adapters. `destroy()` ends the streams |
 | `<core-textarea>` | `rows`, `maxlength`, `label`, `hint`, `error` |
 | `<core-rich-text>` | WYSIWYG editor; `min-height`, `maxlength` (plain text), `toolbar` (`full`/`narrative`/`compact`), `sanitize`; events `core-rich-text-input`, `core-rich-text-change`; methods `getHtml()`, `getText()`, `setHtml()`, `isMaxLengthExceeded()`; i18n container `core_ux`; helpers in `lib/html/rich-text-html.js` |
 | `<core-select>` | `options` JSON `[{ "value", "label", "selected"? }]` |

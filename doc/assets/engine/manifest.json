@@ -1,0 +1,11 @@
+{
+  "dependency": "CORE_JS/lib/filter",
+  "lockedCommit": "20ae6dc2dfd0578c53f0bcafc78c61f2157b7416",
+  "files": {
+    "lib/filter/core-filter-engine.js": "29494cb3377319016012adff277749e938bbdfbdf3be074a44e50627e951befc",
+    "lib/filter/core-filter-error.js": "0d63c3113aa0b6b03a77111e1b9d10b8698d6845371118be38158093d46127d4",
+    "lib/utils/core-readonly-observable.js": "d6591996b6c23946ffe6c3ad8e15fb1dc14a432a5b981962d0b9c05260041444"
+  },
+  "valueLink": "lib/value -> ../../value",
+  "note": "Byte copies of the filter engine and its observable helper. Value modules stay the existing doc/assets/value copies, reached by the symlink. Refresh the copies, the symlink, and these hashes together. A sibling checkout, when present, is compared by the filter-bar test."
+}

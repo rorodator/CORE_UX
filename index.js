@@ -34,3 +34,4 @@ import './components/core-multi-select/core-multi-select.js';
 import './components/core-formatted-field/core-formatted-field.js';
 import './components/core-range-field/core-range-field.js';
 import './components/core-filter-picker/core-filter-picker.js';
+import './components/core-filter-bar/core-filter-bar.js';

@@ -18,6 +18,7 @@ import { registerCoreComponent } from '../../lib/register-core-component.js';
  * @typedef {object} FilterPickerGroupNode
  * @property {'group'} kind
  * @property {string} label
+ * @property {string} key
  * @property {number} level
  * @property {FilterPickerTreeNode[]} children
  */
@@ -114,7 +115,7 @@ function buildTree(entries) {
             key = key ? `${key}\u0000${label}` : label;
             let group = groups.get(key);
             if (!group) {
-                group = { kind: 'group', label, level: index + 1, children: [] };
+                group = { kind: 'group', label, key, level: index + 1, children: [] };
                 groups.set(key, group);
                 bucket.push(group);
             }
@@ -179,7 +180,9 @@ export class CoreFilterPicker extends Core_UXElement {
         /** @type {FilterPickerEntry[]} */
         this._entries = [];
         this._query = '';
-        this._activeId = '';
+        this._activeKey = '';
+        /** @type {Set<string>} */
+        this._collapsed = new Set();
         this._uid = Math.random().toString(36).slice(2, 9);
         /** @type {FloatingOverlay|null} */
         this._floating = null;
@@ -255,8 +258,12 @@ export class CoreFilterPicker extends Core_UXElement {
      * @param {string} value
      */
     set query(value) {
-        this._query = String(value ?? '');
-        this._activeId = '';
+        const next = String(value ?? '');
+        if (next !== this._query) {
+            this._activeKey = '';
+            this._collapsed.clear();
+        }
+        this._query = next;
         const input = this._input();
         if (input && input.value !== this._query) {
             input.value = this._query;
@@ -279,8 +286,11 @@ export class CoreFilterPicker extends Core_UXElement {
      */
     setEntries(entries) {
         this._entries = normalizeFilterPickerEntries(entries);
-        if (this._activeId && !this._entries.some((entry) => entry.id === this._activeId && !entry.disabled)) {
-            this._activeId = '';
+        if (this._activeKey.startsWith('entry:')) {
+            const id = this._activeKey.slice('entry:'.length);
+            if (!this._entries.some((entry) => entry.id === id && !entry.disabled)) {
+                this._activeKey = '';
+            }
         }
         if (this.isConnected) {
             this._paint();
@@ -395,7 +405,8 @@ export class CoreFilterPicker extends Core_UXElement {
                 return;
             }
             this._query = this._input()?.value || '';
-            this._activeId = '';
+            this._activeKey = '';
+            this._collapsed.clear();
             this._paint();
             if (this._query.trim() && !this.disabled) {
                 this.openMenu();
@@ -458,23 +469,45 @@ export class CoreFilterPicker extends Core_UXElement {
         return 'Browse';
     }
 
+    /**
+     * Keeps the visible label and the field name in step without rebuilding the input.
+     * @param {string} text
+     */
+    _syncLabel(text) {
+        const wrap = this.querySelector(':scope > .core-filter-picker');
+        const input = this._input();
+        let label = this.querySelector('[data-core-filter-picker-label]');
+        if (!text) {
+            label?.remove();
+            input?.setAttribute('aria-label', 'Search filters');
+        } else if (!label && wrap) {
+            label = createElement('label', {
+                className: 'core-filter-picker__label',
+                text,
+                attrs: { for: this.inputId, 'data-core-filter-picker-label': true },
+            });
+            wrap.insertBefore(label, wrap.firstChild);
+            input?.removeAttribute('aria-label');
+        } else if (label) {
+            label.textContent = text;
+            label.setAttribute('for', this.inputId);
+            input?.removeAttribute('aria-label');
+        }
+        const panel = this._panelEl();
+        if (panel) {
+            panel.setAttribute('aria-label', text || 'Filters');
+        }
+    }
+
     _syncChrome() {
-        const label = this.querySelector('[data-core-filter-picker-label]');
         const input = this._input();
         const buttonLabel = this.querySelector('[data-core-filter-picker-button-label]');
         const button = this._button();
         const text = this._labelText();
-        if (label) {
-            label.textContent = text;
-        }
+        this._syncLabel(text);
         if (input) {
             input.placeholder = this._placeholder();
             input.disabled = this.disabled;
-            if (text) {
-                input.removeAttribute('aria-label');
-            } else {
-                input.setAttribute('aria-label', 'Search filters');
-            }
             input.setAttribute('aria-expanded', this.open ? 'true' : 'false');
         }
         if (buttonLabel) {
@@ -483,10 +516,6 @@ export class CoreFilterPicker extends Core_UXElement {
         if (button) {
             button.disabled = this.disabled;
             button.setAttribute('aria-expanded', this.open ? 'true' : 'false');
-        }
-        const panel = this._panelEl();
-        if (panel) {
-            panel.setAttribute('aria-label', text || 'Filters');
         }
     }
 
@@ -581,29 +610,47 @@ export class CoreFilterPicker extends Core_UXElement {
     _appendNodes(parent, nodes, context) {
         for (const node of nodes) {
             if (node.kind === 'group') {
-                const branch = createElement('div', { className: 'core-filter-picker__branch' });
-                const heading = createElement('div', {
+                const open = !this._collapsed.has(node.key);
+                const labelId = `${this.panelId}-label-${context.index}`;
+                const branch = createElement('div', {
+                    className: 'core-filter-picker__branch',
+                    attrs: {
+                        role: 'treeitem',
+                        id: `${this.panelId}-node-${context.index}`,
+                        'data-node-key': `group:${node.key}`,
+                        'aria-expanded': open ? 'true' : 'false',
+                        'aria-level': String(node.level),
+                        'aria-selected': 'false',
+                        'aria-labelledby': labelId,
+                    },
+                });
+                context.index += 1;
+                const heading = createElement('span', {
                     className: 'core-filter-picker__group',
                     text: node.label,
-                    attrs: { role: 'presentation' },
+                    attrs: { id: labelId },
                 });
                 heading.style.paddingLeft = `${node.level * 0.75}rem`;
                 branch.appendChild(heading);
                 const group = createElement('div', {
-                    attrs: { role: 'group', 'aria-label': node.label },
+                    attrs: { role: 'group', hidden: open ? false : true },
                 });
                 this._appendNodes(group, node.children, context);
                 branch.appendChild(group);
                 parent.appendChild(branch);
                 continue;
             }
+            const labelId = `${this.panelId}-label-${context.index}`;
             const option = createElement('div', {
                 className: 'core-filter-picker__option',
                 attrs: {
                     role: 'treeitem',
-                    id: `${this.panelId}-opt-${context.index}`,
+                    id: `${this.panelId}-node-${context.index}`,
                     'data-entry-id': node.entry.id,
+                    'data-node-key': `entry:${node.entry.id}`,
                     'aria-level': String(node.level),
+                    'aria-selected': 'false',
+                    'aria-labelledby': labelId,
                     'aria-disabled': node.entry.disabled ? 'true' : false,
                 },
             });
@@ -612,11 +659,15 @@ export class CoreFilterPicker extends Core_UXElement {
             option.appendChild(createElement('span', {
                 className: 'core-filter-picker__option-label',
                 text: node.entry.label,
+                attrs: { id: labelId },
             }));
             if (node.entry.description) {
+                const descId = `${option.id}-desc`;
+                option.setAttribute('aria-describedby', descId);
                 option.appendChild(createElement('span', {
                     className: 'core-filter-picker__option-desc',
                     text: node.entry.description,
+                    attrs: { id: descId },
                 }));
             }
             parent.appendChild(option);
@@ -624,6 +675,7 @@ export class CoreFilterPicker extends Core_UXElement {
     }
 
     /**
+     * Visible rows: category treeitems and enabled entries, skipping a collapsed branch.
      * @returns {HTMLElement[]}
      */
     _selectable() {
@@ -631,17 +683,48 @@ export class CoreFilterPicker extends Core_UXElement {
         if (!panel) {
             return [];
         }
-        return Array.from(panel.querySelectorAll('[role="treeitem"]:not([aria-disabled="true"])'));
+        return Array.from(panel.querySelectorAll('[role="treeitem"]')).filter((item) => {
+            if (item.getAttribute('aria-disabled') === 'true') {
+                return false;
+            }
+            let parent = item.parentElement;
+            while (parent && parent !== panel) {
+                if (parent.hasAttribute('hidden')) {
+                    return false;
+                }
+                parent = parent.parentElement;
+            }
+            return true;
+        });
+    }
+
+    /**
+     * @param {HTMLElement} item
+     * @returns {boolean}
+     */
+    _isGroup(item) {
+        return item.hasAttribute('aria-expanded');
     }
 
     _markActive() {
         const items = this._selectable();
-        const current = items.find((item) => item.dataset.entryId === this._activeId) || null;
-        const active = current || items[0] || null;
-        this._activeId = active?.dataset.entryId || '';
+        let active = items.find((item) => item.getAttribute('data-node-key') === this._activeKey) || null;
+        if (!active && this._query.trim()) {
+            active = items.find((item) => item.getAttribute('data-node-key')?.startsWith('entry:')) || null;
+        }
+        if (!active) {
+            active = items[0] || null;
+        }
+        this._activeKey = active?.getAttribute('data-node-key') || '';
         const panel = this._panelEl();
         panel?.querySelectorAll('[role="treeitem"]').forEach((item) => {
-            item.classList.toggle('core-filter-picker__option--active', item === active);
+            const on = item === active;
+            item.setAttribute('aria-selected', on ? 'true' : 'false');
+            if (this._isGroup(item)) {
+                item.querySelector(':scope > .core-filter-picker__group')?.classList.toggle('core-filter-picker__option--active', on);
+            } else {
+                item.classList.toggle('core-filter-picker__option--active', on);
+            }
         });
         const input = this._input();
         if (!input) {
@@ -649,8 +732,31 @@ export class CoreFilterPicker extends Core_UXElement {
         }
         if (this.open && active) {
             input.setAttribute('aria-activedescendant', active.id);
+            this._reveal(active);
         } else {
             input.removeAttribute('aria-activedescendant');
+        }
+    }
+
+    /**
+     * Scrolls only the catalog panel so the active row stays visible.
+     * @param {HTMLElement} item
+     */
+    _reveal(item) {
+        const panel = this._panelEl();
+        if (!panel || typeof item.getBoundingClientRect !== 'function') {
+            return;
+        }
+        const panelRect = panel.getBoundingClientRect();
+        const itemRect = item.getBoundingClientRect();
+        if (!panelRect.height || !itemRect.height) {
+            return;
+        }
+        const current = panel.scrollTop || 0;
+        if (itemRect.top < panelRect.top) {
+            panel.scrollTop = current + (itemRect.top - panelRect.top);
+        } else if (itemRect.bottom > panelRect.bottom) {
+            panel.scrollTop = current + (itemRect.bottom - panelRect.bottom);
         }
     }
 
@@ -662,11 +768,11 @@ export class CoreFilterPicker extends Core_UXElement {
         if (!items.length) {
             return;
         }
-        const index = items.findIndex((item) => item.dataset.entryId === this._activeId);
+        const index = items.findIndex((item) => item.getAttribute('data-node-key') === this._activeKey);
         const next = index < 0
             ? (delta < 0 ? items.length - 1 : 0)
             : (index + delta + items.length) % items.length;
-        this._activeId = items[next].dataset.entryId || '';
+        this._activeKey = items[next].getAttribute('data-node-key') || '';
         this._markActive();
     }
 
@@ -676,8 +782,103 @@ export class CoreFilterPicker extends Core_UXElement {
     _activateEdge(edge) {
         const items = this._selectable();
         const item = edge === 'last' ? items[items.length - 1] : items[0];
-        this._activeId = item?.dataset.entryId || '';
+        this._activeKey = item?.getAttribute('data-node-key') || '';
         this._markActive();
+    }
+
+    /**
+     * @param {HTMLElement|null} item
+     * @returns {HTMLElement|null}
+     */
+    _parentItem(item) {
+        const parent = item?.parentElement?.closest('[role="treeitem"]');
+        return parent && typeof parent.getAttribute === 'function' ? parent : null;
+    }
+
+    /**
+     * @param {HTMLElement} item
+     * @returns {HTMLElement|null}
+     */
+    _firstChild(item) {
+        const group = item.querySelector(':scope > [role="group"]');
+        if (!group || group.hasAttribute('hidden')) {
+            return null;
+        }
+        const child = Array.from(group.children).find((node) => node.getAttribute?.('role') === 'treeitem'
+            && node.getAttribute('aria-disabled') !== 'true');
+        return child && typeof child.getAttribute === 'function' ? child : null;
+    }
+
+    _moveRight() {
+        const active = this._activeItem();
+        if (!active || !this._isGroup(active)) {
+            return;
+        }
+        if (active.getAttribute('aria-expanded') === 'false') {
+            this._setGroupOpen(active, true);
+            return;
+        }
+        const child = this._firstChild(active);
+        if (child) {
+            this._activeKey = child.getAttribute('data-node-key') || '';
+            this._markActive();
+        }
+    }
+
+    _moveLeft() {
+        const active = this._activeItem();
+        if (!active) {
+            return;
+        }
+        if (this._isGroup(active) && active.getAttribute('aria-expanded') === 'true') {
+            this._setGroupOpen(active, false);
+            return;
+        }
+        const parent = this._parentItem(active);
+        if (parent) {
+            this._activeKey = parent.getAttribute('data-node-key') || '';
+            this._markActive();
+        }
+    }
+
+    /**
+     * @returns {HTMLElement|null}
+     */
+    _activeItem() {
+        const panel = this._panelEl();
+        if (!panel || !this._activeKey) {
+            return null;
+        }
+        return this._selectable().find((item) => item.getAttribute('data-node-key') === this._activeKey) || null;
+    }
+
+    /**
+     * @param {HTMLElement} item
+     * @param {boolean} open
+     */
+    _setGroupOpen(item, open) {
+        const key = item.getAttribute('data-node-key') || '';
+        const groupKey = key.startsWith('group:') ? key.slice('group:'.length) : '';
+        if (!groupKey) {
+            return;
+        }
+        if (open) {
+            this._collapsed.delete(groupKey);
+        } else {
+            this._collapsed.add(groupKey);
+            if (this._activeKey !== key) {
+                this._activeKey = key;
+            }
+        }
+        this._paint();
+    }
+
+    _toggleActiveGroup() {
+        const active = this._activeItem();
+        if (!active || !this._isGroup(active)) {
+            return;
+        }
+        this._setGroupOpen(active, active.getAttribute('aria-expanded') !== 'true');
     }
 
     /**
@@ -713,6 +914,20 @@ export class CoreFilterPicker extends Core_UXElement {
                     this._move(-1);
                 }
                 break;
+            case 'ArrowRight':
+                if (!this.open) {
+                    return;
+                }
+                event.preventDefault();
+                this._moveRight();
+                break;
+            case 'ArrowLeft':
+                if (!this.open) {
+                    return;
+                }
+                event.preventDefault();
+                this._moveLeft();
+                break;
             case 'Home':
                 if (!this.open) {
                     return;
@@ -729,8 +944,10 @@ export class CoreFilterPicker extends Core_UXElement {
                 break;
             case 'Enter':
                 event.preventDefault();
-                if (this.open && this._activeId) {
-                    this._choose(this._activeId);
+                if (this.open && this._activeKey.startsWith('group:')) {
+                    this._toggleActiveGroup();
+                } else if (this.open && this._activeKey.startsWith('entry:')) {
+                    this._choose(this._activeKey.slice('entry:'.length));
                 } else if (!this.open) {
                     this.openMenu();
                 }
@@ -762,7 +979,8 @@ export class CoreFilterPicker extends Core_UXElement {
         }
         if (!this.keepQuery) {
             this._query = '';
-            this._activeId = '';
+            this._activeKey = '';
+            this._collapsed.clear();
             const input = this._input();
             if (input) {
                 input.value = '';
@@ -825,7 +1043,15 @@ export class CoreFilterPicker extends Core_UXElement {
                 return;
             }
             event.stopPropagation();
-            this._choose(item.getAttribute('data-entry-id') || '');
+            const key = item.getAttribute('data-node-key') || '';
+            this._activeKey = key;
+            if (key.startsWith('group:')) {
+                this._toggleActiveGroup();
+                return;
+            }
+            if (key.startsWith('entry:')) {
+                this._choose(key.slice('entry:'.length));
+            }
         };
         panel.addEventListener('click', this._onPanelClick);
         this._panelBound = panel;

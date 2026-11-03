@@ -117,7 +117,7 @@ function panelOf(picker) {
  * @returns {string[]}
  */
 function optionIds(picker) {
-    return Array.from(panelOf(picker).querySelectorAll('[role="treeitem"]')).map((item) => item.getAttribute('data-entry-id'));
+    return Array.from(panelOf(picker).querySelectorAll('[data-entry-id]')).map((item) => item.getAttribute('data-entry-id'));
 }
 
 /**
@@ -126,6 +126,17 @@ function optionIds(picker) {
  */
 function groupLabels(picker) {
     return Array.from(panelOf(picker).querySelectorAll('.core-filter-picker__group')).map((item) => item.textContent);
+}
+
+/**
+ * @param {HTMLElement} picker
+ * @param {string} label
+ * @returns {HTMLElement|undefined}
+ */
+function groupItem(picker, label) {
+    return Array.from(panelOf(picker).querySelectorAll('[role="treeitem"]')).find((item) => {
+        return item.querySelector(':scope > .core-filter-picker__group')?.textContent === label;
+    });
 }
 
 /**
@@ -212,13 +223,32 @@ test('arrows, Enter, Escape, and Tab follow the open tree', () => {
     const input = inputOf(picker);
     press(input, 'ArrowDown');
     assert.equal(picker.open, true);
-    assert.equal(panelOf(picker).querySelector('.core-filter-picker__option--active').getAttribute('data-entry-id'), 'amount');
-    press(input, 'ArrowDown');
-    assert.equal(panelOf(picker).querySelector('.core-filter-picker__option--active').getAttribute('data-entry-id'), 'tradeDate');
+    const trading = groupItem(picker, 'Trading');
+    assert.equal(trading.getAttribute('role'), 'treeitem');
+    assert.equal(trading.getAttribute('aria-expanded'), 'true');
+    assert.equal(trading.getAttribute('aria-selected'), 'true');
+    assert.equal(document.getElementById(trading.getAttribute('aria-labelledby')).textContent, 'Trading');
+    assert.equal(trading.querySelector(':scope > [role="group"]') != null, true);
+    assert.equal(input.getAttribute('aria-activedescendant'), trading.id);
+    press(input, 'ArrowRight');
+    assert.equal(input.getAttribute('aria-activedescendant'), groupItem(picker, 'Amounts').id);
+    press(input, 'ArrowRight');
+    const amount = panelOf(picker).querySelector('[data-entry-id="amount"]');
+    assert.equal(amount.getAttribute('aria-level'), '3');
+    assert.equal(amount.parentElement.getAttribute('role'), 'group');
+    assert.equal(amount.parentElement.parentElement, groupItem(picker, 'Amounts'));
+    assert.equal(input.getAttribute('aria-activedescendant'), amount.id);
+    press(input, 'ArrowLeft');
+    assert.equal(input.getAttribute('aria-activedescendant'), groupItem(picker, 'Amounts').id);
+    press(input, 'ArrowLeft');
+    assert.equal(groupItem(picker, 'Amounts').getAttribute('aria-expanded'), 'false');
+    assert.equal(panelOf(picker).querySelector('[data-entry-id="amount"]').closest('[role="group"]').hasAttribute('hidden'), true);
+    press(input, 'ArrowRight');
+    assert.equal(panelOf(picker).querySelector('[data-entry-id="amount"]').closest('[role="group"]').hasAttribute('hidden'), false);
     press(input, 'End');
     assert.equal(panelOf(picker).querySelector('.core-filter-picker__option--active').getAttribute('data-entry-id'), 'name');
     press(input, 'Home');
-    assert.equal(panelOf(picker).querySelector('.core-filter-picker__option--active').getAttribute('data-entry-id'), 'amount');
+    assert.equal(input.getAttribute('aria-activedescendant'), groupItem(picker, 'Trading').id);
     const escape = press(input, 'Escape');
     assert.equal(escape.defaultPrevented, true);
     assert.equal(picker.open, false);
@@ -279,6 +309,56 @@ test('keep-query retains the field and a later catalog replaces the open tree', 
     assert.deepEqual(groupLabels(picker), ['Trading', 'Reference']);
     picker.query = '';
     assert.deepEqual(optionIds(picker), ['currency', 'name']);
+});
+
+test('a label change keeps the field and names it', () => {
+    const picker = mount('<core-filter-picker id="picker" label=""></core-filter-picker>');
+    const input = inputOf(picker);
+    assert.equal(picker.querySelector('[data-core-filter-picker-label]'), null);
+    assert.equal(input.getAttribute('aria-label'), 'Search filters');
+    picker.setAttribute('label', 'Fields');
+    const label = picker.querySelector('[data-core-filter-picker-label]');
+    assert.equal(label.textContent, 'Fields');
+    assert.equal(label.getAttribute('for'), input.id);
+    assert.equal(input.hasAttribute('aria-label'), false);
+    assert.equal(inputOf(picker), input);
+    picker.setEntries(catalog());
+    typeQuery(picker, 'name');
+    picker.setAttribute('label', 'Catalog');
+    assert.equal(picker.open, true);
+    assert.equal(picker.query, 'name');
+    assert.equal(inputOf(picker), input);
+    assert.equal(panelOf(picker).getAttribute('aria-label'), 'Catalog');
+    picker.setAttribute('label', '');
+    assert.equal(picker.querySelector('[data-core-filter-picker-label]'), null);
+    assert.equal(input.getAttribute('aria-label'), 'Search filters');
+    assert.equal(panelOf(picker).getAttribute('aria-label'), 'Filters');
+});
+
+test('the active row is scrolled into the catalog panel', () => {
+    const picker = mount();
+    picker.setEntries(catalog());
+    picker.openMenu();
+    const panel = panelOf(picker);
+    let scrollTop = 0;
+    Object.defineProperty(panel, 'scrollTop', {
+        configurable: true,
+        get: () => scrollTop,
+        set: (value) => {
+            scrollTop = value;
+        },
+    });
+    panel.getBoundingClientRect = () => ({
+        top: 100, bottom: 136, left: 0, right: 200, width: 200, height: 36, x: 0, y: 100, toJSON() { return this; },
+    });
+    Array.from(panel.querySelectorAll('[role="treeitem"]')).forEach((row, index) => {
+        const top = 100 + index * 28;
+        row.getBoundingClientRect = () => ({
+            top, bottom: top + 24, left: 0, right: 200, width: 200, height: 24, x: 0, y: top, toJSON() { return this; },
+        });
+    });
+    press(inputOf(picker), 'End');
+    assert.ok(scrollTop > 0);
 });
 
 test('an outside click closes the picker without closing another menu', () => {

@@ -438,7 +438,11 @@
   }
 
   .core-filter-picker__group {
-    @apply px-3 pb-1 pt-2 text-xs font-semibold text-core-text-muted;
+    @apply block cursor-pointer px-3 pb-1 pt-2 text-xs font-semibold text-core-text-muted;
+  }
+
+  .core-filter-picker__group.core-filter-picker__option--active {
+    @apply bg-core-info-muted text-core-primary;
   }
 
   .core-filter-picker__option {

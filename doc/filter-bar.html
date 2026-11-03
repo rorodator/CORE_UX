@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filter bar examples — CORE_UX</title>
+    <link rel="stylesheet" href="../dist/core-ux.css">
+    <link rel="stylesheet" href="assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/utils/dom.js": "./assets/core-dom-shim.js",
+        "CORE_JS/lib/base/core-html-element.js": "./assets/core-html-element-shim.js",
+        "CORE_JS/lib/value/core-value-registry.js": "./assets/value/core-value-registry.js",
+        "CORE_JS/lib/value/core-text-match.js": "./assets/value/core-text-match.js",
+        "CORE_JS/lib/filter/core-filter-engine.js": "./assets/engine/lib/filter/core-filter-engine.js",
+        "CORE_JS/lib/filter/core-filter-error.js": "./assets/engine/lib/filter/core-filter-error.js",
+        "rxjs": "./assets/rxjs-shim.js",
+        "lucide": "../node_modules/lucide/dist/esm/lucide.mjs"
+    }
+}
+</script>
+<script src="assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="filter-bar"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1>Filter bar examples</h1>
+            <p class="lead">The minimal catalog, an advanced bar with formats and an option provider, and a parent that only listens to <code>state$</code> and <code>events$</code>. Nothing here loads rows from an application service.</p>
+        </header>
+
+        <div class="callout callout--info">
+            Tag reference: <a href="components/core-filter-bar.html">core-filter-bar</a>.
+            The engine note in CORE_JS is <code>ai-instructions/filter-engine.md</code>.
+            These pages do not add a query language, a grid, or a data backend.
+        </div>
+
+        <section class="demo-section">
+            <h2>Minimal catalog</h2>
+            <p>Four definitions. No callback, no provider, no adapter. Labels and operators are inferred.</p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-filter-bar id="bar-min"></core-filter-bar>
+                    <p id="bar-min-inferred" class="hint"></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h2>Formats and an option provider</h2>
+            <p>Amount uses a French decimal format. The stored value stays the exact canonical string. Trade date uses <code>dd MMM yyyy</code>. City options arrive from a function that receives <code>AbortSignal</code>.</p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-filter-bar id="bar-adv"></core-filter-bar>
+                </div>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h2>Parent subscriber</h2>
+            <p>This block is the only consumer. It reads <code>state$</code>, <code>events$</code>, and <code>getCriteria()</code>. It does not own the editors and it does not fetch rows. <code>events$</code> stays empty until the bar changes.</p>
+            <div class="demo">
+                <div class="demo__preview">
+                    <p id="bar-adv-event" class="hint">No events yet</p>
+                    <pre><code id="bar-adv-state">Waiting for state$</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <h2>Canonical values</h2>
+        <p>What the editor shows can be localized. What <code>getState()</code> and <code>getCriteria()</code> keep is canonical. <code>0</code> and <code>false</code> count as values.</p>
+        <table>
+            <thead><tr><th>Entry</th><th>Type</th><th>Canonical</th></tr></thead>
+            <tbody>
+                <tr><td><code>1,234,567.89</code> and <code>1 234 567,89</code></td><td>decimal</td><td><code>"1234567.89"</code></td></tr>
+                <tr><td><code>0</code></td><td>decimal or integer</td><td><code>"0"</code></td></tr>
+                <tr><td><code>false</code></td><td>boolean</td><td><code>false</code></td></tr>
+                <tr><td><code>2026-11-03</code></td><td>date</td><td><code>"2026-11-03"</code></td></tr>
+                <tr><td><code>13:05:09</code></td><td>time</td><td><code>"13:05:09"</code></td></tr>
+                <tr><td>local datetime</td><td>datetime</td><td><code>"2026-11-03T13:05:09"</code></td></tr>
+                <tr><td>offset datetime</td><td>datetime</td><td><code>"2026-11-03T13:05:09Z"</code></td></tr>
+                <tr><td>today</td><td>relativeDate</td><td><code>{ "preset": "today" }</code></td></tr>
+            </tbody>
+        </table>
+
+        <h2>RxJS</h2>
+        <p><code>state$</code> replays the current state on subscribe. <code>events$</code> does not. A change publishes state first, then the events of that commit. State and events share the same revision. Events also carry a <code>transactionId</code> and the corresponding state snapshot. Construction and <code>initialFilters</code> do not emit. <code>destroy()</code> completes both streams. Removing the element from the page does not.</p>
+
+        <h2>Outside V1</h2>
+        <ul>
+            <li>OR groups and nested criteria.</li>
+            <li>SQL, REST, grids, and an application data service.</li>
+            <li>Saving a snapshot to a server.</li>
+            <li>Letting the user invent a filter that is not in the catalog.</li>
+            <li>Validation that spans two filters.</li>
+            <li>Automatic compaction of the row list.</li>
+            <li>Resolving <code>relativeDate</code> into calendar dates. The preset object is the value.</li>
+            <li>A calendar popup. Dates are typed in <code>core-formatted-field</code>.</li>
+        </ul>
+    </main>
+</div>
+<script src="assets/sidebar.js"></script>
+<script type="module">
+import '../components/core-filter-bar/core-filter-bar.js';
+
+const minimal = document.getElementById('bar-min');
+minimal.configure({
+    definitions: [
+        { id: 'name', type: 'string' },
+        { id: 'amount', type: 'decimal' },
+        { id: 'tradeDate', type: 'date' },
+        { id: 'currency', type: 'select', options: ['EUR', 'USD', 'GBP'] }
+    ]
+});
+document.getElementById('bar-min-inferred').textContent = minimal.getDefinitions()
+    .map((definition) => definition.label + ' · ' + definition.defaultOperator)
+    .join(', ');
+
+const advanced = document.getElementById('bar-adv');
+const stateNode = document.getElementById('bar-adv-state');
+const eventNode = document.getElementById('bar-adv-event');
+
+advanced.configure({
+    definitions: [
+        {
+            id: 'amount',
+            type: 'decimal',
+            format: { decimalSeparator: ',', groupSeparator: '\u00a0' }
+        },
+        {
+            id: 'tradeDate',
+            type: 'date',
+            format: { format: 'dd MMM yyyy' }
+        },
+        {
+            id: 'city',
+            type: 'select',
+            label: 'City',
+            options(ctx) {
+                return new Promise((resolve) => {
+                    const timer = setTimeout(() => resolve([
+                        { value: 'paris', label: 'Paris' },
+                        { value: 'lyon', label: 'Lyon' }
+                    ]), 200);
+                    ctx.signal.addEventListener('abort', () => clearTimeout(timer));
+                });
+            }
+        }
+    ],
+    initialFilters: [
+        { definitionId: 'amount', value: '1234567.89' },
+        { definitionId: 'city' }
+    ]
+});
+
+function paintConsumer() {
+    const state = advanced.getState();
+    const criteria = advanced.getCriteria();
+    stateNode.textContent = JSON.stringify({
+        revision: state.revision,
+        filters: state.filters.map((filter) => ({
+            definitionId: filter.definitionId,
+            operator: filter.operator,
+            status: filter.status,
+            value: filter.value
+        })),
+        criteria: criteria.criteria
+    }, null, 2);
+}
+
+advanced.state$.subscribe(() => paintConsumer());
+advanced.events$.subscribe((event) => {
+    eventNode.textContent = event.type + ' · ' + event.source + ' · rev ' + event.revision;
+});
+</script>
+</body>
+</html>

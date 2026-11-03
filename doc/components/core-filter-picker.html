@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core-filter-picker — CORE_UX</title>
+    <link rel="stylesheet" href="../../dist/core-ux.css">
+    <link rel="stylesheet" href="../assets/doc.css">
+<script type="importmap">
+{
+    "imports": {
+        "CORE_JS/lib/utils/dom.js": "../assets/core-dom-shim.js",
+        "CORE_JS/lib/base/core-html-element.js": "../assets/core-html-element-shim.js",
+        "CORE_JS/lib/value/core-text-match.js": "../assets/value/core-text-match.js"
+    }
+}
+</script>
+<script src="../assets/bootstrap.js"></script>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar" id="doc-nav" data-active="core-filter-picker"></nav>
+    <main class="main">
+        <header class="hero">
+            <h1><span class="tag">&lt;core-filter-picker&gt;</span></h1>
+            <p class="lead">Search-first catalog. The text field is the control; typing filters and opens the tree. Browse opens the full tree, or the tree already limited by the current text. The picker does not know filter instances and does not build a form.</p>
+        </header>
+
+        <div class="callout callout--info">
+            Pass definition records to <code>setEntries()</code>. A record uses <code>id</code>, <code>label</code>, <code>description</code>, <code>keywords</code>, <code>group</code> (<code>Trading / Dates</code>) or <code>groupPath</code>, <code>disabled</code>, and <code>visible</code>. <code>visible: false</code> is omitted. A disabled row stays visible and cannot be chosen. Search ignores case and accents and matches the label, description, keywords, and category path. A match keeps its ancestor categories. There is no debounce and no extra form.
+        </div>
+
+        <table>
+            <thead><tr><th>Attribute</th><th>Values / default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>label</code></td><td>text</td><td>Visible name of the field. Default <code>Add a filter</code>. An empty value removes the visible label and names the field <code>Search filters</code>.</td></tr>
+                <tr><td><code>placeholder</code></td><td>text</td><td>Default <code>Search filters</code>.</td></tr>
+                <tr><td><code>button-label</code></td><td>text</td><td>Browse button text. Default <code>Browse</code>.</td></tr>
+                <tr><td><code>open</code></td><td>boolean</td><td>Tree is open. Absent means closed.</td></tr>
+                <tr><td><code>disabled</code></td><td>boolean</td><td>Disables the field and the button and closes the tree.</td></tr>
+                <tr><td><code>query</code></td><td>text</td><td>Initial search text. The live value is the <code>query</code> property.</td></tr>
+                <tr><td><code>keep-query</code></td><td>boolean</td><td>After a choice, keep the typed text. Without it, the field is cleared.</td></tr>
+            </tbody>
+        </table>
+
+        <h2>Events and API</h2>
+        <table>
+            <thead><tr><th>Name</th><th>When</th><th>Detail</th></tr></thead>
+            <tbody>
+                <tr><td><code>core-filter-picker-select</code></td><td>Enter or click on an enabled row</td><td><code>{ id, label, description, keywords, groupPath }</code>. The tree closes. Focus returns to the field.</td></tr>
+                <tr><td><code>setEntries(entries)</code></td><td>Public method</td><td>Replaces the catalog immediately, including while the tree is open.</td></tr>
+                <tr><td><code>getEntries()</code></td><td>Public method</td><td>Normalized entries, in order, without hidden or duplicate ids.</td></tr>
+                <tr><td><code>openMenu()</code> / <code>closeMenu()</code></td><td>Public methods</td><td>Open shows the current filter, or the full tree when the field is empty. Close hides the tree.</td></tr>
+                <tr><td><code>query</code></td><td>Property</td><td>Read or replace the search text.</td></tr>
+            </tbody>
+        </table>
+
+        <h2>Keyboard</h2>
+        <p>From the field: ArrowDown and ArrowUp open the tree and move through visible categories and enabled filters, wrapping at the ends. ArrowRight opens a closed category or moves into it. ArrowLeft closes an open category or moves to its parent. Home and End jump while the tree is open. Enter chooses the highlighted filter, or opens and closes the highlighted category. Typing selects the first matching filter, not its category. Escape closes and keeps the text. Tab closes and moves focus onward. The tree does not trap Tab. Disabled filters are skipped. Changing <code>label</code> updates the visible name without replacing the field.</p>
+
+        <section class="demo-section">
+            <h3>Catalog</h3>
+            <p>Try <code>echeance</code>, <code>notional</code>, or <code>dates</code>. The last choice is written under the field.</p>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-filter-picker id="catalog-picker" label="Add a filter"></core-filter-picker>
+                    <p id="catalog-choice">No choice yet.</p>
+                </div>
+                <pre class="demo__code"><code>&lt;core-filter-picker id="catalog-picker" label="Add a filter"&gt;&lt;/core-filter-picker&gt;
+picker.setEntries([
+  { id: 'amount', label: 'Amount', description: 'Notional', keywords: ['notional'], group: 'Trading / Amounts' },
+  { id: 'tradeDate', label: 'Trade date', keywords: ['échéance'], groupPath: ['Trading', 'Dates'] },
+  { id: 'name', label: 'Name' }
+]);</code></pre>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Disabled and keep-query</h3>
+            <div class="demo">
+                <div class="demo__preview demo__preview--stacked">
+                    <core-filter-picker label="Unavailable" disabled placeholder="Search filters"></core-filter-picker>
+                    <core-filter-picker id="keep-picker" label="Keep the query" keep-query button-label="Show all"></core-filter-picker>
+                </div>
+                <pre class="demo__code"><code>&lt;core-filter-picker label="Unavailable" disabled&gt;&lt;/core-filter-picker&gt;
+&lt;core-filter-picker label="Keep the query" keep-query button-label="Show all"&gt;&lt;/core-filter-picker&gt;</code></pre>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="../assets/sidebar.js"></script>
+<script type="module">
+import '../../components/core-filter-picker/core-filter-picker.js';
+
+const entries = [
+    { id: 'amount', label: 'Amount', description: 'Notional', keywords: ['notional'], group: 'Trading / Amounts' },
+    { id: 'tradeDate', label: 'Trade date', keywords: ['échéance'], groupPath: ['Trading', 'Dates'] },
+    { id: 'status', label: 'Status', groupPath: ['Trading', 'Dates'], disabled: true },
+    { id: 'name', label: 'Name' }
+];
+const catalog = document.getElementById('catalog-picker');
+const kept = document.getElementById('keep-picker');
+catalog.setEntries(entries);
+kept.setEntries(entries);
+catalog.addEventListener('core-filter-picker-select', (event) => {
+    document.getElementById('catalog-choice').textContent = event.detail.groupPath.concat(event.detail.label).join(' / ');
+});
+</script>
+</body>
+</html>

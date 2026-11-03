@@ -399,6 +399,77 @@
     @apply block;
   }
 
+  /* —— Filter picker —— */
+  .core-filter-picker {
+    @apply relative w-full max-w-md font-core;
+  }
+
+  .core-filter-picker__label {
+    @apply mb-1 block text-sm font-medium text-core-text;
+  }
+
+  .core-filter-picker__control {
+    @apply flex w-full items-stretch gap-2;
+  }
+
+  .core-filter-picker__input {
+    @apply min-w-0 flex-1;
+  }
+
+  .core-filter-picker__browse {
+    @apply inline-flex shrink-0 items-center gap-1 rounded-core border border-core-border
+      bg-core-surface px-3 py-2 text-sm font-medium text-core-text shadow-core-sm
+      hover:bg-core-surface-hover
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-core-primary
+      focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .core-filter-picker__chevron {
+    @apply text-xs text-core-text-muted;
+  }
+
+  .core-filter-picker__panel {
+    @apply absolute z-50 mt-1 max-h-72 w-full overflow-y-auto rounded-core border
+      border-core-border bg-core-surface py-1 shadow-core-lg;
+  }
+
+  .core-filter-picker__panel.core-floating-overlay {
+    @apply mt-0;
+  }
+
+  .core-filter-picker__group {
+    @apply block cursor-pointer px-3 pb-1 pt-2 text-xs font-semibold text-core-text-muted;
+  }
+
+  .core-filter-picker__group.core-filter-picker__option--active {
+    @apply bg-core-info-muted text-core-primary;
+  }
+
+  .core-filter-picker__option {
+    @apply block w-full cursor-pointer border-0 bg-transparent px-3 py-2 text-left text-sm
+      text-core-text hover:bg-core-surface-hover focus:outline-none;
+  }
+
+  .core-filter-picker__option--active {
+    @apply bg-core-info-muted text-core-primary;
+  }
+
+  .core-filter-picker__option[aria-disabled='true'] {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  .core-filter-picker__option-label {
+    @apply block font-medium;
+  }
+
+  .core-filter-picker__option-desc {
+    @apply mt-0.5 block text-xs text-core-text-muted;
+  }
+
+  .core-filter-picker__empty {
+    @apply px-3 py-2 text-sm text-core-text-muted;
+  }
+
   /* —— Multi select —— */
   .core-multi-select {
     @apply w-full font-core;

@@ -32,7 +32,7 @@
         </header>
 
         <div class="callout callout--info">
-            A usual type needs no callback: the label, operators, and editor are inferred. User actions are stamped <code>user</code>. <code>destroy()</code> ends the streams and aborts option requests. Removing the element from the page does not. After a catalog choice, focus moves into the new editor. Layout is <code>wrap</code> unless <code>ui.layout</code> or the <code>layout</code> attribute is <code>scroll</code> or <code>vertical</code>.
+            A usual type needs no callback: the label, operators, and editor are inferred. When a definition allows only one operator, the row applies it and hides the operator menu. User actions are stamped <code>user</code>. <code>destroy()</code> ends the streams and aborts option requests. Removing the element from the page does not. After a catalog choice, focus moves into the new editor. Layout is <code>wrap</code> unless <code>ui.layout</code> or the <code>layout</code> attribute is <code>scroll</code> or <code>vertical</code>.
         </div>
 
         <table>
@@ -47,6 +47,9 @@
         <p><code>configure(config)</code> builds the engine. The element then delegates <code>getDefinitions</code>, <code>getState</code>, <code>getCriteria</code>, <code>getResolvedConfig</code>, <code>validate</code>, <code>exportState</code>, <code>importState</code>, <code>addDefinition</code>, <code>updateDefinition</code>, <code>removeDefinition</code>, <code>addFilter</code>, <code>removeFilter</code>, <code>clearFilter</code>, <code>setValue</code>, <code>setOperator</code>, <code>moveFilter</code>, <code>setPinned</code>, <code>setFilters</code>, <code>reset</code>, <code>transaction</code>, and <code>destroy</code>. <code>state$</code> replays the current state. <code>events$</code> stays quiet until a change. <code>validate()</code> reveals errors when validation mode is <code>manual</code>.</p>
         <p>There is no filter-added DOM event. Subscribe to <code>events$</code>. A registered editor is <code>extensions.registry.editors[editorRef]</code>, a function of the definition that returns <code>{ mount, update, focus, destroy }</code>. <code>mount</code> and <code>update</code> must not emit a value change.</p>
 
+        <h2>Operators</h2>
+        <p>Each row shows a <code>core-menu</code> only when the resolved definition lists more than one operator. A single allowed operator is applied silently and the menu stays hidden.</p>
+
         <h2>Keyboard and touch</h2>
         <p>Each row has Earlier and Later buttons, and the reorder handle accepts arrow keys inside the pinned or unpinned group. The handle can also be dragged. A pinned filter that the configuration locked cannot be unpinned from the row. Clear empties the value. Remove deletes the instance when it is removable. Is empty and Is not empty hide Clear.</p>
 
@@ -56,6 +59,16 @@
                 <div class="demo__preview">
                     <core-filter-bar id="bar-min"></core-filter-bar>
                     <p id="bar-min-state" class="hint"></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h3>Single allowed operator</h3>
+            <div class="demo">
+                <div class="demo__preview">
+                    <core-filter-bar id="bar-single-op"></core-filter-bar>
+                    <p id="bar-single-op-hint" class="hint">The Name row has no operator menu; only <code>contains</code> is allowed.</p>
                 </div>
             </div>
         </section>
@@ -87,6 +100,21 @@ minimal.state$.subscribe((state) => {
     stateNode.textContent = state.filters.length
         ? state.filters.map((filter) => filter.definitionId + ' ' + filter.operator).join(', ')
         : 'No filters yet';
+});
+
+const singleOp = document.getElementById('bar-single-op');
+singleOp.configure({
+    definitions: [
+        {
+            id: 'name',
+            label: 'Name',
+            type: 'string',
+            operators: ['contains'],
+            defaultOperator: 'contains',
+        },
+        { id: 'amount', type: 'decimal' },
+    ],
+    initialFilters: [{ definitionId: 'name', value: 'Ada' }],
 });
 
 const advanced = document.getElementById('bar-adv');

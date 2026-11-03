@@ -500,6 +500,7 @@ export class CoreFilterBar extends Core_UXElement {
         } catch (error) {
             editorHost.textContent = error?.message || 'This editor could not be created.';
         }
+        syncOperatorPicker(menu, definition.operators, instance.operator, row);
         return row;
     }
 
@@ -519,7 +520,7 @@ export class CoreFilterBar extends Core_UXElement {
             labelNode.textContent = label;
         }
         row.handle?.setAttribute('aria-label', `Reorder ${label}`);
-        syncOperatorMenu(row.menu, definition.operators, instance.operator);
+        syncOperatorPicker(row.menu, definition.operators, instance.operator, row);
         row.root.setAttribute('aria-label', `${label} filter`);
         setDisabled(row.earlier, !this._canMove(instance, -1));
         setDisabled(row.later, !this._canMove(instance, 1));
@@ -771,6 +772,81 @@ export class CoreFilterBar extends Core_UXElement {
         }
         this._rows.clear();
     }
+}
+
+/**
+ * @param {string[]|undefined} operators
+ * @returns {boolean}
+ */
+function operatorPickerVisible(operators) {
+    return Array.isArray(operators) && operators.length > 1;
+}
+
+/**
+ * @param {HTMLElement} menu
+ * @returns {boolean}
+ */
+function operatorMenuOwnsFocus(menu) {
+    const doc = menu.ownerDocument;
+    const active = doc?.activeElement;
+    if (!active) {
+        return false;
+    }
+    const trigger = menu.querySelector('[data-core-menu-trigger]');
+    if (trigger && (active === trigger || trigger.contains(active))) {
+        return true;
+    }
+    const panel = doc.getElementById(menu.panelId);
+    return Boolean(panel && (active === panel || panel.contains(active)));
+}
+
+/**
+ * @param {object} row
+ * @param {string} operator
+ */
+function restoreFilterRowFocus(row, operator) {
+    if (operatorTakesValue(operator)) {
+        row.adapter?.focus?.();
+        return;
+    }
+    const candidates = [row.remove, row.pin, row.clear, row.earlier, row.later, row.handle];
+    for (const node of candidates) {
+        if (node instanceof HTMLElement && !node.hidden && node.disabled !== true) {
+            node.focus();
+            return;
+        }
+    }
+}
+
+/**
+ * Hides the operator menu when the definition allows only one choice.
+ * @param {HTMLElement|null|undefined} menu
+ * @param {string[]|undefined} operators
+ * @param {string} current
+ * @param {object|undefined} row
+ */
+function syncOperatorPicker(menu, operators, current, row) {
+    if (!menu) {
+        return;
+    }
+    const visible = operatorPickerVisible(operators);
+    if (!visible) {
+        const restoreFocus = operatorMenuOwnsFocus(menu);
+        menu.hidden = true;
+        if (menu.open) {
+            if (typeof menu._closeMenu === 'function') {
+                menu._closeMenu({ restoreFocus: false, emitEvent: true });
+            } else {
+                menu.closeMenu?.();
+            }
+        }
+        if (restoreFocus && row) {
+            restoreFilterRowFocus(row, current);
+        }
+        return;
+    }
+    menu.hidden = false;
+    syncOperatorMenu(menu, operators, current);
 }
 
 /**

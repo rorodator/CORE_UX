@@ -13,9 +13,16 @@ if (typeof window.clearTimeout !== 'function') {
 
 /** @type {Element[]} */
 const focused = [];
+/** @type {Element|null} */
+let activeElement = null;
+Object.defineProperty(document, 'activeElement', {
+    configurable: true,
+    get: () => activeElement || document.body,
+});
 const nativeFocus = HTMLElement.prototype.focus;
 HTMLElement.prototype.focus = function focus(...args) {
     focused.push(this);
+    activeElement = this;
     nativeFocus.apply(this, args);
 };
 
@@ -28,6 +35,7 @@ function clearBody() {
         document.body.removeChild(document.body.firstChild);
     }
     focused.length = 0;
+    activeElement = null;
 }
 
 /**
@@ -881,4 +889,211 @@ test('disconnect keeps the streams and destroy aborts a provider', async () => {
     resolvers.forEach((resolve) => resolve([{ value: 'late', label: 'Late' }]));
     await flush();
     assert.equal(completed, true);
+});
+
+test('a single configured operator hides the menu and keeps criteria', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{
+            id: 'name',
+            type: 'string',
+            operators: ['contains'],
+            defaultOperator: 'contains',
+        }],
+    });
+    /** @type {string[]} */
+    const eventTypes = [];
+    bar.events$.subscribe((event) => eventTypes.push(event.type));
+    const id = bar.addFilter('name');
+    const nameRow = row(bar, 'name');
+    const menu = nameRow.querySelector('core-menu');
+    assert.equal(menu.hidden, true);
+    const input = /** @type {HTMLInputElement} */ (control(bar, 'name'));
+    assert.equal(input instanceof HTMLInputElement, true);
+    input.value = 'Ada';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    assert.equal(bar.getState().filters[0].operator, 'contains');
+    assert.equal(bar.getCriteria().criteria[0].operator, 'contains');
+    assert.equal(bar.getCriteria().criteria[0].value, 'Ada');
+    assert.equal(eventTypes.includes('operatorChanged'), false);
+    bar.setValue(id, 'Bob');
+    assert.equal(bar.getCriteria().criteria[0].value, 'Bob');
+    bar.destroy();
+});
+
+test('several configured operators keep a working operator menu', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{
+            id: 'name',
+            type: 'string',
+            operators: ['eq', 'contains'],
+        }],
+    });
+    bar.addFilter('name');
+    const nameRow = row(bar, 'name');
+    const menu = nameRow.querySelector('core-menu');
+    assert.equal(menu.hidden, false);
+    menu.openMenu();
+    const panel = document.getElementById(menu.panelId);
+    const values = [...panel.querySelectorAll('core-menu-item')].map((item) => item.getAttribute('value'));
+    assert.deepEqual(values, ['eq', 'contains']);
+    menu.dispatchEvent(new CustomEvent('core-menu-select', {
+        bubbles: true,
+        detail: { value: 'eq' },
+    }));
+    assert.equal(bar.getState().filters[0].operator, 'eq');
+    menu.closeMenu();
+    bar.destroy();
+});
+
+test('inferred operators still show the operator menu', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{ id: 'name', type: 'string' }],
+    });
+    bar.addFilter('name');
+    const menu = row(bar, 'name').querySelector('core-menu');
+    assert.equal(menu.hidden, false);
+    assert.equal(bar.getDefinitions()[0].operators.length > 1, true);
+    bar.destroy();
+});
+
+test('a single-operator transition refocuses the editor from a closed menu trigger', async () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{ id: 'amount', type: 'decimal', operators: ['eq', 'gt'] }],
+    });
+    const amountId = bar.addFilter('amount');
+    const amountRow = row(bar, 'amount');
+    const amountInput = /** @type {HTMLInputElement} */ (control(bar, 'amount'));
+    bar.setValue(amountId, '42');
+    const menu = amountRow.querySelector('core-menu');
+    const trigger = menu.querySelector('[data-core-menu-trigger]');
+    trigger.focus();
+    assert.equal(menu.open, false);
+    assert.equal(document.activeElement, trigger);
+
+    bar.updateDefinition('amount', { operators: ['eq'] });
+    await flush();
+    assert.equal(menu.hidden, true);
+    assert.equal(row(bar, 'amount'), amountRow);
+    assert.equal(document.activeElement, amountInput);
+    assert.equal(amountInput.value, '42');
+    bar.destroy();
+});
+
+test('a single-operator transition closes an open menu and refocuses the editor', async () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [
+            { id: 'amount', type: 'decimal', operators: ['eq', 'gt'] },
+            { id: 'name', type: 'string' },
+        ],
+    });
+    const amountId = bar.addFilter('amount');
+    bar.addFilter('name');
+    const amountRow = row(bar, 'amount');
+    const amountInput = /** @type {HTMLInputElement} */ (control(bar, 'amount'));
+    const nameInput = /** @type {HTMLInputElement} */ (control(bar, 'name'));
+    bar.setValue(amountId, '42');
+    const menu = amountRow.querySelector('core-menu');
+    menu.openMenu();
+    const panel = document.getElementById(menu.panelId);
+    const menuItem = panel.querySelector('core-menu-item');
+    menuItem.focus();
+    assert.equal(menu.open, true);
+    assert.equal(document.activeElement, menuItem);
+
+    /** @type {string[]} */
+    const operatorEvents = [];
+    bar.events$.subscribe((event) => {
+        if (event.type === 'operatorChanged') {
+            operatorEvents.push(event.type);
+        }
+    });
+
+    bar.updateDefinition('amount', { operators: ['eq'] });
+    await flush();
+    assert.equal(menu.open, false);
+    assert.equal(menu.hidden, true);
+    assert.equal(row(bar, 'amount'), amountRow);
+    assert.equal(control(bar, 'amount'), amountInput);
+    assert.equal(amountInput.value, '42');
+    assert.equal(document.activeElement, amountInput);
+    assert.equal(operatorEvents.length, 0);
+
+    bar.updateDefinition('amount', { operators: ['eq', 'gt'] });
+    await flush();
+    menu.openMenu();
+    nameInput.focus();
+    assert.equal(document.activeElement, nameInput);
+    bar.updateDefinition('amount', { operators: ['eq'] });
+    await flush();
+    assert.equal(menu.open, false);
+    assert.equal(document.activeElement, nameInput);
+    assert.equal(amountInput.value, '42');
+    bar.destroy();
+});
+
+test('updateDefinition toggles operator menu visibility without losing the row', async () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{
+            id: 'amount',
+            type: 'decimal',
+            operators: ['eq', 'gt'],
+        }],
+    });
+    const id = bar.addFilter('amount');
+    const amountRow = row(bar, 'amount');
+    const input = /** @type {HTMLInputElement} */ (control(bar, 'amount'));
+    bar.setValue(id, '42');
+    assert.equal(amountRow.querySelector('core-menu').hidden, false);
+
+    bar.updateDefinition('amount', { operators: ['eq'] });
+    await flush();
+    assert.equal(row(bar, 'amount'), amountRow);
+    assert.equal(amountRow.querySelector('core-menu').hidden, true);
+    assert.equal(control(bar, 'amount'), input);
+    assert.equal(input.value, '42');
+    assert.equal(bar.getState().filters[0].operator, 'eq');
+
+    bar.updateDefinition('amount', { operators: ['eq', 'gt'] });
+    await flush();
+    assert.equal(row(bar, 'amount'), amountRow);
+    assert.equal(amountRow.querySelector('core-menu').hidden, false);
+    assert.equal(control(bar, 'amount'), input);
+    assert.equal(input.value, '42');
+    bar.destroy();
+});
+
+test('showing a single-operator row does not emit operatorChanged', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{
+            id: 'code',
+            type: 'string',
+            operators: ['contains'],
+            defaultOperator: 'contains',
+        }],
+    });
+    /** @type {string[]} */
+    const operatorEvents = [];
+    bar.events$.subscribe((event) => {
+        if (event.type === 'operatorChanged') {
+            operatorEvents.push(event.type);
+        }
+    });
+    bar.addFilter('code');
+    assert.equal(operatorEvents.length, 0);
+    assert.equal(bar.getState().filters[0].operator, 'contains');
+    bar.destroy();
 });

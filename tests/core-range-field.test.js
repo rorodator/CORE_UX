@@ -113,6 +113,74 @@ test('a programmatic range received during focus is applied when focus leaves', 
     assert.deepEqual(host.getValueState().value, { min: '99', max: null });
 });
 
+test('last write wins for a range, including focus moving from min to max', async () => {
+    const host = mount(`<core-range-field value-type="integer" value='{"min":"12","max":null}'></core-range-field>`);
+    await customElements.whenDefined('core-range-field');
+    const min = host.querySelector('[data-bound="min"]');
+    const max = host.querySelector('[data-bound="max"]');
+    let events = 0;
+    host.addEventListener('core-range-field-input', () => {
+        events += 1;
+    });
+    host.addEventListener('core-range-field-change', () => {
+        events += 1;
+    });
+
+    min.focus();
+    min.value = '7';
+    min.dispatchEvent(new Event('input', { bubbles: true }));
+    assert.equal(events, 1);
+    host.setAttribute('value', '{"min":"99","max":"3"}');
+    assert.equal(events, 1);
+    assert.equal(min.value, '7');
+    min.dispatchEvent(new Event('focusout', { bubbles: true }));
+    assert.equal(events, 1);
+    assert.equal(min.value, '99');
+    assert.equal(max.value, '3');
+    assert.equal(host.getAttribute('value'), '{"min":"99","max":"3"}');
+
+    max.value = '';
+    min.focus();
+    host.setAttribute('value', '{"min":"40","max":null}');
+    assert.equal(events, 1);
+    min.value = '8';
+    min.dispatchEvent(new Event('input', { bubbles: true }));
+    min.dispatchEvent(new Event('focusout', { bubbles: true }));
+    assert.equal(host.getAttribute('value'), '{"min":"8","max":null}');
+    assert.equal(min.value, '8');
+
+    min.focus();
+    const before = events;
+    host.setAttribute('value', '{"min":"1","max":null}');
+    host.setAttribute('value', '{"min":"2","max":null}');
+    host.setAttribute('value', '{"min":"3","max":null}');
+    assert.equal(events, before);
+    assert.equal(min.value, '8');
+    min.dispatchEvent(new Event('focusout', { bubbles: true }));
+    assert.equal(events, before);
+    assert.equal(min.value, '3');
+
+    min.focus();
+    min.value = '42';
+    min.dispatchEvent(new Event('input', { bubbles: true }));
+    const moved = events;
+    const move = new Event('focusout', { bubbles: true });
+    Object.defineProperty(move, 'relatedTarget', { value: max });
+    min.dispatchEvent(move);
+    max.focus();
+    assert.equal(min.value, '42');
+    assert.equal(max.value, '');
+    assert.equal(host.getAttribute('value'), '{"min":"3","max":null}');
+    host.setAttribute('value', '{"min":"1","max":"2"}');
+    assert.equal(events, moved);
+    assert.equal(min.value, '42');
+    assert.equal(max.value, '');
+    max.dispatchEvent(new Event('focusout', { bubbles: true }));
+    assert.equal(events, moved);
+    assert.equal(min.value, '1');
+    assert.equal(max.value, '2');
+});
+
 test('a pending range bound stays on screen after blur', async () => {
     const host = mount('<core-range-field value-type="decimal" locale="fr"></core-range-field>');
     await customElements.whenDefined('core-range-field');

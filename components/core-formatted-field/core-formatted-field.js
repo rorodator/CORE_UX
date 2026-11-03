@@ -182,6 +182,7 @@ export class CoreFormattedField extends Core_UXFormControl {
 
     _onInput() {
         this._dirty = true;
+        this._queuedExternal = false;
         this._holdRaw = true;
         const input = this._getControl();
         const { type, options } = readFormattedOptions(this);
@@ -196,15 +197,16 @@ export class CoreFormattedField extends Core_UXFormControl {
         if (event.target !== this._getControl()) {
             return;
         }
-        if (!this._dirty) {
-            if (this._queuedExternal) {
-                this._queuedExternal = false;
-                this._holdRaw = false;
-                this._syncFromAttribute();
-            }
+        if (this._queuedExternal) {
+            this._queuedExternal = false;
+            this._dirty = false;
+            this._holdRaw = false;
+            this._syncFromAttribute();
             return;
         }
-        this._queuedExternal = false;
+        if (!this._dirty) {
+            return;
+        }
         this._dirty = false;
         const input = this._getControl();
         const raw = input ? input.value : '';

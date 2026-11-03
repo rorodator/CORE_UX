@@ -189,6 +189,57 @@ test('a programmatic value received during focus is applied on blur without movi
     assert.equal(host.getValueState().value, '99');
 });
 
+test('last write wins between typing and programmatic updates', async () => {
+    const host = mount('<core-formatted-field value-type="integer" value="12"></core-formatted-field>');
+    await customElements.whenDefined('core-formatted-field');
+    const input = host.querySelector('[data-core-formatted-input]');
+    let events = 0;
+    host.addEventListener('core-formatted-field-input', () => {
+        events += 1;
+    });
+    host.addEventListener('core-formatted-field-change', () => {
+        events += 1;
+    });
+
+    input.focus();
+    input.value = '7';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    assert.equal(events, 1);
+    host.setAttribute('value', '99');
+    assert.equal(events, 1);
+    assert.equal(input.value, '7');
+    if (typeof input.selectionStart === 'number') {
+        input.setSelectionRange(1, 1);
+        host.setAttribute('value', '99');
+        assert.equal(input.selectionStart, 1);
+    }
+    input.dispatchEvent(new Event('focusout', { bubbles: true }));
+    assert.equal(events, 1);
+    assert.equal(host.getAttribute('value'), '99');
+    assert.equal(input.value, '99');
+
+    input.focus();
+    host.setAttribute('value', '40');
+    assert.equal(events, 1);
+    input.value = '8';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('focusout', { bubbles: true }));
+    assert.equal(host.getAttribute('value'), '8');
+    assert.equal(input.value, '8');
+
+    input.focus();
+    const before = events;
+    host.setAttribute('value', '1');
+    host.setAttribute('value', '2');
+    host.setAttribute('value', '3');
+    assert.equal(events, before);
+    assert.equal(input.value, '8');
+    input.dispatchEvent(new Event('focusout', { bubbles: true }));
+    assert.equal(events, before);
+    assert.equal(host.getAttribute('value'), '3');
+    assert.equal(input.value, '3');
+});
+
 test('pending text stays visible on blur and a dot group round-trips', async () => {
     const host = mount('<core-formatted-field value-type="decimal" locale="fr"></core-formatted-field>');
     await customElements.whenDefined('core-formatted-field');

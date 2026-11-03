@@ -27,7 +27,7 @@
         </header>
 
         <div class="callout callout--info">
-            Both inputs are <code>type="text"</code>, named <code>{name}-min</code> and <code>{name}-max</code>, with accessible names Minimum and Maximum. The group is labelled by the visible label. Bounds stack on a narrow viewport and sit on one row from the <code>sm</code> breakpoint. A partial range is valid. If both sides are set and the minimum is greater than the maximum, the raw text stays, <code>value</code> is removed, and the error code is <code>E_RANGE_ORDER</code>.
+            Both inputs are <code>type="text"</code>, named <code>{name}-min</code> and <code>{name}-max</code>, with accessible names Minimum and Maximum. The group is labelled by the visible label. Bounds stack on a narrow viewport and sit on one row from the <code>sm</code> breakpoint. A partial range is valid. If both sides are set and the minimum is greater than the maximum, the raw text stays, <code>value</code> is removed, and the error code is <code>E_RANGE_ORDER</code>. A scripted <code>value</code> does not emit an event. On blur, the later write wins. Moving from minimum to maximum keeps the typed text and does not apply a queued scripted value.
         </div>
 
         <table>

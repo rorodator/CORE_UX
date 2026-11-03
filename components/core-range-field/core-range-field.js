@@ -30,7 +30,8 @@ export class CoreRangeField extends Core_UXFormControl {
         super();
         this._suppress = false;
         this._queuedExternal = false;
-        this._focusedBounds = 0;
+        /** @type {HTMLInputElement|null} */
+        this._focusedBound = null;
         /** @type {{ min: boolean, max: boolean }} */
         this._dirty = { min: false, max: false };
         /** @type {{ status: string, value: { min: unknown, max: unknown }|null, errors: object[] }} */
@@ -96,7 +97,15 @@ export class CoreRangeField extends Core_UXFormControl {
 
     _isBoundsFocused() {
         const active = document.activeElement;
-        return this._focusedBounds > 0 || active === this._bound('min') || active === this._bound('max');
+        return this._focusedBound != null || active === this._bound('min') || active === this._bound('max');
+    }
+
+    /**
+     * @param {EventTarget|null} node
+     * @returns {boolean}
+     */
+    _isInnerBound(node) {
+        return node === this._bound('min') || node === this._bound('max');
     }
 
     _bindFocusTracking() {
@@ -109,10 +118,16 @@ export class CoreRangeField extends Core_UXFormControl {
                 return;
             }
             input.addEventListener('focus', () => {
-                this._focusedBounds += 1;
+                this._focusedBound = input;
             }, { signal });
-            input.addEventListener('focusout', () => {
-                this._focusedBounds = Math.max(0, this._focusedBounds - 1);
+            input.addEventListener('focusout', (event) => {
+                if (this._isInnerBound(event.relatedTarget)) {
+                    this._focusedBound = /** @type {HTMLInputElement} */ (event.relatedTarget);
+                    return;
+                }
+                if (this._focusedBound === input) {
+                    this._focusedBound = null;
+                }
             }, { signal });
         });
     }
@@ -120,7 +135,7 @@ export class CoreRangeField extends Core_UXFormControl {
     cleanFunctional() {
         this._focusAbort?.abort();
         this._focusAbort = null;
-        this._focusedBounds = 0;
+        this._focusedBound = null;
         super.cleanFunctional();
     }
 
@@ -188,7 +203,7 @@ export class CoreRangeField extends Core_UXFormControl {
         this._syncBoundAttributes();
         this._bindFocusTracking();
         this.bindDelegated('input', '[data-bound]', (event, match) => this._onInput(match));
-        this.bindDelegated('focusout', '[data-bound]', (event, match) => this._onFocusOut(match));
+        this.bindDelegated('focusout', '[data-bound]', (event, match) => this._onFocusOut(event, match));
         this._syncFromAttribute();
     }
 
@@ -319,24 +334,29 @@ export class CoreRangeField extends Core_UXFormControl {
     _onInput(match) {
         const bound = match.getAttribute('data-bound') === 'max' ? 'max' : 'min';
         this._dirty[bound] = true;
+        this._queuedExternal = false;
         this._state = this._evaluate(false);
         this._emit('core-range-field-input');
     }
 
     /**
-     * @param {Element} match
+     * @param {Event} event
+     * @param {Element} _match
      */
-    _onFocusOut(match) {
-        const bound = match.getAttribute('data-bound') === 'max' ? 'max' : 'min';
-        if (!this._dirty[bound]) {
-            if (this._queuedExternal) {
-                this._queuedExternal = false;
-                this._syncFromAttribute(true);
-            }
+    _onFocusOut(event, _match) {
+        if (this._isInnerBound(event.relatedTarget)) {
             return;
         }
-        this._queuedExternal = false;
-        this._dirty[bound] = false;
+        if (this._queuedExternal) {
+            this._queuedExternal = false;
+            this._dirty = { min: false, max: false };
+            this._syncFromAttribute(true);
+            return;
+        }
+        if (!this._dirty.min && !this._dirty.max) {
+            return;
+        }
+        this._dirty = { min: false, max: false };
         const { type, options } = readFormattedOptions(this);
         this._state = this._evaluate(true);
         if (this._state.status === 'valid' && this._state.value) {

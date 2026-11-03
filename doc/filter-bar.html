@@ -86,7 +86,7 @@
         </table>
 
         <h2>RxJS</h2>
-        <p><code>state$</code> replays the current state on subscribe. <code>events$</code> does not. A change publishes state first, then the events of that commit. They share <code>revision</code> and <code>transactionId</code>. Construction and <code>initialFilters</code> do not emit. <code>destroy()</code> completes both streams. Removing the element from the page does not.</p>
+        <p><code>state$</code> replays the current state on subscribe. <code>events$</code> does not. A change publishes state first, then the events of that commit. State and events share the same revision. Events also carry a <code>transactionId</code> and the corresponding state snapshot. Construction and <code>initialFilters</code> do not emit. <code>destroy()</code> completes both streams. Removing the element from the page does not.</p>
 
         <h2>Outside V1</h2>
         <ul>

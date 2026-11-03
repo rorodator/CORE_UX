@@ -500,7 +500,7 @@ export class CoreFilterBar extends Core_UXElement {
         } catch (error) {
             editorHost.textContent = error?.message || 'This editor could not be created.';
         }
-        syncOperatorPicker(menu, definition.operators, instance.operator, () => row.adapter?.focus?.());
+        syncOperatorPicker(menu, definition.operators, instance.operator, row);
         return row;
     }
 
@@ -520,7 +520,7 @@ export class CoreFilterBar extends Core_UXElement {
             labelNode.textContent = label;
         }
         row.handle?.setAttribute('aria-label', `Reorder ${label}`);
-        syncOperatorPicker(row.menu, definition.operators, instance.operator, () => row.adapter?.focus?.());
+        syncOperatorPicker(row.menu, definition.operators, instance.operator, row);
         row.root.setAttribute('aria-label', `${label} filter`);
         setDisabled(row.earlier, !this._canMove(instance, -1));
         setDisabled(row.later, !this._canMove(instance, 1));
@@ -801,32 +801,51 @@ function operatorMenuOwnsFocus(menu) {
 }
 
 /**
+ * @param {object} row
+ * @param {string} operator
+ */
+function restoreFilterRowFocus(row, operator) {
+    if (operatorTakesValue(operator)) {
+        row.adapter?.focus?.();
+        return;
+    }
+    const candidates = [row.remove, row.pin, row.clear, row.earlier, row.later, row.handle];
+    for (const node of candidates) {
+        if (node instanceof HTMLElement && !node.hidden && node.disabled !== true) {
+            node.focus();
+            return;
+        }
+    }
+}
+
+/**
  * Hides the operator menu when the definition allows only one choice.
  * @param {HTMLElement|null|undefined} menu
  * @param {string[]|undefined} operators
  * @param {string} current
- * @param {(() => void)|undefined} focusEditor
+ * @param {object|undefined} row
  */
-function syncOperatorPicker(menu, operators, current, focusEditor) {
+function syncOperatorPicker(menu, operators, current, row) {
     if (!menu) {
         return;
     }
     const visible = operatorPickerVisible(operators);
-    menu.hidden = !visible;
     if (!visible) {
+        const restoreFocus = operatorMenuOwnsFocus(menu);
+        menu.hidden = true;
         if (menu.open) {
-            const restoreEditor = operatorMenuOwnsFocus(menu);
             if (typeof menu._closeMenu === 'function') {
                 menu._closeMenu({ restoreFocus: false, emitEvent: true });
             } else {
                 menu.closeMenu?.();
             }
-            if (restoreEditor) {
-                focusEditor?.();
-            }
+        }
+        if (restoreFocus && row) {
+            restoreFilterRowFocus(row, current);
         }
         return;
     }
+    menu.hidden = false;
     syncOperatorMenu(menu, operators, current);
 }
 

@@ -962,6 +962,31 @@ test('inferred operators still show the operator menu', () => {
     bar.destroy();
 });
 
+test('a single-operator transition refocuses the editor from a closed menu trigger', async () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{ id: 'amount', type: 'decimal', operators: ['eq', 'gt'] }],
+    });
+    const amountId = bar.addFilter('amount');
+    const amountRow = row(bar, 'amount');
+    const amountInput = /** @type {HTMLInputElement} */ (control(bar, 'amount'));
+    bar.setValue(amountId, '42');
+    const menu = amountRow.querySelector('core-menu');
+    const trigger = menu.querySelector('[data-core-menu-trigger]');
+    trigger.focus();
+    assert.equal(menu.open, false);
+    assert.equal(document.activeElement, trigger);
+
+    bar.updateDefinition('amount', { operators: ['eq'] });
+    await flush();
+    assert.equal(menu.hidden, true);
+    assert.equal(row(bar, 'amount'), amountRow);
+    assert.equal(document.activeElement, amountInput);
+    assert.equal(amountInput.value, '42');
+    bar.destroy();
+});
+
 test('a single-operator transition closes an open menu and refocuses the editor', async () => {
     clearBody();
     const bar = mount();

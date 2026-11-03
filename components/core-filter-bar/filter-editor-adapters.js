@@ -147,6 +147,7 @@ class FilterValueEditor {
         this._onChange = onChange;
         this._context = context;
         this._dependency = context.dependencyKey || '';
+        this._provider = context.provider;
         host.replaceChildren();
         if (this.kind === 'none') {
             return;
@@ -175,13 +176,16 @@ class FilterValueEditor {
         if (this._dead) {
             return;
         }
+        const providerChanged = context.provider !== this._provider;
+        this._provider = context.provider;
         this._context = context;
         if (!this._widget) {
             return;
         }
         this._syncDisabled();
+        this._nameControl(context.label || 'Filter value');
         this._writeValue();
-        if ((context.dependencyKey || '') !== this._dependency) {
+        if (providerChanged || (context.dependencyKey || '') !== this._dependency) {
             this._dependency = context.dependencyKey || '';
             this._reload(false);
         }
@@ -295,12 +299,22 @@ class FilterValueEditor {
      */
     _nameControl(label) {
         const control = this._control();
-        if (control && !control.getAttribute('aria-label') && control.localName !== 'select') {
-            control.setAttribute('aria-label', label);
+        if (!control || control.getAttribute('aria-label') === label) {
+            return;
         }
-        if (control?.localName === 'select') {
-            control.setAttribute('aria-label', label);
+        control.setAttribute('aria-label', label);
+    }
+
+    /**
+     * Static options come from the definition. A provider owns `_options` instead,
+     * so a later definition update is not hidden behind the previous list.
+     * @returns {unknown}
+     */
+    _choiceList() {
+        if (typeof this._context?.provider === 'function') {
+            return this._options;
         }
+        return this._context?.options;
     }
 
     /**
@@ -349,9 +363,9 @@ class FilterValueEditor {
             } else if (this.kind === 'boolean') {
                 this._writeBooleanOptions();
             } else if (this.kind === 'select') {
-                this._writeSelectOptions(this._options.length ? this._options : this._context.options);
+                this._writeSelectOptions(this._choiceList());
             } else if (this.kind === 'multiSelect') {
-                this._writeMultiOptions(this._options.length ? this._options : this._context.options);
+                this._writeMultiOptions(this._choiceList());
             } else if (this.kind === 'autocomplete') {
                 const instance = this._context.instance;
                 const text = instance.status === 'valid'
@@ -377,7 +391,9 @@ class FilterValueEditor {
             { value: 'true', label: 'Yes', selected: current === 'true' },
             { value: 'false', label: 'No', selected: current === 'false' },
         ]);
+        clearNativeSelect(this._widget);
         writeAttribute(this._widget, 'options', payload);
+        applyNativeSelect(this._widget, current);
     }
 
     /**
@@ -393,7 +409,9 @@ class FilterValueEditor {
             label: item.label,
             selected: item.value === current,
         }))]);
+        clearNativeSelect(this._widget);
         writeAttribute(this._widget, 'options', payload);
+        applyNativeSelect(this._widget, typeof current === 'string' ? current : '');
     }
 
     /**
@@ -402,9 +420,19 @@ class FilterValueEditor {
     _writeMultiOptions(options) {
         const list = withCurrent(normalizeList(options), this._context.instance);
         this._options = list;
-        this._widget.setOptions(list.map((item) => ({ value: item.value, label: item.label })));
+        const payload = list.map((item) => ({ value: item.value, label: item.label }));
+        const optionsKey = JSON.stringify(payload);
+        if (optionsKey !== this._multiOptionsKey) {
+            this._multiOptionsKey = optionsKey;
+            this._widget.setOptions(payload);
+        }
         const value = Array.isArray(this._context.instance.value) ? this._context.instance.value : [];
-        this._widget.setSelected(value.filter((item) => typeof item === 'string' || typeof item === 'boolean'));
+        const selected = value.filter((item) => typeof item === 'string' || typeof item === 'boolean');
+        const selectedKey = JSON.stringify(selected);
+        if (selectedKey !== this._multiSelectedKey) {
+            this._multiSelectedKey = selectedKey;
+            this._widget.setSelected(selected);
+        }
     }
 
     /**
@@ -694,6 +722,40 @@ class FilterValueEditor {
             touched: true,
             errors: [],
         });
+    }
+}
+
+/**
+ * core-select keeps the previous option selected when that option is still listed.
+ * Clear the selection before rewriting the list, then mark only the engine value.
+ * select.value is not assigned: a getter-only property throws and drops the choice.
+ * @param {HTMLElement|null} widget
+ * @param {string} desired
+ */
+function applyNativeSelect(widget, desired) {
+    const select = widget?.querySelector('select');
+    if (!select) {
+        return;
+    }
+    const match = [...select.options].find((option) => option.value === desired);
+    if (!match) {
+        return;
+    }
+    match.selected = true;
+    match.setAttribute('selected', '');
+}
+
+/**
+ * @param {HTMLElement|null} widget
+ */
+function clearNativeSelect(widget) {
+    const select = widget?.querySelector('select');
+    if (!select) {
+        return;
+    }
+    for (const option of select.options) {
+        option.selected = false;
+        option.removeAttribute('selected');
     }
 }
 

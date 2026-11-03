@@ -429,6 +429,167 @@ test('a stale option response is ignored and the chosen value stays', async () =
     bar.destroy();
 });
 
+test('setValue shows the select value while the previous option stays listed', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{ id: 'status', type: 'select', options: ['Open', 'Closed'] }],
+    });
+    /** @type {{ type: string, source: string }[]} */
+    const events = [];
+    bar.events$.subscribe((event) => events.push({ type: event.type, source: event.source }));
+    const id = bar.addFilter('status');
+    const select = () => /** @type {HTMLSelectElement} */ (control(bar, 'status'));
+    const shown = () => [...select().options].find((option) => option.selected)?.value ?? '';
+    const listed = () => [...select().options].map((option) => option.value);
+
+    let cursor = events.length;
+    bar.setValue(id, 'Open');
+    assert.equal(shown(), 'Open');
+    assert.equal(select().value, 'Open');
+    assert.equal(listed().includes('Open'), true);
+    assert.equal(listed().includes('Closed'), true);
+    assert.equal(bar.getState().filters[0].value, 'Open');
+    assert.equal(bar.getCriteria().criteria[0].value, 'Open');
+    assert.deepEqual(events.slice(cursor).map((event) => event.source), ['api']);
+
+    cursor = events.length;
+    bar.setValue(id, 'Closed');
+    assert.equal(shown(), 'Closed');
+    assert.equal(select().value, 'Closed');
+    assert.equal(listed().includes('Open'), true);
+    assert.equal(bar.getState().filters[0].value, 'Closed');
+    assert.equal(bar.getCriteria().criteria[0].value, 'Closed');
+    assert.deepEqual(events.slice(cursor).map((event) => event.source), ['api']);
+
+    cursor = events.length;
+    bar.clearFilter(id);
+    assert.equal(shown(), '');
+    assert.equal(select().value, '');
+    assert.equal(listed().includes('Open'), true);
+    assert.equal(listed().includes('Closed'), true);
+    assert.equal(bar.getState().filters[0].status, 'empty');
+    assert.equal(bar.getState().filters[0].value, null);
+    assert.deepEqual(bar.getCriteria().criteria, []);
+    assert.deepEqual(events.slice(cursor).map((event) => event.source), ['api']);
+    assert.equal(events.some((event) => event.source === 'user'), false);
+    bar.destroy();
+});
+
+test('changing another filter does not rebuild an open multi-select', async () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [
+            { id: 'colors', type: 'multiSelect', options: ['Red', 'Blue'] },
+            { id: 'name', type: 'string' },
+        ],
+    });
+    bar.addFilter('colors');
+    const nameId = bar.addFilter('name');
+    const widget = row(bar, 'colors').querySelector('core-multi-select');
+    widget.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const search = document.querySelector('.core-multi-select__search');
+    assert.equal(search != null, true);
+    search.focus();
+    const focusCount = focused.length;
+    const focusedSearch = focused.at(-1) === search;
+    let optionWrites = 0;
+    let selectionWrites = 0;
+    const originalOptions = widget.setOptions.bind(widget);
+    const originalSelected = widget.setSelected.bind(widget);
+    widget.setOptions = (options) => {
+        optionWrites += 1;
+        return originalOptions(options);
+    };
+    widget.setSelected = (values) => {
+        selectionWrites += 1;
+        return originalSelected(values);
+    };
+    bar.setValue(nameId, 'kept');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(optionWrites, 0);
+    assert.equal(selectionWrites, 0);
+    assert.equal(document.querySelector('.core-multi-select__search') === search, true);
+    assert.equal(search.isConnected, true);
+    assert.equal(widget._open, true);
+    assert.equal(focused.length, focusCount);
+    assert.equal(focusedSearch, true);
+    assert.equal(focused.at(-1) === search, true);
+    assert.equal(bar.getState().filters.find((item) => item.definitionId === 'name').value, 'kept');
+    widget.close();
+    bar.destroy();
+});
+
+test('updateDefinition refreshes one row and ignores a stale provider', async () => {
+    clearBody();
+    const bar = mount();
+    let releasePrevious;
+    const previousGate = new Promise((resolve) => {
+        releasePrevious = resolve;
+    });
+    /** @type {string[]} */
+    const calls = [];
+    function previousProvider(ctx) {
+        calls.push('previous');
+        ctx.signal.addEventListener('abort', () => calls.push('abort'));
+        return previousGate.then(() => [{ value: 'old', label: 'Old' }]);
+    }
+    function nextProvider() {
+        calls.push('next');
+        return [{ value: 'new', label: 'New' }];
+    }
+    bar.configure({
+        definitions: [
+            { id: 'city', type: 'select', label: 'City', options: ['Paris'] },
+            { id: 'name', type: 'string' },
+        ],
+    });
+    bar.addFilter('city');
+    const nameId = bar.addFilter('name');
+    bar.setValue(nameId, 'kept');
+    const cityRow = row(bar, 'city');
+    const nameInput = control(bar, 'name');
+
+    bar.updateDefinition('city', { options: ['Lyon'] });
+    const swapped = /** @type {HTMLSelectElement} */ (control(bar, 'city'));
+    assert.equal(row(bar, 'city'), cityRow);
+    assert.equal([...swapped.options].some((option) => option.value === 'Lyon'), true);
+    assert.equal([...swapped.options].some((option) => option.value === 'Paris'), false);
+    assert.equal(control(bar, 'name'), nameInput);
+    assert.equal(nameInput.value, 'kept');
+
+    bar.updateDefinition('city', { options: previousProvider });
+    await flush();
+    assert.equal(calls.includes('previous'), true);
+    bar.updateDefinition('city', {
+        label: 'Ville',
+        operators: ['eq', 'neq'],
+        options: nextProvider,
+    });
+    await flush();
+    releasePrevious();
+    await flush();
+    assert.equal(calls.includes('abort'), true);
+    assert.equal(calls.includes('next'), true);
+    const select = /** @type {HTMLSelectElement} */ (control(bar, 'city'));
+    const labels = [...select.options].map((option) => option.textContent);
+    assert.equal(labels.includes('New'), true);
+    assert.equal(labels.includes('Old'), false);
+    assert.equal(labels.includes('Lyon'), false);
+    assert.equal(row(bar, 'city'), cityRow);
+    assert.equal(cityRow.querySelector('.core-filter-bar__label').textContent, 'Ville');
+    assert.deepEqual(
+        [...cityRow.querySelectorAll('core-menu-item')].map((item) => item.getAttribute('value')),
+        ['eq', 'neq'],
+    );
+    assert.equal(control(bar, 'name'), nameInput);
+    assert.equal(nameInput.value, 'kept');
+    assert.equal(bar.getState().filters.find((item) => item.definitionId === 'name').value, 'kept');
+    bar.destroy();
+});
+
 test('disconnect keeps the streams and destroy aborts a provider', async () => {
     clearBody();
     const bar = mount();

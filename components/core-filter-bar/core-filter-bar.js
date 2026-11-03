@@ -514,6 +514,12 @@ export class CoreFilterBar extends Core_UXElement {
     _syncRow(row, instance, definition, filters, locale, mode) {
         row.root.setAttribute('data-operator', instance.operator);
         const label = definition.label || instance.definitionId;
+        const labelNode = row.root.querySelector('.core-filter-bar__label');
+        if (labelNode && labelNode.textContent !== label) {
+            labelNode.textContent = label;
+        }
+        row.handle?.setAttribute('aria-label', `Reorder ${label}`);
+        syncOperatorMenu(row.menu, definition.operators, instance.operator);
         row.root.setAttribute('aria-label', `${label} filter`);
         setDisabled(row.earlier, !this._canMove(instance, -1));
         setDisabled(row.later, !this._canMove(instance, 1));
@@ -768,10 +774,34 @@ export class CoreFilterBar extends Core_UXElement {
 }
 
 /**
- * @param {string} label
- * @param {string} [name]
- * @returns {HTMLElement}
+ * Refresh the operator menu in place. An unchanged list keeps the open panel.
+ * @param {HTMLElement|null|undefined} menu
+ * @param {string[]} operators
+ * @param {string} current
  */
+function syncOperatorMenu(menu, operators, current) {
+    if (!menu) {
+        return;
+    }
+    const wanted = Array.isArray(operators) ? operators : [];
+    const present = [...menu.querySelectorAll('core-menu-item')].map((item) => item.getAttribute('value'));
+    menu.setLabel?.(operatorLabel(current));
+    const same = present.length === wanted.length && present.every((value, index) => value === wanted[index]);
+    if (same) {
+        return;
+    }
+    for (const item of [...menu.querySelectorAll('core-menu-item')]) {
+        item.remove();
+    }
+    for (const operator of wanted) {
+        const item = document.createElement('core-menu-item');
+        item.setAttribute('value', operator);
+        item.setAttribute('label', operatorLabel(operator));
+        menu.append(item);
+    }
+    menu.refresh?.();
+}
+
 /**
  * Move a row only when its position changed. Re-appending a child disconnects it.
  * @param {HTMLElement} parent

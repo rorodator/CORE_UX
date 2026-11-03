@@ -642,6 +642,19 @@ function mountNestedMenu() {
     };
 }
 
+test('a nested submenu resolves its owner after the parent has already rendered', async () => {
+    await customElements.whenDefined('core-menu');
+    const { root, share, more } = mountNestedMenu();
+
+    root.openMenu();
+    more._menuOwner = null;
+    more._ensureMenuOwner();
+    share.openSubmenu();
+    assert.equal(more.openSubmenu(), true);
+    assert.equal(isSubmenuOpen(more), true);
+    assert.equal(more._menuOwner, share);
+});
+
 test('ArrowLeft and ArrowRight on a flat menu item do not preventDefault', async () => {
     await customElements.whenDefined('core-menu');
     const { a } = mountThreeMenus();

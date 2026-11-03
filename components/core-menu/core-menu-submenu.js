@@ -45,7 +45,27 @@ export class CoreMenuSubmenu extends Core_UXElement {
         this._menuOwner = owner;
     }
 
+    /**
+     * Resolves the parent menu when this element was moved before upgrade.
+     */
+    _ensureMenuOwner() {
+        if (this._menuOwner) {
+            return;
+        }
+        let parent = this.parentElement;
+        while (parent) {
+            if (parent.localName === 'core-menu' || parent.localName === 'core-menu-submenu') {
+                this._menuOwner = parent;
+                return;
+            }
+            parent = parent.parentElement;
+        }
+    }
+
     onConnect() {
+        // A parent may move this element into its panel before this class is
+        // upgraded, so attachMenuOwner was not available yet.
+        this._ensureMenuOwner();
         // Portal moves disconnect and reconnect this host under linkedom.
         // The shell and its live children must survive that round-trip.
         if (this._shellReady()) {

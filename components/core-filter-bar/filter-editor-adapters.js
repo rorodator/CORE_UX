@@ -483,6 +483,9 @@ class FilterValueEditor {
             } else {
                 selected.delete(value);
             }
+            // The bar skips this row while the edit is local, so the key has to
+            // follow the checkbox or the next paint treats the selection as stale.
+            this._treeKey = treeSignature(tree, selected);
             this._emitValues([...selected]);
         }));
     }
@@ -541,7 +544,7 @@ class FilterValueEditor {
                         this._widget.setDataSource(toResults(options));
                         this._writeValue();
                     } else if (this.kind === 'treeSelect') {
-                        this._options = normalizeList(options);
+                        this._options = normalizeTree(options);
                         this._writeTree(this._options);
                     } else if (this.kind === 'multiSelect') {
                         this._writeMultiOptions(options);
@@ -945,15 +948,58 @@ function toResults(options) {
 }
 
 /**
+ * Keeps category nodes and their children. A flat list is still a list of leaves.
  * @param {unknown} nodes
  * @returns {object[]}
  */
 function treeNodes(nodes) {
-    const list = Array.isArray(nodes) ? nodes : [];
-    if (list.some((item) => item && typeof item === 'object' && Array.isArray(/** @type {any} */ (item).children))) {
-        return list;
+    return normalizeTree(nodes);
+}
+
+/**
+ * @param {unknown} nodes
+ * @returns {object[]}
+ */
+function normalizeTree(nodes) {
+    if (!Array.isArray(nodes)) {
+        return [];
     }
-    return normalizeList(list);
+    /** @type {object[]} */
+    const out = [];
+    for (const item of nodes) {
+        if (typeof item === 'string' || typeof item === 'boolean') {
+            out.push({
+                value: item,
+                label: typeof item === 'boolean' ? (item ? 'Yes' : 'No') : item,
+            });
+            continue;
+        }
+        if (!item || typeof item !== 'object') {
+            continue;
+        }
+        const record = /** @type {Record<string, unknown>} */ (item);
+        const children = Array.isArray(record.children) ? normalizeTree(record.children) : [];
+        const hasValue = typeof record.value === 'string' || typeof record.value === 'boolean';
+        const label = typeof record.label === 'string'
+            ? record.label
+            : (hasValue ? String(record.value) : '');
+        if (!hasValue && label === '' && children.length === 0) {
+            continue;
+        }
+        /** @type {Record<string, unknown>} */
+        const node = {};
+        if (hasValue) {
+            node.value = record.value;
+        }
+        if (label !== '') {
+            node.label = label;
+        }
+        if (children.length > 0) {
+            node.children = children;
+        }
+        out.push(node);
+    }
+    return out;
 }
 
 /**

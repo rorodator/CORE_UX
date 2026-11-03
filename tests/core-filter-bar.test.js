@@ -66,6 +66,22 @@ async function flush() {
     await Promise.resolve();
 }
 
+/**
+ * @param {Element|null|undefined} node
+ * @returns {number}
+ */
+function levelCount(node) {
+    let count = 0;
+    let current = node;
+    while (current) {
+        if (current.classList?.contains('core-filter-bar__tree-level')) {
+            count += 1;
+        }
+        current = current.parentElement;
+    }
+    return count;
+}
+
 test('filter bar sources do not import a grid, a query language, or a data backend', () => {
     const root = path.resolve(import.meta.dirname, '..');
     const source = [
@@ -722,6 +738,100 @@ test('changing another filter does not rebuild a tree selection', () => {
     const desk = boxes.find((box) => box.checked);
     assert.equal(desk != null, true);
     desk.focus();
+    const focusCount = focused.length;
+    bar.setValue(nameId, 'kept');
+    const again = [...row(bar, 'place').querySelectorAll('input[type="checkbox"]')];
+    assert.equal(again.length, boxes.length);
+    again.forEach((box, index) => {
+        assert.equal(box === boxes[index], true);
+    });
+    assert.equal(desk.checked, true);
+    assert.equal(desk.isConnected, true);
+    assert.equal(focused.length, focusCount);
+    assert.equal(focused.at(-1) === desk, true);
+    assert.deepEqual(bar.getState().filters.find((item) => item.definitionId === 'place').value, ['desk']);
+    assert.equal(bar.getState().filters.find((item) => item.definitionId === 'name').value, 'kept');
+    bar.destroy();
+});
+
+test('a provider tree keeps nested categories after another filter changes', async () => {
+    clearBody();
+    const bar = mount();
+    function places() {
+        return [{
+            label: 'Europe',
+            children: [{
+                label: 'France',
+                children: [
+                    { value: 'paris', label: 'Paris' },
+                    { value: 'lyon', label: 'Lyon' },
+                ],
+            }],
+        }];
+    }
+    bar.configure({
+        definitions: [
+            { id: 'place', type: 'treeSelect', options: places },
+            { id: 'name', type: 'string' },
+        ],
+    });
+    bar.addFilter('place');
+    const nameId = bar.addFilter('name');
+    await flush();
+    const place = row(bar, 'place');
+    const labels = () => [...place.querySelectorAll('.core-filter-bar__tree-label')].map((node) => node.textContent);
+    const boxes = () => [...place.querySelectorAll('input[type="checkbox"]')];
+    assert.deepEqual(labels(), ['Europe', 'France']);
+    assert.equal(boxes().length, 2);
+    const paris = boxes().find((box) => box.nextElementSibling?.textContent === 'Paris');
+    assert.equal(paris != null, true);
+    assert.equal(levelCount(paris), 3);
+    const before = boxes();
+    paris.focus();
+    const focusCount = focused.length;
+    bar.setValue(nameId, 'kept');
+    await flush();
+    const after = boxes();
+    assert.equal(after.length, before.length);
+    after.forEach((box, index) => {
+        assert.equal(box === before[index], true);
+    });
+    assert.deepEqual(labels(), ['Europe', 'France']);
+    assert.equal(levelCount(paris), 3);
+    assert.equal(paris.isConnected, true);
+    assert.equal(focused.length, focusCount);
+    assert.equal(focused.at(-1) === paris, true);
+    assert.equal(bar.getState().filters.find((item) => item.definitionId === 'name').value, 'kept');
+    bar.destroy();
+});
+
+test('a checked tree box stays put when another filter changes', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [
+            {
+                id: 'place',
+                type: 'treeSelect',
+                options: [
+                    { value: 'desk', label: 'Desk' },
+                    { value: 'room', label: 'Room' },
+                ],
+            },
+            { id: 'name', type: 'string' },
+        ],
+    });
+    bar.addFilter('place');
+    const nameId = bar.addFilter('name');
+    const boxes = [...row(bar, 'place').querySelectorAll('input[type="checkbox"]')];
+    const desk = boxes.find((box) => box.nextElementSibling?.textContent === 'Desk');
+    assert.equal(desk != null, true);
+    desk.focus();
+    desk.checked = true;
+    desk.dispatchEvent(new Event('change', { bubbles: true }));
+    assert.equal(desk.isConnected, true);
+    assert.equal(desk.checked, true);
+    assert.deepEqual(bar.getState().filters.find((item) => item.definitionId === 'place').value, ['desk']);
     const focusCount = focused.length;
     bar.setValue(nameId, 'kept');
     const again = [...row(bar, 'place').querySelectorAll('input[type="checkbox"]')];

@@ -882,3 +882,131 @@ test('disconnect keeps the streams and destroy aborts a provider', async () => {
     await flush();
     assert.equal(completed, true);
 });
+
+test('a single configured operator hides the menu and keeps criteria', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{
+            id: 'name',
+            type: 'string',
+            operators: ['contains'],
+            defaultOperator: 'contains',
+        }],
+    });
+    /** @type {string[]} */
+    const eventTypes = [];
+    bar.events$.subscribe((event) => eventTypes.push(event.type));
+    const id = bar.addFilter('name');
+    const nameRow = row(bar, 'name');
+    const menu = nameRow.querySelector('core-menu');
+    assert.equal(menu.hidden, true);
+    const input = /** @type {HTMLInputElement} */ (control(bar, 'name'));
+    assert.equal(input instanceof HTMLInputElement, true);
+    input.value = 'Ada';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    assert.equal(bar.getState().filters[0].operator, 'contains');
+    assert.equal(bar.getCriteria().criteria[0].operator, 'contains');
+    assert.equal(bar.getCriteria().criteria[0].value, 'Ada');
+    assert.equal(eventTypes.includes('operatorChanged'), false);
+    bar.setValue(id, 'Bob');
+    assert.equal(bar.getCriteria().criteria[0].value, 'Bob');
+    bar.destroy();
+});
+
+test('several configured operators keep a working operator menu', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{
+            id: 'name',
+            type: 'string',
+            operators: ['eq', 'contains'],
+        }],
+    });
+    bar.addFilter('name');
+    const nameRow = row(bar, 'name');
+    const menu = nameRow.querySelector('core-menu');
+    assert.equal(menu.hidden, false);
+    menu.openMenu();
+    const panel = document.getElementById(menu.panelId);
+    const values = [...panel.querySelectorAll('core-menu-item')].map((item) => item.getAttribute('value'));
+    assert.deepEqual(values, ['eq', 'contains']);
+    menu.dispatchEvent(new CustomEvent('core-menu-select', {
+        bubbles: true,
+        detail: { value: 'eq' },
+    }));
+    assert.equal(bar.getState().filters[0].operator, 'eq');
+    menu.closeMenu();
+    bar.destroy();
+});
+
+test('inferred operators still show the operator menu', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{ id: 'name', type: 'string' }],
+    });
+    bar.addFilter('name');
+    const menu = row(bar, 'name').querySelector('core-menu');
+    assert.equal(menu.hidden, false);
+    assert.equal(bar.getDefinitions()[0].operators.length > 1, true);
+    bar.destroy();
+});
+
+test('updateDefinition toggles operator menu visibility without losing the row', async () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{
+            id: 'amount',
+            type: 'decimal',
+            operators: ['eq', 'gt'],
+        }],
+    });
+    const id = bar.addFilter('amount');
+    const amountRow = row(bar, 'amount');
+    const input = /** @type {HTMLInputElement} */ (control(bar, 'amount'));
+    bar.setValue(id, '42');
+    assert.equal(amountRow.querySelector('core-menu').hidden, false);
+
+    bar.updateDefinition('amount', { operators: ['eq'] });
+    await flush();
+    assert.equal(row(bar, 'amount'), amountRow);
+    assert.equal(amountRow.querySelector('core-menu').hidden, true);
+    assert.equal(control(bar, 'amount'), input);
+    assert.equal(input.value, '42');
+    assert.equal(bar.getState().filters[0].operator, 'eq');
+
+    bar.updateDefinition('amount', { operators: ['eq', 'gt'] });
+    await flush();
+    assert.equal(row(bar, 'amount'), amountRow);
+    assert.equal(amountRow.querySelector('core-menu').hidden, false);
+    assert.equal(control(bar, 'amount'), input);
+    assert.equal(input.value, '42');
+    bar.destroy();
+});
+
+test('showing a single-operator row does not emit operatorChanged', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [{
+            id: 'code',
+            type: 'string',
+            operators: ['contains'],
+            defaultOperator: 'contains',
+        }],
+    });
+    /** @type {string[]} */
+    const operatorEvents = [];
+    bar.events$.subscribe((event) => {
+        if (event.type === 'operatorChanged') {
+            operatorEvents.push(event.type);
+        }
+    });
+    bar.addFilter('code');
+    assert.equal(operatorEvents.length, 0);
+    assert.equal(bar.getState().filters[0].operator, 'contains');
+    bar.destroy();
+});

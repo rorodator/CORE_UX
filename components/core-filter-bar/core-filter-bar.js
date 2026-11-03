@@ -396,6 +396,7 @@ export class CoreFilterBar extends Core_UXElement {
         });
         error.hidden = true;
         root.append(handle, label, menu, editorHost, actions, error);
+        syncOperatorPicker(menu, definition.operators, instance.operator);
 
         const adapter = createFilterEditor(definition, instance.operator, registry);
         const row = {
@@ -519,7 +520,7 @@ export class CoreFilterBar extends Core_UXElement {
             labelNode.textContent = label;
         }
         row.handle?.setAttribute('aria-label', `Reorder ${label}`);
-        syncOperatorMenu(row.menu, definition.operators, instance.operator);
+        syncOperatorPicker(row.menu, definition.operators, instance.operator);
         row.root.setAttribute('aria-label', `${label} filter`);
         setDisabled(row.earlier, !this._canMove(instance, -1));
         setDisabled(row.later, !this._canMove(instance, 1));
@@ -771,6 +772,39 @@ export class CoreFilterBar extends Core_UXElement {
         }
         this._rows.clear();
     }
+}
+
+/**
+ * @param {string[]|undefined} operators
+ * @returns {boolean}
+ */
+function operatorPickerVisible(operators) {
+    return Array.isArray(operators) && operators.length > 1;
+}
+
+/**
+ * Hides the operator menu when the definition allows only one choice.
+ * @param {HTMLElement|null|undefined} menu
+ * @param {string[]|undefined} operators
+ * @param {string} current
+ */
+function syncOperatorPicker(menu, operators, current) {
+    if (!menu) {
+        return;
+    }
+    const visible = operatorPickerVisible(operators);
+    menu.hidden = !visible;
+    if (!visible) {
+        if (menu.open) {
+            if (typeof menu._closeMenu === 'function') {
+                menu._closeMenu({ restoreFocus: false, emitEvent: true });
+            } else {
+                menu.closeMenu?.();
+            }
+        }
+        return;
+    }
+    syncOperatorMenu(menu, operators, current);
 }
 
 /**

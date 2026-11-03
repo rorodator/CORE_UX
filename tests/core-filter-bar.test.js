@@ -590,6 +590,154 @@ test('updateDefinition refreshes one row and ignores a stale provider', async ()
     bar.destroy();
 });
 
+test('an open operator menu is not rebuilt when another filter changes', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [
+            { id: 'city', type: 'select', options: ['Paris', 'Lyon'] },
+            { id: 'name', type: 'string' },
+        ],
+    });
+    bar.addFilter('city');
+    const nameId = bar.addFilter('name');
+    const menu = row(bar, 'city').querySelector('core-menu');
+    menu.openMenu();
+    const panel = document.getElementById(menu.panelId);
+    const items = [...panel.children].filter((node) => node.localName === 'core-menu-item');
+    const before = document.querySelectorAll('core-menu-item').length;
+    assert.equal(menu.open, true);
+    assert.equal(items.length > 0, true);
+    bar.setValue(nameId, 'kept');
+    assert.equal(menu.open, true);
+    assert.equal(document.getElementById(menu.panelId), panel);
+    const after = [...panel.children].filter((node) => node.localName === 'core-menu-item');
+    assert.equal(after.length, items.length);
+    after.forEach((item, index) => {
+        assert.equal(item === items[index], true);
+    });
+    assert.equal(document.querySelectorAll('core-menu-item').length, before);
+    assert.equal(bar.getState().filters.find((item) => item.definitionId === 'name').value, 'kept');
+    menu.closeMenu();
+    bar.destroy();
+});
+
+test('a late provider response does not replace static options', async () => {
+    clearBody();
+    const bar = mount();
+    let releasePrevious;
+    const previousGate = new Promise((resolve) => {
+        releasePrevious = resolve;
+    });
+    /** @type {string[]} */
+    const calls = [];
+    function previousProvider(ctx) {
+        calls.push('previous');
+        ctx.signal.addEventListener('abort', () => calls.push('abort'));
+        return previousGate.then(() => [{ value: 'late', label: 'Late' }]);
+    }
+    bar.configure({
+        definitions: [{ id: 'city', type: 'select', options: previousProvider }],
+    });
+    bar.addFilter('city');
+    await flush();
+    assert.equal(calls.includes('previous'), true);
+    bar.updateDefinition('city', { options: ['Paris'] });
+    const shown = () => [.../** @type {HTMLSelectElement} */ (control(bar, 'city')).options].map((option) => option.value);
+    assert.equal(shown().includes('Paris'), true);
+    assert.equal(shown().includes('late'), false);
+    assert.equal(calls.includes('abort'), true);
+    releasePrevious();
+    await flush();
+    assert.equal(shown().includes('Paris'), true);
+    assert.equal(shown().includes('late'), false);
+    bar.destroy();
+});
+
+test('autocomplete uses the replacement provider', async () => {
+    clearBody();
+    const bar = mount();
+    /** @type {string[][]} */
+    const calls = [];
+    function providerA(ctx) {
+        calls.push(['A', ctx.query]);
+        return [{ value: 'a', label: 'Alpha' }];
+    }
+    function providerB(ctx) {
+        calls.push(['B', ctx.query]);
+        return [{ value: 'b', label: 'Beta' }];
+    }
+    bar.configure({
+        definitions: [
+            { id: 'account', type: 'autocomplete', options: providerA },
+            { id: 'name', type: 'string' },
+        ],
+    });
+    bar.addFilter('account');
+    const nameId = bar.addFilter('name');
+    bar.setValue(nameId, 'kept');
+    const nameInput = control(bar, 'name');
+    const widget = row(bar, 'account').querySelector('core-autocomplete');
+    const first = widget._dataSource;
+    first('aaa').subscribe({ next() {}, error() {} });
+    await flush();
+    assert.deepEqual(calls, [['A', 'aaa']]);
+    bar.updateDefinition('account', { options: providerB });
+    const second = widget._dataSource;
+    assert.equal(second === first, false);
+    assert.equal(row(bar, 'account').querySelector('core-autocomplete'), widget);
+    calls.length = 0;
+    second('bbb').subscribe({ next() {}, error() {} });
+    await flush();
+    assert.deepEqual(calls, [['B', 'bbb']]);
+    calls.length = 0;
+    first('ccc').subscribe({ next() {}, error() {} });
+    await flush();
+    assert.deepEqual(calls, [['B', 'ccc']]);
+    assert.equal(control(bar, 'name'), nameInput);
+    assert.equal(nameInput.value, 'kept');
+    bar.destroy();
+});
+
+test('changing another filter does not rebuild a tree selection', () => {
+    clearBody();
+    const bar = mount();
+    bar.configure({
+        definitions: [
+            {
+                id: 'place',
+                type: 'treeSelect',
+                options: [
+                    { value: 'desk', label: 'Desk' },
+                    { value: 'room', label: 'Room' },
+                ],
+            },
+            { id: 'name', type: 'string' },
+        ],
+    });
+    const placeId = bar.addFilter('place');
+    const nameId = bar.addFilter('name');
+    bar.setValue(placeId, ['desk']);
+    const boxes = [...row(bar, 'place').querySelectorAll('input[type="checkbox"]')];
+    const desk = boxes.find((box) => box.checked);
+    assert.equal(desk != null, true);
+    desk.focus();
+    const focusCount = focused.length;
+    bar.setValue(nameId, 'kept');
+    const again = [...row(bar, 'place').querySelectorAll('input[type="checkbox"]')];
+    assert.equal(again.length, boxes.length);
+    again.forEach((box, index) => {
+        assert.equal(box === boxes[index], true);
+    });
+    assert.equal(desk.checked, true);
+    assert.equal(desk.isConnected, true);
+    assert.equal(focused.length, focusCount);
+    assert.equal(focused.at(-1) === desk, true);
+    assert.deepEqual(bar.getState().filters.find((item) => item.definitionId === 'place').value, ['desk']);
+    assert.equal(bar.getState().filters.find((item) => item.definitionId === 'name').value, 'kept');
+    bar.destroy();
+});
+
 test('disconnect keeps the streams and destroy aborts a provider', async () => {
     clearBody();
     const bar = mount();

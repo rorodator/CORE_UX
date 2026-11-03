@@ -784,13 +784,17 @@ function syncOperatorMenu(menu, operators, current) {
         return;
     }
     const wanted = Array.isArray(operators) ? operators : [];
-    const present = [...menu.querySelectorAll('core-menu-item')].map((item) => item.getAttribute('value'));
-    menu.setLabel?.(operatorLabel(current));
+    const label = operatorLabel(current);
+    if ((menu.label || '') !== label) {
+        menu.setLabel?.(label);
+    }
+    const items = operatorMenuItems(menu);
+    const present = items.map((item) => item.getAttribute('value'));
     const same = present.length === wanted.length && present.every((value, index) => value === wanted[index]);
     if (same) {
         return;
     }
-    for (const item of [...menu.querySelectorAll('core-menu-item')]) {
+    for (const item of items) {
         item.remove();
     }
     for (const operator of wanted) {
@@ -800,6 +804,33 @@ function syncOperatorMenu(menu, operators, current) {
         menu.append(item);
     }
     menu.refresh?.();
+}
+
+/**
+ * Items of the operator menu, including the panel portaled onto the document.
+ * A query from the host misses that panel and would append a second copy.
+ * @param {HTMLElement} menu
+ * @returns {HTMLElement[]}
+ */
+function operatorMenuItems(menu) {
+    const panelId = menu.panelId;
+    const panel = (panelId && menu.ownerDocument?.getElementById(panelId))
+        || menu.querySelector('.core-menu__panel');
+    /** @type {HTMLElement[]} */
+    const items = [];
+    if (panel) {
+        for (const child of panel.children) {
+            if (child.localName === 'core-menu-item') {
+                items.push(/** @type {HTMLElement} */ (child));
+            }
+        }
+    }
+    for (const child of menu.children) {
+        if (child.localName === 'core-menu-item' && !items.includes(child)) {
+            items.push(/** @type {HTMLElement} */ (child));
+        }
+    }
+    return items;
 }
 
 /**

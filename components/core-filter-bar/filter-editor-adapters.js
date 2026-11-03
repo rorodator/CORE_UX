@@ -184,6 +184,9 @@ class FilterValueEditor {
         }
         this._syncDisabled();
         this._nameControl(context.label || 'Filter value');
+        if (providerChanged && (this.kind === 'autocomplete' || this.kind === 'tags')) {
+            this._bindDataSource();
+        }
         this._writeValue();
         if (providerChanged || (context.dependencyKey || '') !== this._dependency) {
             this._dependency = context.dependencyKey || '';
@@ -284,14 +287,24 @@ class FilterValueEditor {
         }
         this._nameControl(context.label || 'Filter value');
         this._syncDisabled();
-        if (this.kind === 'autocomplete' || this.kind === 'tags') {
-            const provider = context.provider;
-            if (typeof provider === 'function') {
-                widget.setDataSource((query) => this._search(provider, query));
-            } else {
-                widget.setDataSource(toResults(context.options));
-            }
+        this._bindDataSource();
+    }
+
+    /**
+     * Points the widget at the provider stored on the context.
+     * The function passed to setDataSource does not close over a previous provider.
+     */
+    _bindDataSource() {
+        const widget = this._widget;
+        if (!widget || (this.kind !== 'autocomplete' && this.kind !== 'tags')) {
+            return;
         }
+        const provider = this._context?.provider;
+        if (typeof provider === 'function') {
+            widget.setDataSource((query) => this._search(query));
+            return;
+        }
+        widget.setDataSource(toResults(this._context?.options));
     }
 
     /**
@@ -315,6 +328,17 @@ class FilterValueEditor {
             return this._options;
         }
         return this._context?.options;
+    }
+
+    /**
+     * A provider list stays cached until the next response. Static nodes come from the definition.
+     * @returns {unknown}
+     */
+    _treeSource() {
+        if (typeof this._context?.provider === 'function' && this._options.length > 0) {
+            return this._options;
+        }
+        return this._context?.nodes || this._context?.options;
     }
 
     /**
@@ -376,7 +400,7 @@ class FilterValueEditor {
                 const value = Array.isArray(this._context.instance.value) ? this._context.instance.value : [];
                 this._widget.setSelected(value.filter((item) => typeof item === 'string'));
             } else if (this.kind === 'treeSelect') {
-                this._writeTree(this._options.length ? this._options : (this._context.nodes || this._context.options));
+                this._writeTree(this._treeSource());
             }
         } finally {
             this._silent = false;
@@ -444,6 +468,11 @@ class FilterValueEditor {
                 .filter((item) => typeof item === 'string')
         );
         const tree = treeNodes(nodes);
+        const key = treeSignature(tree, selected);
+        if (key === this._treeKey && this._widget.childElementCount > 0) {
+            return;
+        }
+        this._treeKey = key;
         this._widget.replaceChildren();
         this._widget.append(renderTree(tree, selected, (value, checked) => {
             if (this._silent || this._dead) {
@@ -479,9 +508,13 @@ class FilterValueEditor {
         }
         const provider = this._context.provider;
         if (typeof provider !== 'function') {
+            this._seq += 1;
+            this._abort?.abort();
+            this._abort = null;
+            this._options = [];
             this._setHint('', false);
             if (this.kind === 'treeSelect') {
-                this._writeTree(this._context.nodes || this._context.options);
+                this._writeTree(this._treeSource());
             }
             return;
         }
@@ -509,7 +542,7 @@ class FilterValueEditor {
                         this._writeValue();
                     } else if (this.kind === 'treeSelect') {
                         this._options = normalizeList(options);
-                        this._writeTree(options);
+                        this._writeTree(this._options);
                     } else if (this.kind === 'multiSelect') {
                         this._writeMultiOptions(options);
                     } else {
@@ -528,12 +561,18 @@ class FilterValueEditor {
     }
 
     /**
-     * @param {Function} provider
+     * Reads the current provider when the search runs, not the one captured at mount.
      * @param {string} query
      * @returns {Observable<unknown>}
      */
-    _search(provider, query) {
+    _search(query) {
+        const provider = this._context?.provider;
         return new Observable((subscriber) => {
+            if (typeof provider !== 'function') {
+                subscriber.next([]);
+                subscriber.complete();
+                return undefined;
+            }
             const ctrl = new AbortController();
             let active = true;
             const context = this._context;
@@ -915,6 +954,40 @@ function treeNodes(nodes) {
         return list;
     }
     return normalizeList(list);
+}
+
+/**
+ * @param {object[]} nodes
+ * @param {Set<string>} selected
+ * @returns {string}
+ */
+function treeSignature(nodes, selected) {
+    return JSON.stringify({
+        nodes: signatureNodes(nodes),
+        selected: [...selected].sort(),
+    });
+}
+
+/**
+ * @param {object[]} nodes
+ * @returns {object[]}
+ */
+function signatureNodes(nodes) {
+    if (!Array.isArray(nodes)) {
+        return [];
+    }
+    return nodes.map((node) => {
+        if (!node || typeof node !== 'object') {
+            return null;
+        }
+        const record = /** @type {Record<string, unknown>} */ (node);
+        const value = typeof record.value === 'string' || typeof record.value === 'boolean' ? record.value : null;
+        return {
+            value,
+            label: typeof record.label === 'string' ? record.label : '',
+            children: Array.isArray(record.children) ? signatureNodes(record.children) : [],
+        };
+    });
 }
 
 /**
